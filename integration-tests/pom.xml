@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+  <modelVersion>4.1.0</modelVersion>
 
   <parent>
     <groupId>io.github.bmarwell.jdtfmt</groupId>
@@ -12,4 +12,58 @@
 
   <name>jdtfmt :: ITs</name>
 
+  <dependencies>
+    <dependency>
+      <groupId>io.github.bmarwell.jdtfmt</groupId>
+      <artifactId>jdtfmt</artifactId>
+      <version>${project.version}</version>
+      <classifier>distribution</classifier>
+      <type>tgz</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <inherited>true</inherited>
+        <executions>
+          <execution>
+            <id>unpack-distribution</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.github.bmarwell.jdtfmt</groupId>
+                  <artifactId>jdtfmt</artifactId>
+                  <classifier>distribution</classifier>
+                  <type>tgz</type>
+                  <version>${project.version}</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/jdtfmt</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <inherited>true</inherited>
+        <configuration>
+          <systemPropertyVariables>
+            <jdtfmt.directory>${project.build.directory}/jdtfmt/jdtfmt-${project.version}</jdtfmt.directory>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <subprojects>
+    <subproject>it-extension</subproject>
+    <subproject>jreleaser-builtin</subproject>
+  </subprojects>
 </project>
