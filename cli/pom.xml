@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+  <modelVersion>4.1.0</modelVersion>
 
   <parent>
     <groupId>io.github.bmarwell.jdtfmt</groupId>
@@ -11,14 +11,13 @@
   <packaging>jar</packaging>
 
   <name>jdtfmt :: cli</name>
+  <properties>
+    <main.class>io.github.bmarwell.jdtfmt.JdtFmt</main.class>
+
+    <native.quick.build>false</native.quick.build>
+  </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>io.github.bmarwell.jdtfmt</groupId>
-      <artifactId>jdtfmt-p2-fetcher</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-      <type>pom</type>
-    </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
@@ -27,7 +26,25 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli-jansi-graalvm</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>io.github.java-diff-utils</groupId>
+      <artifactId>java-diff-utils</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.ide</groupId>
+      <artifactId>org.eclipse.jdt.core</artifactId>
+      <version>3.42.0.v20250523-0728</version>
+    </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>eclipse-2025-06</id>
+      <url>https://p2repository.com/mvn4/eclipse-2025-06/</url>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>
@@ -47,10 +64,88 @@
           </compilerArgs>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>collect-dependencies</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/libs</outputDirectory>
+              <prependGroupId>true</prependGroupId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jreleaser</groupId>
+        <artifactId>jreleaser-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble-archive</id>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <jreleaser>
+                <project>
+                  <links>
+                    <homepage>https://github.com/bmarwell/jdtfmt</homepage>
+                  </links>
+                </project>
+                <assemble>
+                  <javaArchive>
+                    <jdtfmt>
+                      <active>ALWAYS</active>
+                      <stereotype>DESKTOP</stereotype>
+                      <formats>
+                        <format>ZIP</format>
+                        <format>TGZ</format>
+                      </formats>
+                      <options>
+                        <longFileMode>POSIX</longFileMode>
+                        <bigNumberMode>POSIX</bigNumberMode>
+                      </options>
+                      <java>
+                        <mainClass>${main.class}</mainClass>
+                      </java>
+                      <mainJar>
+                        <path>${project.build.directory}/${project.build.finalName}.jar</path>
+                      </mainJar>
+                      <fileSets>
+                        <fileSet>
+                          <input>${project.build.directory}/libs/</input>
+                          <output>lib/</output>
+                          <includes>
+                            <include>*.jar</include>
+                          </includes>
+                        </fileSet>
+                      </fileSets>
+                    </jdtfmt>
+                  </javaArchive>
+                </assemble>
+              </jreleaser>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
   <profiles>
+    <profile>
+      <id>quick</id>
+      <properties>
+        <native.quick.build>true</native.quick.build>
+      </properties>
+    </profile>
     <profile>
       <id>native</id>
       <build>
@@ -60,7 +155,26 @@
             <artifactId>native-maven-plugin</artifactId>
             <extensions>true</extensions>
             <configuration>
-              <mainClass>io.github.bmarwell.jdtfmt.JdtFmt</mainClass>
+              <mainClass>${main.class}</mainClass>
+              <quickBuild>${native.quick.build}</quickBuild>
+              <imageName>${project.artifactId}-${project.version}</imageName>
+              <agentResourceDirectory>${project.basedir}/src/main/graalvm-native</agentResourceDirectory>
+              <buildArgs>
+                <buildArg>--strict-image-heap</buildArg>
+                <buildArg>-J-Duser.language=en</buildArg>
+                <buildArg>-J-Duser.country=US</buildArg>
+                <buildArg>--initialize-at-build-time=org.eclipse.jdt.internal.compiler</buildArg>
+              </buildArgs>
+              <systemProperties>
+                <systemProperty>
+                  <name>user.language</name>
+                  <value>en</value>
+                </systemProperty>
+                <systemProperty>
+                  <name>user.country</name>
+                  <value>US</value>
+                </systemProperty>
+              </systemProperties>
             </configuration>
             <executions>
               <execution>
@@ -74,6 +188,41 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>dist-linux</id>
+      <activation>
+        <os>
+          <family>linux</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration combine.self="merge">
+              <buildArgs>
+                <buildArg>--static</buildArg>
+                <buildArg>-march=compatibility</buildArg>
+                <buildArg>--libc=musl</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>dist-windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <!-- not used in POM, but used in assembly descriptors -->
+        <executable-suffix>.exe</executable-suffix>
+      </properties>
     </profile>
   </profiles>
 
