@@ -34,10 +34,14 @@ The “Java” name may be used in product, service, and event names without per
 +
 … also, I wanted to keep the book open for the OpenJDK community to adopt an official tool with this name.
 
+How opinionated is it?::
+While there is a default rule, you can use other named rules or even foreign config files created by Eclipse IDE as well.
+But I encourage everyone to use the default configuration – and let's discuss how well it is defined in the GitHub discussions and the issue tracker.
+
 == Implementation status
 
 Started.
-The project is in an early stage, and is not considered stable or feature-complete yet.
+The project is in an early stage and is not considered stable or feature-complete yet.
 
 == Compiling
 
