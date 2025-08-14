@@ -39,6 +39,11 @@
         <artifactId>picocli</artifactId>
         <version>${picocli.version}</version>
       </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-jansi-graalvm</artifactId>
+        <version>1.2.0</version>
+      </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>
