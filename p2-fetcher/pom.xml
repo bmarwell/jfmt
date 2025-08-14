@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bmarwell.jdtfmt</groupId>
+    <artifactId>jdtfmt-root</artifactId>
+  </parent>
+
+  <artifactId>jdtfmt-p2-fetcher</artifactId>
+  <packaging>pom</packaging>
+
+  <name>jdtfmt :: p2-fetcher</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.ide</groupId>
+      <artifactId>org.eclipse.jdt.core</artifactId>
+      <version>3.42.0.v20250523-0728</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>eclipse-2025-06</id>
+      <url>https://p2repository.com/mvn4/eclipse-2025-06/</url>
+    </repository>
+  </repositories>
+
+</project>

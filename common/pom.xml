@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bmarwell.jdtfmt</groupId>
+    <artifactId>jdtfmt-root</artifactId>
+  </parent>
+
+  <artifactId>jdtfmt-common</artifactId>
+  <packaging>pom</packaging>
+
+  <name>jdtfmt :: common</name>
+
+  <modules>
+    <module>value</module>
+  </modules>
+</project>

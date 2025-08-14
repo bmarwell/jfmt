@@ -1,0 +1,3 @@
+= jdtfmt
+
+A Eclipse JDT-based Java source code formtter.
