@@ -1,3 +1,50 @@
 = jdtfmt
+:toc: macro
 
-A Eclipse JDT-based Java source code formtter.
+An opinionated Eclipse JDT-based Java source code formatter.
+
+toc::[]
+
+== Goals
+
+* 🚫​⚙️ No config file by default
+  ** ship a sane default config, similar to https://github.com/palantir/palantir-java-format[palantir-java-format].
+* 🪞 idempotent operation
+  ** do not do other/additional changes upon subsequent reformat operations
+* 📝 reading and writing
+  ** allows output on stdout or overwriting the input files
+* 🚯 no AST loss
+  ** do not swallow comments, intentional empty lines and line breaks, etc.
+* 🚀 FAST
+  ** The project aims to create a GraalVM-based binary for most architectures, so it can operate
+     almost as fast as `gofmt` or similar tools.
+
+== Implementation
+
+* 💻 Uses PicoCLI for command line parsing
+* 📝 Uses Eclipse JDT for formatting
+* ⚙️ Uses GraalVM for creating native, statically-linked stand-alone binaries
+
+== The name
+
+Why not call it `javafmt`?::
+The JAVA® brand name is a registered trademark of Oracle, and except in limited circumstances, may not be used without a
+written license from Oracle.
+The “Java” name may be used in product, service, and event names without permission only in specific, limited ways.
++
+… also, I wanted to keep the book open for the OpenJDK community to adopt an official tool with this name.
+
+== Implementation status
+
+Not started
+
+== Compiling
+
+* Use Maven 4 or the Maven wrapper
+* JDK 21 required
+
+== Further reading
+
+* https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] by Jan Ouwens.
+* link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] - the reference for the JDT code formatter config.
+* https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] - the reference.
