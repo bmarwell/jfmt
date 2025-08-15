@@ -187,6 +187,12 @@
           <artifactId>jreleaser-maven-plugin</artifactId>
           <version>1.19.0</version>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.6.1</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
