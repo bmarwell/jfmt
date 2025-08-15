@@ -5,4 +5,9 @@
     <artifactId>wagon-ssh</artifactId>
     <version>3.5.3</version>
   </extension>
+  <extension>
+    <groupId>com.tisonkun.os</groupId>
+    <artifactId>os-detector-maven-plugin</artifactId>
+    <version>0.6.0</version>
+  </extension>
 </extensions>

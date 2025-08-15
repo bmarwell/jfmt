@@ -1,0 +1,25 @@
+{
+  "resources": {
+    "includes": [
+      { "pattern": "io/github/bmarwell/jdtfmt/config/default-config.xml" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/.*\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/messages.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en_GB.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en_US.properties" }
+    ]
+  },
+  "bundles": [
+    { "name": "org.eclipse.jdt.internal.compiler.messages" },
+    {
+      "name":"org.eclipse.jdt.internal.compiler.batch.messages",
+      "locales": [ "", "en", "en_US", "en_GB" ]
+    },
+    {
+      "name":"org.eclipse.jdt.internal.compiler.problem.messages",
+      "locales": [ "", "en", "en_US", "en_GB" ]
+    },
+    { "name": "org.eclipse.jdt.internal.formatter.messages" }
+  ]
+}

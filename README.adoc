@@ -1,7 +1,7 @@
 = jdtfmt
 :toc: macro
 
-An opinionated Eclipse JDT-based Java source code formatter.
+*jdtfmt* is an opinionated Eclipse JDT-based Java source code formatter.
 
 toc::[]
 
@@ -23,9 +23,9 @@ toc::[]
 
 * 💻 Uses PicoCLI for command line parsing
 * 📝 Uses Eclipse JDT for formatting
-* ⚙️ Uses GraalVM for creating native, statically-linked stand-alone binaries
+* ⚙️ Uses GraalVM for creating native, statically linked stand-alone binaries
 
-== The name
+== FAQ
 
 Why not call it `javafmt`?::
 The JAVA® brand name is a registered trademark of Oracle, and except in limited circumstances, may not be used without a
@@ -36,15 +36,53 @@ The “Java” name may be used in product, service, and event names without per
 
 == Implementation status
 
-Not started
+Started.
+The project is in an early stage, and is not considered stable or feature-complete yet.
 
 == Compiling
 
 * Use Maven 4 or the Maven wrapper
 * JDK 21 required
 
+You can use `mvn verify` to create a tested and verified runnable application archive using jreleaser.
+You can find and execute the archive in the path `cli/target/jreleaser/assemble/jdtfmt/java-archive`.
+More info about these kinds of archives can be found in my blog post: https://blog.bmarwell.de/2025/04/12/creating-app-distribution-using-maven-jreleaser.html[Creating an App Distribution with Apache Maven and JReleaser].
+
+Please note that Java 21 or better needs to be installed on your system and must be in the `PATH` environment variable.
+
+=== Native Binaries
+
+Why use native binaries?
+Because they are fast, small, and do not require a JRE to be installed on the system.
+
+Here is a simple comparison of this project running with both options:
+
+[source,console]
+----
+❯ time ./cli/target/jdtfmt-1.0.0-SNAPSHOT .
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/JdtFmt.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/value/FileProcessingResult.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/config/ConfigLoader.java
+./cli/target/jdtfmt-1.0.0-SNAPSHOT .  0,01s user 0,02s system 95% cpu 0,034 total
+
+❯ time ./cli/target/jreleaser/assemble/jdtfmt/java-archive/work/jdtfmt-1.0.0-SNAPSHOT/bin/jdtfmt .
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/JdtFmt.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/value/FileProcessingResult.java
+Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/config/ConfigLoader.java
+ .  2,01s user 0,13s system 232% cpu 0,923 total
+----
+
+As you can see, the native binary is about three times faster than the JAR distribution.
+
+==== Compiling native binaries on linux
+
+By default, a profile `dist-linux` is activated, which will create a native binary for Linux x86_64 using musl.
+If you do not have musl and `libz.a` installed, you can use the profile `'-Pnative,!dist-linux'` to create a native binary using glibc instead.
+
 == Further reading
 
-* https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] by Jan Ouwens.
-* link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] - the reference for the JDT code formatter config.
-* https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] - the reference.
+* https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] – by Jan Ouwens.
+* link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] – the reference for the JDT code formatter config.
+* https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] – the reference.
