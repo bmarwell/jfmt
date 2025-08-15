@@ -259,7 +259,7 @@ public class JdtFmt implements Callable<Integer> {
         } else if (this.write) {
             System.err.println(ansiMode.string("@|bold,green Writing formatted file:|@ " + javaFile));
             try (var os =
-                    Files.newOutputStream(javaFile, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                    Files.newOutputStream(javaFile, StandardOpenOption.TRUNCATE_EXISTING)) {
                 os.write(revisedSourceCode.getBytes(StandardCharsets.UTF_8));
 
                 // it does not have a diff ANYMORE, so return false.
