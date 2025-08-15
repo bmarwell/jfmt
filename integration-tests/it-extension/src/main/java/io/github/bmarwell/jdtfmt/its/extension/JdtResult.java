@@ -22,7 +22,7 @@ public record JdtResult(int exitCode, List<LogLine> logLines) {
 
     public String getStderr() {
         return logLines.stream()
-                .filter(l -> l.channel == LogLine.Channel.STDERR)
+                .filter(l -> l.channel() == LogLine.Channel.STDERR)
                 .map(LogLine::message)
                 .collect(Collectors.joining("\n"));
     }
