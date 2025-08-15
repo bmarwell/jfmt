@@ -1,9 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
 = jdtfmt
 :toc: macro
 
 *jdtfmt* is an opinionated Eclipse JDT-based Java source code formatter.
 
-image::https://codecov.io/github/bmarwell/jdtfmt/graph/badge.svg?token=97T490QXQ2[link=https://codecov.io/github/bmarwell/jdtfmt]
+image:https://codecov.io/github/bmarwell/jdtfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jdtfmt]
+image:https://img.shields.io/badge/License-Apache_2.0-blue.svg["License",link=https://opensource.org/licenses/Apache-2.0]
+image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=https://joinup.ec.europa.eu/software/page/eupl]
 
 toc::[]
 
@@ -92,3 +95,12 @@ If you do not have musl and `libz.a` installed, you can use the profile `'-Pnati
 * https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] – by Jan Ouwens.
 * link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] – the reference for the JDT code formatter config.
 * https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] – the reference.
+
+== License
+
+This work is dual-licensed under Apache 2.0 and EUPL 1.2.
+You may choose either license when using this work.
+
+----
+SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+----
