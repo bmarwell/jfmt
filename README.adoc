@@ -3,6 +3,8 @@
 
 *jdtfmt* is an opinionated Eclipse JDT-based Java source code formatter.
 
+image::https://codecov.io/github/bmarwell/jdtfmt/graph/badge.svg?token=97T490QXQ2[link=https://codecov.io/github/bmarwell/jdtfmt]
+
 toc::[]
 
 == Goals
