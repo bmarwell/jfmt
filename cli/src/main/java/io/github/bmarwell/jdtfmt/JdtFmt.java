@@ -15,6 +15,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -253,13 +254,20 @@ public class JdtFmt implements Callable<Integer> {
                     for (String line : delta.getTarget().getLines()) {
                         System.out.println(ansiMode.string(">" + line));
                     }
-
                 }
-
             }
         } else if (this.write) {
             System.err.println(ansiMode.string("@|bold,green Writing formatted file:|@ " + javaFile));
-            throw new UnsupportedOperationException("Writing formatted file is not yet implemented.");
+            try (var os =
+                    Files.newOutputStream(javaFile, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                os.write(revisedSourceCode.getBytes(StandardCharsets.UTF_8));
+
+                // it does not have a diff ANYMORE, so return false.
+                // this will make the app exit without an error code (exit code 0).
+                return new FileProcessingResult(javaFile, false);
+            } catch (IOException ioException) {
+                throw new UncheckedIOException(ioException);
+            }
         } else {
             // output formatted source code
             for (String line : revisedSourceLines) {
