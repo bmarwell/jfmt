@@ -12,6 +12,11 @@
 
   <name>jdtfmt :: ITs</name>
 
+  <properties>
+    <!-- do not upload ITs to any repository -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.github.bmarwell.jdtfmt</groupId>

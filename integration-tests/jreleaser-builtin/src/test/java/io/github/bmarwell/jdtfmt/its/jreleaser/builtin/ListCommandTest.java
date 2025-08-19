@@ -26,4 +26,12 @@ class ListCommandTest {
         assertEquals(0, result.exitCode());
         assertTrue(result.getStderr().contains("src/test/resources/correctly_formatted/CorrectlyFormatted.java"));
     }
+
+    @Test
+    @JdtFmtTest(args = { "-l", "--config=equalsverifier", "src/test/resources/incorrectly_formatted/" })
+    @DisplayName("runs list command with path should exit 1 and print 'not formatted correctly'")
+    void runs_list_command_with_incorrectly_formatted_path(JdtResult result) {
+        assertEquals(1, result.exitCode());
+        assertTrue(result.getStderr().contains("Not formatted correctly"));
+    }
 }
