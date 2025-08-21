@@ -1,21 +1,18 @@
 package io.github.bmarwell.jdtfmt;
 
-import com.github.difflib.DiffUtils;
-import com.github.difflib.UnifiedDiffUtils;
-import com.github.difflib.patch.AbstractDelta;
-import com.github.difflib.patch.DeltaType;
-import com.github.difflib.patch.Patch;
 import io.github.bmarwell.jdtfmt.config.CliNamedConfig;
 import io.github.bmarwell.jdtfmt.config.ConfigLoader;
 import io.github.bmarwell.jdtfmt.config.NamedConfig;
+import io.github.bmarwell.jdtfmt.format.DiffOptions;
+import io.github.bmarwell.jdtfmt.format.FileProcessingResult;
+import io.github.bmarwell.jdtfmt.format.FormatProcessor;
+import io.github.bmarwell.jdtfmt.format.FormatterMode;
 import io.github.bmarwell.jdtfmt.nio.PathUtils;
-import io.github.bmarwell.jdtfmt.value.FileProcessingResult;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -114,10 +111,8 @@ public class JdtFmt implements Callable<Integer> {
     private Path configFile;
 
     private CommandLine.Help.Ansi ansiMode;
-
-    public void initAnsiMode() {
-        ansiMode = noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
-    }
+    private FormatterMode fmtMode;
+    private FormatProcessor formatProcessor;
 
     public static void main(String[] args) {
         int exitCode;
@@ -128,7 +123,7 @@ public class JdtFmt implements Callable<Integer> {
 
             try {
                 final var parseResult = cmd.parseArgs(args);
-                jdtFmt.initAnsiMode();
+                jdtFmt.init();
 
                 exitCode = cmd.execute(args);
 
@@ -142,6 +137,45 @@ public class JdtFmt implements Callable<Integer> {
         }
     }
 
+    public void init() {
+        this.ansiMode = this.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
+        this.fmtMode = getFormatterMode();
+        this.formatProcessor = new FormatProcessor(this.fmtMode, new DiffOptions(this.unified[0]));
+    }
+
+    private FormatterMode getFormatterMode() {
+        if (this.write) {
+            // write implies list
+            return FormatterMode.WRITE;
+        }
+
+        if (this.listOnly) {
+            if (this.reportAll) {
+                return FormatterMode.LIST_ALL;
+            } else {
+                return FormatterMode.LIST_FIRST;
+            }
+        }
+
+        if (this.reportAsDiff) {
+            if (this.unified[0] >= 0) {
+                if (this.reportAll) {
+                    return FormatterMode.DIFF_ALL_UNIFIED;
+                } else {
+                    return FormatterMode.DIFF_FIRST_UNIFIED;
+                }
+            } else {
+                if (this.reportAll) {
+                    return FormatterMode.DIFF_ALL_NORMAL;
+                } else {
+                    return FormatterMode.DIFF_FIRST_NORMAL;
+                }
+            }
+        }
+
+        return FormatterMode.PRINT;
+    }
+
     @Override
     public Integer call() {
         final Set<Path> allFilesAndDirs = PathUtils.resolveAll(List.of(this.filesOrDirectories));
@@ -151,11 +185,18 @@ public class JdtFmt implements Callable<Integer> {
         for (Path javaFile : allFilesAndDirs) {
             final FileProcessingResult processingResult = processFile(formatter, javaFile);
 
-            if (processingResult.hasDiff() && !this.reportAll) {
-                return 1;
+            results.add(processingResult);
+
+            if (processingResult.changesWritten()) {
+                System.err.println(ansiMode.string("@|bold,green Wrote formatted file:|@ " + javaFile));
+            } else if (processingResult.hasDiff()) {
+                System.err.println(ansiMode.string("@|bold,red Not formatted correctly:|@ " + javaFile));
             }
 
-            results.add(processingResult);
+            // short-circuit if not -e was given
+            if (processingResult.hasDiff() && !this.reportAll && !this.write) {
+                return 1;
+            }
         }
 
         return results.stream().anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
@@ -175,20 +216,19 @@ public class JdtFmt implements Callable<Integer> {
     }
 
     public FileProcessingResult processFile(CodeFormatter formatter, Path javaFile) {
-        System.err.println(ansiMode.string("@|bold,green Formatting file:|@ " + javaFile));
+        System.err.println(ansiMode.string("@|bold,green Processing file:|@ " + javaFile));
 
         try (var javaSource = Files.newInputStream(javaFile)) {
             final String sourceCode = new String(javaSource.readAllBytes(), StandardCharsets.UTF_8);
             final String revisedSourceCode = createRevisedSourceCode(formatter, sourceCode);
 
-            return processRevisedSourceCode(javaFile, sourceCode, revisedSourceCode);
+            return formatProcessor.processRevisedSourceCode(javaFile, sourceCode, revisedSourceCode);
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
         } catch (org.eclipse.jface.text.BadLocationException ble) {
             System.err.println(ansiMode.string("@|red Error formatting file:|@ " + javaFile));
             throw new IllegalStateException(ble);
         }
-
     }
 
     private static String createRevisedSourceCode(CodeFormatter formatter, String sourceCode)
@@ -210,71 +250,4 @@ public class JdtFmt implements Callable<Integer> {
         return doc.get();
     }
 
-    private FileProcessingResult processRevisedSourceCode(Path javaFile, String sourceCode, String revisedSourceCode) {
-        final List<String> originalSourceLines = List.of(sourceCode.split("\n"));
-        final List<String> revisedSourceLines = List.of(revisedSourceCode.split("\n"));
-        final Patch<String> patch = DiffUtils.diff(originalSourceLines, revisedSourceLines);
-
-        if (patch.getDeltas().isEmpty()) {
-            return new FileProcessingResult(javaFile, false);
-        } else if (!patch.getDeltas().isEmpty()) {
-            System.err.println(ansiMode.string("@|bold,red Not indented correctly:|@ " + javaFile));
-        }
-
-        if (this.listOnly) {
-            return new FileProcessingResult(javaFile, true);
-        }
-
-        if (this.reportAsDiff && !sourceCode.equals(revisedSourceCode)) {
-            // print diff
-            if (this.unified.length > 0 && this.unified[0] >= 0) {
-                final List<String> theDiff = UnifiedDiffUtils.generateUnifiedDiff(
-                    javaFile.toString(),
-                    javaFile + ".new",
-                    originalSourceLines,
-                    patch,
-                    this.unified[0]
-                );
-
-                for (String line : theDiff) {
-                    System.out.println(ansiMode.string(line));
-                }
-
-            } else {
-                // print normal diff
-                for (AbstractDelta<String> delta : patch.getDeltas()) {
-                    if (Objects.requireNonNull(delta.getType()) == DeltaType.EQUAL) {
-                        continue;
-                    }
-
-                    for (String line : delta.getSource().getLines()) {
-                        System.out.println(ansiMode.string("<" + line));
-                    }
-
-                    for (String line : delta.getTarget().getLines()) {
-                        System.out.println(ansiMode.string(">" + line));
-                    }
-                }
-            }
-        } else if (this.write) {
-            System.err.println(ansiMode.string("@|bold,green Writing formatted file:|@ " + javaFile));
-            try (var os =
-                    Files.newOutputStream(javaFile, StandardOpenOption.TRUNCATE_EXISTING)) {
-                os.write(revisedSourceCode.getBytes(StandardCharsets.UTF_8));
-
-                // it does not have a diff ANYMORE, so return false.
-                // this will make the app exit without an error code (exit code 0).
-                return new FileProcessingResult(javaFile, false);
-            } catch (IOException ioException) {
-                throw new UncheckedIOException(ioException);
-            }
-        } else {
-            // output formatted source code
-            for (String line : revisedSourceLines) {
-                System.out.println(line);
-            }
-        }
-
-        return new FileProcessingResult(javaFile, true);
-    }
 }
