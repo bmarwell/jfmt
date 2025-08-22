@@ -29,6 +29,9 @@ import picocli.CommandLine;
 
 public abstract class AbstractCommand implements Callable<Integer> {
 
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
+
     @CommandLine.Mixin
     GlobalOptions globalOptions = new GlobalOptions();
 
@@ -37,7 +40,12 @@ public abstract class AbstractCommand implements Callable<Integer> {
     public void init() {
         CommandLine.Help.Ansi ansiMode =
                 this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
-        this.writer = new OutputWriter(ansiMode, getFormatterMode().verbose());
+        this.writer = new OutputWriter(
+                ansiMode,
+                getFormatterMode().verbose(),
+                spec.commandLine().getOut(),
+                spec.commandLine().getErr()
+        );
     }
 
     abstract FormatterMode getFormatterMode();
