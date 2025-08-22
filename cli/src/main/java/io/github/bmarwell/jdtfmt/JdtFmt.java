@@ -8,6 +8,7 @@ import io.github.bmarwell.jdtfmt.format.FileProcessingResult;
 import io.github.bmarwell.jdtfmt.format.FormatProcessor;
 import io.github.bmarwell.jdtfmt.format.FormatterMode;
 import io.github.bmarwell.jdtfmt.nio.PathUtils;
+import io.github.bmarwell.jdtfmt.writer.OutputWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -110,9 +111,9 @@ public class JdtFmt implements Callable<Integer> {
     )
     private Path configFile;
 
-    private CommandLine.Help.Ansi ansiMode;
     private FormatterMode fmtMode;
     private FormatProcessor formatProcessor;
+    private OutputWriter writer;
 
     public static void main(String[] args) {
         int exitCode;
@@ -138,9 +139,10 @@ public class JdtFmt implements Callable<Integer> {
     }
 
     public void init() {
-        this.ansiMode = this.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
+        CommandLine.Help.Ansi ansiMode = this.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
         this.fmtMode = getFormatterMode();
-        this.formatProcessor = new FormatProcessor(this.fmtMode, new DiffOptions(this.unified[0]));
+        this.writer = new OutputWriter(ansiMode, fmtMode.verbose());
+        this.formatProcessor = new FormatProcessor(writer, this.fmtMode, new DiffOptions(this.unified[0]));
     }
 
     private FormatterMode getFormatterMode() {
@@ -188,9 +190,9 @@ public class JdtFmt implements Callable<Integer> {
             results.add(processingResult);
 
             if (processingResult.changesWritten()) {
-                System.err.println(ansiMode.string("@|bold,green Wrote formatted file:|@ " + javaFile));
+                writer.info("Wrote formatted file", javaFile.toString());
             } else if (processingResult.hasDiff()) {
-                System.err.println(ansiMode.string("@|bold,red Not formatted correctly:|@ " + javaFile));
+                writer.warn("Not formatted correctly", javaFile.toString());
             }
 
             // short-circuit if not -e was given
@@ -216,7 +218,7 @@ public class JdtFmt implements Callable<Integer> {
     }
 
     public FileProcessingResult processFile(CodeFormatter formatter, Path javaFile) {
-        System.err.println(ansiMode.string("@|bold,green Processing file:|@ " + javaFile));
+        writer.info("Processing file", javaFile.toString());
 
         try (var javaSource = Files.newInputStream(javaFile)) {
             final String sourceCode = new String(javaSource.readAllBytes(), StandardCharsets.UTF_8);
@@ -226,7 +228,7 @@ public class JdtFmt implements Callable<Integer> {
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
         } catch (org.eclipse.jface.text.BadLocationException ble) {
-            System.err.println(ansiMode.string("@|red Error formatting file:|@ " + javaFile));
+            writer.warn("Error formatting file", javaFile.toString());
             throw new IllegalStateException(ble);
         }
     }

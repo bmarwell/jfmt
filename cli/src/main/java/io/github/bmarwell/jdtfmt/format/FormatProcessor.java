@@ -5,6 +5,7 @@ import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
+import io.github.bmarwell.jdtfmt.writer.OutputWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -16,10 +17,12 @@ import java.util.Objects;
 
 public class FormatProcessor {
 
+    private final OutputWriter writer;
     private final FormatterMode fmtMode;
     private final DiffOptions diffOptions;
 
-    public FormatProcessor(FormatterMode fmtMode, DiffOptions diffOptions) {
+    public FormatProcessor(OutputWriter writer, FormatterMode fmtMode, DiffOptions diffOptions) {
+        this.writer = writer;
         this.fmtMode = fmtMode;
         this.diffOptions = diffOptions;
     }
@@ -40,9 +43,7 @@ public class FormatProcessor {
     }
 
     private FileProcessingResult printOutput(Path javaFile, List<String> revisedSourceCodeLines, Patch<String> patch) {
-        for (String revisedSourceCodeLine : revisedSourceCodeLines) {
-            System.out.println(revisedSourceCodeLine);
-        }
+        writer.output(revisedSourceCodeLines);
 
         if (patch.getDeltas().isEmpty()) {
             return new FileProcessingResult(javaFile, false, false);
@@ -63,11 +64,11 @@ public class FormatProcessor {
             }
 
             for (String line : delta.getSource().getLines()) {
-                System.out.println("<" + line);
+                writer.output("<" + line);
             }
 
             for (String line : delta.getTarget().getLines()) {
-                System.out.println(">" + line);
+                writer.output(">" + line);
             }
         }
 
@@ -87,9 +88,7 @@ public class FormatProcessor {
             this.diffOptions.unifiedDiffContextLine()
         );
 
-        for (String line : theDiff) {
-            System.out.println(line);
-        }
+        writer.output(theDiff);
 
         return new FileProcessingResult(javaFile, true, false);
     }
