@@ -66,6 +66,24 @@
       </plugin>
 
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-third-party-licenses</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <encoding>UTF-8</encoding>
+              <excludedScopes>test,provided</excludedScopes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
@@ -76,6 +94,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
+              <includeScope>runtime</includeScope>
               <outputDirectory>${project.build.directory}/libs</outputDirectory>
               <prependGroupId>true</prependGroupId>
             </configuration>
@@ -125,6 +144,20 @@
                           <output>lib/</output>
                           <includes>
                             <include>*.jar</include>
+                          </includes>
+                        </fileSet>
+                        <fileSet>
+                          <input>${project.build.directory}/generated-sources/license</input>
+                          <output>etc/</output>
+                          <includes>
+                            <include>*.txt</include>
+                          </includes>
+                        </fileSet>
+                        <fileSet>
+                          <input>${maven.multiModuleProjectDirectory}</input>
+                          <output>etc/</output>
+                          <includes>
+                            <include>LICENSE.*</include>
                           </includes>
                         </fileSet>
                       </fileSets>
