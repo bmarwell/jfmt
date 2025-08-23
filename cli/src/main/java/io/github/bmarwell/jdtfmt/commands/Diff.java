@@ -69,12 +69,16 @@ public class Diff extends AbstractCommand {
                 continue;
             }
 
+            getWriter().output(delta.getSource().getPosition() + "c" + delta.getTarget().getPosition());
+
             for (String line : delta.getSource().getLines()) {
-                getWriter().output("-" + line);
+                getWriter().output("< " + line);
             }
 
+            getWriter().output("---");
+
             for (String line : delta.getTarget().getLines()) {
-                getWriter().output("+" + line);
+                getWriter().output("> " + line);
             }
         }
 
