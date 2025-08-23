@@ -335,10 +335,10 @@
             <executions>
               <execution>
                 <id>report-aggregate</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>report-aggregate</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>

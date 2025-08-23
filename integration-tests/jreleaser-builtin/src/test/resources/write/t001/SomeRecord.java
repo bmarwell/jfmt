@@ -3,26 +3,24 @@
  * @param some some string
  * @param record some other string
  */
-public
-record
-SomeRecord
+public record SomeRecord
         (
-        String some
-        , String record
+                String some
+                , String record
 
-)
+                )
 {
 
     public String
     getSome()
-{
+    {
         return some;
     }
 
     public
     String
     getRecord()
-{
+    {
         return record;
     }
 }

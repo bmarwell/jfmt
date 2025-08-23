@@ -1,14 +1,12 @@
 /**
  * This file will fail with any formatter profile.
- * @param some some string
- * @param record some other string
+ * @param some
+ * @param record
  */
-public
-record
-SomeRecord
+public record SomeRecord
         (
         String some
-        , String record
+        , String record,
 
 )
 {
@@ -19,9 +17,8 @@ SomeRecord
         return some;
     }
 
-    public
-    String
-    getRecord()
+    public String get
+    Record()
 {
         return record;
     }
