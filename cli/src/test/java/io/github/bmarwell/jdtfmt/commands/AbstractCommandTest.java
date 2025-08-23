@@ -1,20 +1,15 @@
 package io.github.bmarwell.jdtfmt.commands;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.github.bmarwell.jdtfmt.JdtFmt;
+import io.github.bmarwell.jdtfmt.test.CommandExecutionResult;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.junit.jupiter.api.Test;
+import java.util.List;
 import picocli.CommandLine;
 
-class DiffTest {
+public abstract class AbstractCommandTest {
 
-    @Test
-    void can_output_unified_diff() {
-        var args = new String[] { "diff", "-u", "target/test-classes/diff/SomeRecord.java" };
-
+    protected CommandExecutionResult doExecute(String[] args) throws CommandLine.UnmatchedArgumentException {
         JdtFmt jdtFmt = new JdtFmt();
         CommandLine cmd = new CommandLine(jdtFmt);
 
@@ -36,8 +31,10 @@ class DiffTest {
         // when
         int execute = cmd.execute(args);
 
-        // then
-        assertEquals(1, execute);
-        assertTrue(out.toString().contains("+"));
+        return new CommandExecutionResult(
+                execute,
+                List.of(out.toString().split("\n")),
+                List.of(err.toString().split("\n"))
+        );
     }
 }

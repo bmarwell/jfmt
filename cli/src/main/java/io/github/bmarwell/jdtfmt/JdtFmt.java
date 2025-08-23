@@ -40,16 +40,16 @@ public class JdtFmt {
             try {
                 final var parseResult = cmd.parseArgs(args);
                 if (parseResult.isUsageHelpRequested()) {
-                    cmd.usage(System.err);
+                    cmd.usage(cmd.getErr());
                     System.exit(0);
                 }
 
                 if (!parseResult.errors().isEmpty()) {
                     for (Exception error : parseResult.errors()) {
-                        System.err.println(error.getMessage());
+                        cmd.getErr().println(error.getMessage());
                     }
 
-                    cmd.usage(System.err);
+                    cmd.usage(cmd.getErr());
 
                     System.exit(2);
                 }
@@ -66,10 +66,10 @@ public class JdtFmt {
                 exitCode = cmd.execute(args);
 
                 System.exit(exitCode);
-            } catch (CommandLine.MissingParameterException mpe) {
-                System.err.println(mpe.getMessage());
-                System.err.println();
-                cmd.usage(System.err);
+            } catch (CommandLine.PicocliException mpe) {
+                cmd.getErr().println(mpe.getMessage());
+                cmd.getErr().println();
+                cmd.usage(cmd.getErr());
                 System.exit(2);
             }
         }
