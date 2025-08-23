@@ -27,10 +27,9 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Build and test all
-        run: ./mvnw verify
+        run: ./mvnw verify -Pci
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-

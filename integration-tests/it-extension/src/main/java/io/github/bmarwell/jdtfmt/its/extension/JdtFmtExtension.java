@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +42,18 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
             throw new IllegalStateException("jdtfmt.directory system property is not set to a valid directory.");
         }
 
+        final String jacocoAgentPath = System.getProperty("jacoco.agent.path");
+        if (jacocoAgentPath == null || jacocoAgentPath.isEmpty()) {
+            throw new IllegalStateException(
+                    "jacoco.agent.path system property is not set or empty: [" + jacocoAgentPath + "]"
+            );
+        }
+
+        var jacocoAgent = Paths.get(jacocoAgentPath);
+        if (!Files.isReadable(jacocoAgent)) {
+            throw new IllegalStateException("jacocoAgentPath does not point to jacoco-agent.jar: " + jacocoAgent);
+        }
+
         final String executable;
         if (System.getProperty("os.name") != null && System.getProperty("os.name").toLowerCase().contains("win")) {
             executable = "jdtfmt.bat";
@@ -58,6 +71,7 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
 
         ExtensionContext.Namespace classNameSpace = ExtensionContext.Namespace.create(context);
         final ExtensionContext.Store classStore = context.getStore(classNameSpace);
+        classStore.put("jdtfmt.jacocoAgent", jacocoAgent);
         classStore.put("jdtfmt.executable", jdtFmtPath.resolve("bin").resolve(executable));
         classStore.put("jdtfmt.args", args);
     }
@@ -77,13 +91,22 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
             args = classStore.get("jdtfmt.args", List.class);
         }
 
+        Path jacocoAgentPath = classStore.get("jdtfmt.jacocoAgent", Path.class);
+
         final Path jdtApp = classStore.get("jdtfmt.executable", Path.class);
         List<String> cmd = Stream.concat(
             Stream.of(jdtApp.toString()),
             args.stream()
         ).toList();
 
+        String jacocoAgentArgLine = String.format(
+            Locale.ROOT,
+            "-javaagent:%s=destfile=target/jacoco-it.exec,append=true",
+            jacocoAgentPath
+        );
+
         final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+        processBuilder.environment().put("JAVA_OPTS", jacocoAgentArgLine);
         final Process process = processBuilder.start();
 
         List<JdtResult.LogLine> logs = new CopyOnWriteArrayList<>();

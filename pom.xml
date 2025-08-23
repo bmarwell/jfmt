@@ -17,6 +17,7 @@
     <picocli.version>4.7.7</picocli.version>
 
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <jacoco.version>0.8.13</jacoco.version>
 
     <!-- plugins -->
     <native.maven.plugin.version>0.11.0</native.maven.plugin.version>
@@ -56,6 +57,15 @@
         <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
+
+      <!-- dependency of jacoco plugin, must be specified for our extension -->
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>org.jacoco.agent</artifactId>
+        <version>${jacoco.version}</version>
+        <classifier>runtime</classifier>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -70,6 +80,14 @@
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- dependency of jacoco plugin, must be specified for our extension -->
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>org.jacoco.agent</artifactId>
+      <classifier>runtime</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -78,6 +96,11 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.5.2</version>
         </plugin>
         <plugin>
@@ -129,7 +152,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.13</version>
+          <version>${jacoco.version}</version>
         </plugin>
 
         <plugin>
@@ -173,6 +196,47 @@
 
     <!-- forced execution -->
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <jacoco.agent.path>${org.jacoco:org.jacoco.agent:jar:runime}</jacoco.agent.path>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <jacoco.agent.path>${org.jacoco:org.jacoco.agent:jar:runtime}</jacoco.agent.path>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -218,6 +282,14 @@
               <goal>prepare-agent</goal>
             </goals>
           </execution>
+
+          <execution>
+            <id>prepare-agent-integration</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+          </execution>
+
           <execution>
             <id>report</id>
             <goals>
@@ -225,6 +297,15 @@
             </goals>
             <phase>prepare-package</phase>
           </execution>
+
+          <execution>
+            <id>report-integration</id>
+            <goals>
+              <goal>report-integration</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+
         </executions>
       </plugin>
     </plugins>
@@ -238,6 +319,28 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- run jacoco aggregate b/c of separated integration tests -->
+    <profile>
+      <id>ci</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>report-aggregate</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
