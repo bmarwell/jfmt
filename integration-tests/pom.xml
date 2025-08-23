@@ -59,6 +59,17 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <inherited>true</inherited>
         <configuration>
+          <systemPropertyVariables combine.self="merge">
+            <jdtfmt.directory>${project.build.directory}/jdtfmt/jdtfmt-${project.version}</jdtfmt.directory>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <inherited>true</inherited>
+        <configuration>
           <systemPropertyVariables>
             <jdtfmt.directory>${project.build.directory}/jdtfmt/jdtfmt-${project.version}</jdtfmt.directory>
           </systemPropertyVariables>
