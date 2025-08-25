@@ -12,27 +12,27 @@ import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-        name = "diff",
-        description = """
-                      Output in diff format. Normal diff is used unless -u is also given.""",
-        mixinStandardHelpOptions = true
+    name = "diff",
+    description = """
+                  Output in diff format. Normal diff is used unless -u is also given.""",
+    mixinStandardHelpOptions = true
 )
 public class Diff extends AbstractCommand {
 
     @CommandLine.Option(
-            names = { "-u", "--unified" },
-            description = """
-                          Output diff in unified format.
-                          Deactivated by default.""",
-            defaultValue = "false"
+        names = { "-u", "--unified" },
+        description = """
+                      Output diff in unified format.
+                      Deactivated by default.""",
+        defaultValue = "false"
     )
     private boolean unified;
 
     @CommandLine.Option(
-            names = { "--context" },
-            description = """
-                          Number of context lines when in unified diff mode (-u). Defaults to ${DEFAULT-VALUE}.""",
-            defaultValue = "3"
+        names = { "--context" },
+        description = """
+                      Number of context lines when in unified diff mode (-u). Defaults to ${DEFAULT-VALUE}.""",
+        defaultValue = "3"
     )
     private int context;
 
@@ -43,12 +43,12 @@ public class Diff extends AbstractCommand {
 
     @Override
     FileProcessingResult processRevisedSourceCode(
-            Path javaFile,
-            String sourceCode,
-            String revisedSourceCode,
-            List<String> originalSourceLines,
-            List<String> revisedSourceLines,
-            Patch<String> patch
+        Path javaFile,
+        String sourceCode,
+        String revisedSourceCode,
+        List<String> originalSourceLines,
+        List<String> revisedSourceLines,
+        Patch<String> patch
     ) {
         if (unified) {
             return unifiedDiff(javaFile, originalSourceLines, patch);
