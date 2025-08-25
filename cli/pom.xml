@@ -15,6 +15,9 @@
     <main.class>io.github.bmarwell.jdtfmt.JdtFmt</main.class>
 
     <native.quick.build>false</native.quick.build>
+
+    <!--set to empty for unix/mac-->
+    <executable-suffix />
   </properties>
 
   <dependencies>
