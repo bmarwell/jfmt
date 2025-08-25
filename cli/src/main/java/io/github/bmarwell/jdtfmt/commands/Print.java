@@ -12,7 +12,8 @@ import picocli.CommandLine;
         description = """
                       Print the correctly formatted output for the given file(s).
                       Stops on the first file unless -a (--all) is given.
-                      In this case, the file name is printed before each output."""
+                      In this case, the file name is printed before each output.""",
+        mixinStandardHelpOptions = true
 )
 public class Print extends AbstractCommand {
 

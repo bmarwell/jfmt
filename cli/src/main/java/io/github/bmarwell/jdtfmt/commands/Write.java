@@ -18,7 +18,8 @@ import picocli.CommandLine;
         description = """
                       Write the formatted source code back to the file(s).
                       If not given, the non-indented file(s) will be printed to stdout.
-                      Only the first file is printed, unless -e is also given."""
+                      Only the first file is printed, unless -e is also given.""",
+        mixinStandardHelpOptions = true
 )
 public class Write extends AbstractCommand {
 

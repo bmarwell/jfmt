@@ -14,7 +14,8 @@ import picocli.CommandLine;
 @CommandLine.Command(
         name = "diff",
         description = """
-                      Output in diff format. Normal diff is used unless -u is also given."""
+                      Output in diff format. Normal diff is used unless -u is also given.""",
+        mixinStandardHelpOptions = true
 )
 public class Diff extends AbstractCommand {
 
