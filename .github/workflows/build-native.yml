@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache/restore@v4.2.4
         with:
           path: ~/.musl-toolchain
-          key: mcs-musl-toolchain-10
+          key: jdtfmt-musl-toolchain-11
 
       - name: Get musl toolchain and compile libz against it
         id: prepare-musl
@@ -38,7 +38,20 @@ jobs:
           mkdir -p ~/.musl-toolchain
           pushd ~/.musl-toolchain
           if [ ! -f x86_64-linux-musl-native.tgz ]; then
-            curl -u ${MUSL_TOOLCHAIN_USER}:${MUSL_TOOLCHAIN_PASS} -kLOJ ${MUSL_TOOLCHAIN_LOCATION}/10/x86_64-linux-musl/x86_64-linux-musl-native.tgz
+            curl \
+                --silent \
+                --show-error \
+                --fail-with-body \
+                --connect-timeout 5 \
+                --max-time 50 \
+                --retry 5 \
+                --retry-delay 0 \
+                --retry-max-time 40 \
+                --user "${MUSL_TOOLCHAIN_USER}:${MUSL_TOOLCHAIN_PASS}" \
+                --location \
+                --remote-name \
+                --remote-header-name \
+                "${MUSL_TOOLCHAIN_LOCATION}/11/x86_64-linux-musl-native.tgz"
           fi
           popd
           
@@ -67,7 +80,7 @@ jobs:
         uses: actions/cache/save@v4.2.4
         with:
           path: ~/.musl-toolchain
-          key: mcs-musl-toolchain-10
+          key: jdtfmt-musl-toolchain-11
 
       - name: Cache Maven packages
         id: restore-maven-package-cache
@@ -79,10 +92,11 @@ jobs:
 
       - name: Build static native image for Linux
         run: |
-          PATH=${TOOLCHAIN_DIR}/bin:$PATH; mvn -B -Pci,native package
+          PATH="${TOOLCHAIN_DIR}/bin:${PATH}"
+          export PATH
+          ./mvnw -B -Pci,native,dist-linux package
         env:
           TOOLCHAIN_DIR: ${{ steps.prepare-musl.outputs.TOOLCHAIN_DIR }}
-
 
       - name: Save downloaded Maven packages
         uses: actions/cache/save@v4.2.4
