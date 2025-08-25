@@ -115,9 +115,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: linux-aarch64-musl
-            os: ubuntu-latest
-            arch: aarch64
           - target: macos-x64
             os: macos-13
             arch: x64
