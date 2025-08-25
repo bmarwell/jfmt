@@ -39,24 +39,25 @@ public class JdtFmt {
 
             try {
                 final var parseResult = cmd.parseArgs(args);
-                if (parseResult.isUsageHelpRequested()) {
-                    cmd.usage(cmd.getErr());
-                    System.exit(0);
-                }
-
-                if (!parseResult.errors().isEmpty()) {
-                    for (Exception error : parseResult.errors()) {
-                        cmd.getErr().println(error.getMessage());
-                    }
-
-                    cmd.usage(cmd.getErr());
-
-                    System.exit(2);
-                }
 
                 CommandLine.ParseResult command = parseResult;
                 while (command.hasSubcommand()) {
                     command = command.subcommand();
+                }
+
+                if (command.isUsageHelpRequested()) {
+                    command.commandSpec().commandLine().usage(cmd.getErr());
+                    System.exit(0);
+                }
+
+                if (!command.errors().isEmpty()) {
+                    for (Exception error : command.errors()) {
+                        cmd.getErr().println(error.getMessage());
+                    }
+
+                    command.commandSpec().commandLine().usage(cmd.getErr());
+
+                    System.exit(2);
                 }
 
                 if (command.commandSpec().userObject() instanceof AbstractCommand abstractCommand) {

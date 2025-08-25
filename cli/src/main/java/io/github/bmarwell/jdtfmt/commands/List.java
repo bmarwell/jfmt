@@ -10,7 +10,8 @@ import picocli.CommandLine;
         name = "list",
         description = """
                       Just list files which are not formatted correctly without \
-                      printing a diff or writing changes."""
+                      printing a diff or writing changes.""",
+        mixinStandardHelpOptions = true
 )
 public class List extends AbstractCommand {
     @Override
