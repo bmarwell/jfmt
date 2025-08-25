@@ -15,6 +15,9 @@
     <main.class>io.github.bmarwell.jdtfmt.JdtFmt</main.class>
 
     <native.quick.build>false</native.quick.build>
+
+    <!--set to empty for unix/mac-->
+    <executable-suffix />
   </properties>
 
   <dependencies>
@@ -217,19 +220,17 @@
               <agentResourceDirectory>${project.basedir}/src/main/graalvm-native</agentResourceDirectory>
               <buildArgs>
                 <buildArg>--strict-image-heap</buildArg>
-                <buildArg>-J-Duser.language=en</buildArg>
-                <buildArg>-J-Duser.country=US</buildArg>
-                <buildArg>--initialize-at-build-time=org.eclipse.jdt.internal.compiler</buildArg>
+                <buildArg>--initialize-at-build-time=org.eclipse.jdt.internal.compiler,org.eclipse.jdt.internal.compiler.util</buildArg>
               </buildArgs>
+
+              <jvmArgs>
+                <jvmArg>-Duser.language=en</jvmArg>
+                <jvmArg>-Duser.country=US</jvmArg>
+              </jvmArgs>
+
               <systemProperties>
-                <systemProperty>
-                  <name>user.language</name>
-                  <value>en</value>
-                </systemProperty>
-                <systemProperty>
-                  <name>user.country</name>
-                  <value>US</value>
-                </systemProperty>
+                <user.language>en</user.language>
+                <user.country>US</user.country>
               </systemProperties>
             </configuration>
             <executions>
@@ -241,6 +242,22 @@
                 <phase>package</phase>
               </execution>
             </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration combine.self="merge">
+              <skipAssembly>false</skipAssembly>
+              <descriptors>
+                <descriptor>src/main/assembly/assembly-native.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
           </plugin>
         </plugins>
       </build>
@@ -257,7 +274,8 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <configuration combine.self="merge">
+            <!-- as of Maven 4.0.0-rc-4, combine.* does not work -->
+            <configuration combine.children="merge">
               <buildArgs>
                 <buildArg>--static</buildArg>
                 <buildArg>-march=compatibility</buildArg>

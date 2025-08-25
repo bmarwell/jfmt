@@ -148,6 +148,11 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.14.0</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
 
         <plugin>
           <groupId>org.jacoco</groupId>
@@ -320,14 +325,6 @@
   <profiles>
     <profile>
       <id>native</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
 
     <!-- run jacoco aggregate b/c of separated integration tests -->
