@@ -4,7 +4,7 @@
 
 *jdtfmt* is an opinionated Eclipse JDT-based Java source code formatter.
 
-image:https://github.com/bmarwell/jdtfmt/actions/workflows/ci-backend.yml/badge.svg["Build",link=https://github.com/bmarwell/jdtfmt/actions/workflows/build.yml]
+image:https://github.com/bmarwell/jdtfmt/actions/workflows/build.yml/badge.svg["Build",link=https://github.com/bmarwell/jdtfmt/actions/workflows/build.yml]
 image:https://codecov.io/github/bmarwell/jdtfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jdtfmt]
 image:https://img.shields.io/badge/License-Apache_2.0-blue.svg["License",link=https://opensource.org/licenses/Apache-2.0]
 image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=https://joinup.ec.europa.eu/software/page/eupl]
