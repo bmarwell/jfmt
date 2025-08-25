@@ -3,15 +3,13 @@ permissions:
 name: Build Native
 
 on:
-  workflow_run:
-    workflows: [ "Build" ]   # must match 'name:' in build.yml
-    types:
-      - completed
+  pull_request:
+    branches: [ main ]
   workflow_dispatch: { }
 
 jobs:
   build-linux-x64-musl:
-    if: github.event.workflow_run.conclusion == 'success' && contains(github.event.head_commit.message, 'Releasing version') != true && contains(github.event.head_commit.message, 'Prepare next version') != true
+    if: contains(github.event.head_commit.message, 'Releasing version') != true && contains(github.event.head_commit.message, 'Prepare next version') != true
     runs-on: ubuntu-latest
     environment: native-build
     steps:
