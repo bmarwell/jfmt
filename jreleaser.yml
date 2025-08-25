@@ -1,0 +1,65 @@
+project:
+  name: jdtfmt
+  description: JDT Formatter
+  longDescription: Format your Java source code using the Eclipse JDT formatter.
+  links:
+    bugTracker: https://github.com/bmarwell/jdtfmt/issues
+    homepage: https://github.com/bmarwell/jdtfmt
+    vcsBrowser: https://github.com/bmarwell/jdtfmt
+  authors:
+    - Benjamin Marwell
+  license: Apache-2.0 OR EUPL-1.2
+  extraProperties:
+    inceptionYear: 2025
+  stereotype: CLI
+  tags:
+    - 'java'
+    - 'formatter'
+    - 'cli'
+
+release:
+  github:
+    enabled: true
+    owner: bmarwell
+    name: jdtfmt
+    username: bmarwell
+    update:
+      enabled: true
+    changelog:
+      formatted: ALWAYS
+      preset: 'conventional-commits'
+      links: true
+      hide:
+        contributors:
+          - 'Benjamin Marwell'
+          - '[bot]'
+          - 'GitHub'
+
+distributions:
+  jdtfmt-archive:
+    stereotype: CLI
+    type: JAVA_BINARY
+    artifacts:
+      - path: ./cli/target/jreleaser/assemble/jdtfmt/java-archive/jdtfmt-{{projectVersion}}.jar
+  jdtfmt:
+    stereotype: CLI
+    type: BINARY
+    artifacts:
+      - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-x86_64.zip
+        platform: linux-x86_64
+        extraProperties:
+          graalVMNativeImage: true
+      - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-x86_64.tar.gz
+        platform: linux-x86_64
+        extraProperties:
+          graalVMNativeImage: true
+      - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-windows-x86_64.zip
+        platform: windows-x86_64
+      - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-x86_64.zip
+        platform: osx-x86_64
+        extraProperties:
+          graalVMNativeImage: true
+      - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-aarch_64.zip
+        platform: osx-aarch_64
+        extraProperties:
+          graalVMNativeImage: true
