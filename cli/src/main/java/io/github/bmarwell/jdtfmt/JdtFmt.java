@@ -9,24 +9,24 @@ import picocli.CommandLine;
 import picocli.jansi.graalvm.AnsiConsole;
 
 @CommandLine.Command(
-        name = "jdtfmt",
-        mixinStandardHelpOptions = true,
-        version = "jdtfmt 1.0",
-        description = "A command-line tool to format Java source code using JDT.",
-        usageHelpAutoWidth = true,
-        subcommands = {
-                List.class,
-                Write.class,
-                Print.class,
-                Diff.class,
-        }
+    name = "jdtfmt",
+    mixinStandardHelpOptions = true,
+    version = "jdtfmt 1.0",
+    description = "A command-line tool to format Java source code using JDT.",
+    usageHelpAutoWidth = true,
+    subcommands = {
+        List.class,
+        Write.class,
+        Print.class,
+        Diff.class,
+    }
 )
 public class JdtFmt {
 
     @CommandLine.Option(
-            names = { "-l", "--list" },
-            description = """
-                          Just report the name of the files which are not indented correctly."""
+        names = { "-l", "--list" },
+        description = """
+                      Just report the name of the files which are not indented correctly."""
     )
     private boolean listOnly;
 

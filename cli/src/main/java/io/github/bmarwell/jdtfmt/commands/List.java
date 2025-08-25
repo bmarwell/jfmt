@@ -7,11 +7,11 @@ import java.nio.file.Path;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-        name = "list",
-        description = """
-                      Just list files which are not formatted correctly without \
-                      printing a diff or writing changes.""",
-        mixinStandardHelpOptions = true
+    name = "list",
+    description = """
+                  Just list files which are not formatted correctly without \
+                  printing a diff or writing changes.""",
+    mixinStandardHelpOptions = true
 )
 public class List extends AbstractCommand {
     @Override
@@ -21,12 +21,12 @@ public class List extends AbstractCommand {
 
     @Override
     FileProcessingResult processRevisedSourceCode(
-            Path javaFile,
-            String sourceCode,
-            String revisedSourceCode,
-            java.util.List<String> originalSourceLines,
-            java.util.List<String> revisedSourceLines,
-            Patch<String> patch
+        Path javaFile,
+        String sourceCode,
+        String revisedSourceCode,
+        java.util.List<String> originalSourceLines,
+        java.util.List<String> revisedSourceLines,
+        Patch<String> patch
     ) {
         if (!patch.getDeltas().isEmpty()) {
             getWriter().warn("Not formatted correctly", javaFile.toString());
