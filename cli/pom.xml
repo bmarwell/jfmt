@@ -247,12 +247,22 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <configuration combine.self="merge">
-              <skipAssembly>false</skipAssembly>
-              <descriptors>
-                <descriptor>src/main/assembly/assembly-native.xml</descriptor>
-              </descriptors>
-            </configuration>
+            <executions>
+              <execution>
+                <id>assemble-native-distribution</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration combine.self="merge">
+                  <skipAssembly>false</skipAssembly>
+                  <descriptors>
+                    <descriptor>src/main/assembly/assembly-native.xml</descriptor>
+                  </descriptors>
+                  <outputDirectory>${project.build.directory}/distributions</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
           <plugin>
