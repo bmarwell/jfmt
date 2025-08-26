@@ -74,6 +74,14 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-codegen</artifactId>
+            <version>${picocli.version}</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>generate-autocompletion-script</id>
@@ -93,6 +101,56 @@
                 <argument>${project.build.directory}/${binary.name}_completion.sh</argument>
                 <argument>${main.class}</argument>
               </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generateManPages</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <includeProjectDependencies>true</includeProjectDependencies>
+              <includePluginDependencies>true</includePluginDependencies>
+              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+              <arguments>
+                <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
+                <argument>${main.class}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>output-html</id>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>html5</backend>
+              <outputDirectory>${project.build.directory}/generated-docs/usr/share/doc</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>output-manpage</id>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>manpage</backend>
+              <outputDirectory>${project.build.directory}/generated-docs/usr/share/man/man1</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -194,8 +252,16 @@
                           </includes>
                         </fileSet>
                         <fileSet>
+                          <input>${project.build.directory}/generated-docs/</input>
+                          <output>./</output>
+                        </fileSet>
+                        <fileSet>
+                          <input>${project.build.directory}/generated-picocli-docs/</input>
+                          <output>./usr/share/doc/</output>
+                        </fileSet>
+                        <fileSet>
                           <input>${maven.multiModuleProjectDirectory}</input>
-                          <output>etc/</output>
+                          <output>./</output>
                           <includes>
                             <include>LICENSE.*</include>
                           </includes>
