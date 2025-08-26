@@ -14,13 +14,13 @@ class LicenseIT {
         // given
         Path jdtDistributionPath = getJdtDistributionPath();
 
-        Path asl2 = jdtDistributionPath.resolve("etc").resolve("LICENSE.Apache-2.0");
-        Path eupl = jdtDistributionPath.resolve("etc").resolve("LICENSE.EUPL-1.2");
+        Path asl2 = jdtDistributionPath.resolve("LICENSE.Apache-2.0");
+        Path eupl = jdtDistributionPath.resolve("LICENSE.EUPL-1.2");
         Path thirdParty = jdtDistributionPath.resolve("etc").resolve("THIRD-PARTY.txt");
 
         // expect
-        assertTrue(Files.exists(asl2), "etc/LICENSE.Apache-2.0 must exist");
-        assertTrue(Files.exists(eupl), "etc/LICENSE.EUPL-1.2 must exist");
+        assertTrue(Files.exists(asl2), "LICENSE.Apache-2.0 must exist");
+        assertTrue(Files.exists(eupl), "LICENSE.EUPL-1.2 must exist");
         assertTrue(Files.exists(thirdParty), "etc/THIRD-PARTY.txt must exist");
     }
 
