@@ -32,9 +32,9 @@ public abstract class AbstractCommandTest {
         int execute = cmd.execute(args);
 
         return new CommandExecutionResult(
-                execute,
-                List.of(out.toString().split("\n")),
-                List.of(err.toString().split("\n"))
+            execute,
+            List.of(out.toString().split("\n")),
+            List.of(err.toString().split("\n"))
         );
     }
 }

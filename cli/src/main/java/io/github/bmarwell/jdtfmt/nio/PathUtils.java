@@ -13,9 +13,9 @@ public class PathUtils {
 
     public static Set<Path> resolveAll(List<Path> paths) {
         return paths.stream()
-                .map(PathUtils::resolve)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+            .map(PathUtils::resolve)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
     }
 
     public static Set<Path> resolve(Path path) {
@@ -42,9 +42,9 @@ public class PathUtils {
     private static Set<Path> resolveDirectory(Path path) {
         try (var fileStream = Files.walk(path)) {
             return fileStream
-                    .filter(p -> p.toString().endsWith(".java"))
-                    .filter(Files::isRegularFile)
-                    .collect(Collectors.toSet());
+                .filter(p -> p.toString().endsWith(".java"))
+                .filter(Files::isRegularFile)
+                .collect(Collectors.toSet());
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
         }

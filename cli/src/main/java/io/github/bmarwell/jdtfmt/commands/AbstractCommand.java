@@ -40,12 +40,12 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     public void init() {
         CommandLine.Help.Ansi ansiMode =
-                this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
+            this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
         this.writer = new OutputWriter(
-                ansiMode,
-                getFormatterMode().verbose(),
-                spec.commandLine().getOut(),
-                spec.commandLine().getErr()
+            ansiMode,
+            getFormatterMode().verbose(),
+            spec.commandLine().getOut(),
+            spec.commandLine().getErr()
         );
     }
 
@@ -101,12 +101,12 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     abstract FileProcessingResult processRevisedSourceCode(
-            Path javaFile,
-            String sourceCode,
-            String revisedSourceCode,
-            List<String> originalSourceLines,
-            List<String> revisedSourceLines,
-            Patch<String> patch
+        Path javaFile,
+        String sourceCode,
+        String revisedSourceCode,
+        List<String> originalSourceLines,
+        List<String> revisedSourceLines,
+        Patch<String> patch
     );
 
     private CodeFormatter createCodeFormatter() {
@@ -123,7 +123,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     static String createRevisedSourceCode(CodeFormatter formatter, String sourceCode)
-            throws BadLocationException {
+        throws BadLocationException {
         final TextEdit edit = formatter.format(
             CodeFormatter.K_COMPILATION_UNIT,
             sourceCode,

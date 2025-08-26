@@ -45,7 +45,7 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
         final String jacocoAgentPath = System.getProperty("jacoco.agent.path");
         if (jacocoAgentPath == null || jacocoAgentPath.isEmpty()) {
             throw new IllegalStateException(
-                    "jacoco.agent.path system property is not set or empty: [" + jacocoAgentPath + "]"
+                "jacoco.agent.path system property is not set or empty: [" + jacocoAgentPath + "]"
             );
         }
 
@@ -125,7 +125,7 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
 
         // Wait for stream readers to complete
         CompletableFuture.allOf(stdoutFuture, stderrFuture)
-                .get(1, TimeUnit.SECONDS);
+            .get(1, TimeUnit.SECONDS);
 
         int exitCode = process.exitValue();
 
@@ -138,9 +138,9 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
     }
 
     private static void readLines(
-            java.io.InputStream in,
-            JdtResult.LogLine.Channel channel,
-            List<JdtResult.LogLine> logs
+        java.io.InputStream in,
+        JdtResult.LogLine.Channel channel,
+        List<JdtResult.LogLine> logs
     ) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             String line;
@@ -154,7 +154,7 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-            throws ParameterResolutionException {
+        throws ParameterResolutionException {
         final Class<?> type = parameterContext.getParameter().getType();
 
         return type.equals(JdtResult.class);
@@ -162,7 +162,7 @@ class JdtFmtExtension implements BeforeAllCallback, BeforeEachCallback, Paramete
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-            throws ParameterResolutionException {
+        throws ParameterResolutionException {
         final Class<?> type = parameterContext.getParameter().getType();
 
         if (type.equals(JdtResult.class)) {
