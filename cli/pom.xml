@@ -13,11 +13,14 @@
   <name>jdtfmt :: cli</name>
   <properties>
     <main.class>io.github.bmarwell.jdtfmt.JdtFmt</main.class>
+    <binary.name>${artifactId}</binary.name>
 
     <native.quick.build>false</native.quick.build>
 
     <!--set to empty for unix/mac-->
     <executable-suffix />
+
+    <completions.dir>./usr/share/bash-completion/completions</completions.dir>
   </properties>
 
   <dependencies>
@@ -66,6 +69,33 @@
             <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
           </compilerArgs>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-autocompletion-script</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-Dpicocli.autocomplete.systemExitOnError=true</argument>
+                <argument>-cp</argument>
+                <classpath />
+                <argument>picocli.AutoComplete</argument>
+                <argument>--force</argument>
+                <argument>--completionScript</argument>
+                <argument>${project.build.directory}/${binary.name}_completion.sh</argument>
+                <argument>${main.class}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -154,6 +184,13 @@
                           <output>etc/</output>
                           <includes>
                             <include>*.txt</include>
+                          </includes>
+                        </fileSet>
+                        <fileSet>
+                          <input>${project.build.directory}</input>
+                          <output>${completions.dir}</output>
+                          <includes>
+                            <include>${binary.name}_completion.sh</include>
                           </includes>
                         </fileSet>
                         <fileSet>
