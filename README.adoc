@@ -67,21 +67,35 @@ Because they are fast, small, and do not require a JRE to be installed on the sy
 
 Here is a simple comparison of this project running with both options:
 
+.Native Binary
 [source,console]
 ----
-❯ time ./cli/target/jdtfmt-1.0.0-SNAPSHOT .
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/JdtFmt.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/value/FileProcessingResult.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/config/ConfigLoader.java
-./cli/target/jdtfmt-1.0.0-SNAPSHOT .  0,01s user 0,02s system 95% cpu 0,034 total
+❯ time ./cli/target/jdtfmt-0.1.0-SNAPSHOT list --all .
+Processing file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+Processing file: ./cli/src/test/resources/diff/SomeRecord.java
+Not formatted correctly: ./cli/src/test/resources/diff/SomeRecord.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/correctly_formatted/CorrectlyFormatted.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
+Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jdtfmt/its/jreleaser/builtin/WriteCommandIT.java
+Processing file: ./cli/src/test/java/io/github/bmarwell/jdtfmt/JdtFmtTest.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/write/t001/SomeRecord.java
+Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/write/t001/SomeRecord.java
+[...]
+jdtfmt list --all .  0,03s user 0,02s system 95% cpu 0,057 total
+----
 
-❯ time ./cli/target/jreleaser/assemble/jdtfmt/java-archive/work/jdtfmt-1.0.0-SNAPSHOT/bin/jdtfmt .
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/JdtFmt.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/value/FileProcessingResult.java
-Formatting file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/config/ConfigLoader.java
- .  2,01s user 0,13s system 232% cpu 0,923 total
+.JAR Distribution
+[source,console]
+❯ time ./cli/target/jreleaser/assemble/jdtfmt/java-archive/work/jdtfmt-0.1.0-SNAPSHOT/bin/jdtfmt list --all .
+Processing file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+Processing file: ./cli/src/test/resources/diff/SomeRecord.java
+Not formatted correctly: ./cli/src/test/resources/diff/SomeRecord.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/correctly_formatted/CorrectlyFormatted.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
+Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
+[...]
+jdtfmt list --all .  2,29s user 0,13s system 281% cpu 0,860 total
 ----
 
 As you can see, the native binary is about three times faster than the JAR distribution.
