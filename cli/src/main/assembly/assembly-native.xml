@@ -17,6 +17,14 @@
       </includes>
       <outputDirectory>./</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-docs/</directory>
+      <outputDirectory>./</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-picocli-docs/</directory>
+      <outputDirectory>./usr/share/doc/</outputDirectory>
+    </fileSet>
   </fileSets>
   <files>
     <file>

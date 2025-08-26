@@ -205,6 +205,12 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${exec.plugin.version}</version>
         </plugin>
+
+        <plugin>
+          <groupId>org.asciidoctor</groupId>
+          <artifactId>asciidoctor-maven-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
