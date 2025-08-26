@@ -22,6 +22,9 @@
     <!-- plugins -->
     <native.maven.plugin.version>0.11.0</native.maven.plugin.version>
 
+    <!-- 3rd party plugins -->
+    <exec.plugin.version>3.5.1</exec.plugin.version>
+
     <!-- build config, e.g. formatters -->
     <analysis.spotless.formatter.config>build/eclipse-formatter-config.xml</analysis.spotless.formatter.config>
   </properties>
@@ -161,12 +164,6 @@
         </plugin>
 
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>3.5.1</version>
-        </plugin>
-
-        <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
           <version>2.46.1</version>
@@ -201,6 +198,12 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
           <version>2.6.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
