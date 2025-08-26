@@ -35,7 +35,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and test all
-        run: ./mvnw verify -Pci
+        run: ./mvnw --batch-mode --strict-checksum --errors spotless:check verify -Pci
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

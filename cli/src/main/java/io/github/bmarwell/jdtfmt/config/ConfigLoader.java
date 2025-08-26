@@ -38,7 +38,7 @@ public class ConfigLoader {
     }
 
     static Map<String, String> loadConfig(InputStream in)
-            throws ParserConfigurationException, SAXException, IOException {
+        throws ParserConfigurationException, SAXException, IOException {
         Map<String, String> map = new ConcurrentHashMap<>();
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
