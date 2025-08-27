@@ -1,0 +1,10 @@
+{
+  "projectName": "jdtfmt",
+  "projectOwner": "bmarwell",
+  "files": [
+    "CONTRIBUTORS.md"
+  ],
+  "skipCi": true,
+  "commitType": "docs",
+  "commitConvention": "angular"
+}
