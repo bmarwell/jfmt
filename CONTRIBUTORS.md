@@ -6,7 +6,7 @@
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="http://jqno.nl"><img src="https://avatars.githubusercontent.com/u/862385?v=4?s=100" width="100px;" alt="Jan Ouwens"/><br /><sub><b>Jan Ouwens</b></sub></a><br /><a href="#code-jqno" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://jqno.nl"><img src="https://avatars.githubusercontent.com/u/862385?v=4?s=100" width="100px;" alt="Jan Ouwens"/><br /><sub><b>Jan Ouwens</b></sub></a><br /><a href="#code-jqno" title="Code">💻</a> <a href="#ideas-jqno" title="Ideas, Planning, & Feedback">🤔</a></td>
     </tr>
   </tbody>
 </table>
