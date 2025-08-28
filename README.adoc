@@ -32,23 +32,43 @@ toc::[]
 * 📝 Uses Eclipse JDT for formatting
 * ⚙️ Uses GraalVM for creating native, statically linked stand-alone binaries
 
-== FAQ
+=== Implementation status
 
-Why not call it `javafmt`?::
-The JAVA® brand name is a registered trademark of Oracle, and except in limited circumstances, may not be used without a
-written license from Oracle.
-The “Java” name may be used in product, service, and event names without permission only in specific, limited ways.
-+
-… also, I wanted to keep the book open for the OpenJDK community to adopt an official tool with this name.
+The following commands are implemented:
 
-How opinionated is it?::
-While there is a default rule, you can use other named rules or even foreign config files created by Eclipse IDE as well.
-But I encourage everyone to use the default configuration – and let's discuss how well it is defined in the GitHub discussions and the issue tracker.
+write/fix::
+    Rewrite the given files in place, if they are not formatted correctly.
 
-== Implementation status
+list::
+    List all files that are not formatted correctly.
 
-Started.
-The project is in an early stage and is not considered stable or feature-complete yet.
+print::
+    Print the formatted version of the given files to stdout.
+
+diff::
+    Print a (unified) diff of the given files to stdout.
+
+=== Roadmap
+
+Features:
+
+* [x] basic commands implemented
+* [x] basic tests implemented
+* [x] CI/CD implemented
+* [ ] Formatting of import statements (link:https://github.com/bmarwell/jdtfmt/issues/34[#34])
+* [ ] Refinement of default formatting rules
+
+Distribution:
+
+* [ ] native binaries for Linux, Windows, MacOS
+* [ ] package for Homebrew
+* [ ] package for Scoop
+* [ ] package for apt/dpkg
+* [ ] package for rpm/yum/dnf
+* [ ] package for Chocolatey
+* [ ] package for winget
+* [ ] package for SDKMAN
+
 
 == Compiling
 
@@ -111,6 +131,24 @@ If you do not have musl and `libz.a` installed, you can use the profile `'-Pnati
 * https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] – by Jan Ouwens.
 * link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] – the reference for the JDT code formatter config.
 * https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] – the reference.
+
+== FAQ
+
+Why not call it `javafmt`?::
+The JAVA® brand name is a registered trademark of Oracle, and except in limited circumstances, may not be used without a
+written license from Oracle.
+The “Java” name may be used in product, service, and event names without permission only in specific, limited ways.
++
+… also, I wanted to keep the book open for the OpenJDK community to adopt an official tool with this name.
+
+How opinionated is it?::
+While there is a default rule, you can use other named rules or even foreign config files created by Eclipse IDE as well.
+But I encourage everyone to use the default configuration – and let's discuss how well it is defined in the GitHub discussions and the issue tracker.
+
+[#contributors]
+== Contributors
+
+See link:CONTRIBUTORS.md[CONTRIBUTORS.md] for a list of all contributors.
 
 == License
 
