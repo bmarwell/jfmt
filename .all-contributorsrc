@@ -2,7 +2,8 @@
   "projectName": "jdtfmt",
   "projectOwner": "bmarwell",
   "files": [
-    "CONTRIBUTORS.md"
+    "CONTRIBUTORS.md",
+    "CONTRIBUTORS.adoc"
   ],
   "skipCi": true,
   "commitType": "docs",
