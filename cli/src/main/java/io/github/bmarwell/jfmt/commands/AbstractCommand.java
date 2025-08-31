@@ -141,7 +141,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             Stream.of(compilationUnit.getProblems())
                 .forEach(System.err::println);
             throw new IllegalStateException(
-                "CompilationUnit problens: " + Arrays.asList(compilationUnit.getProblems())
+                "CompilationUnit problems: " + Arrays.asList(compilationUnit.getProblems())
             );
         }
 
