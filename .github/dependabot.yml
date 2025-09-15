@@ -3,13 +3,13 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval:
-        cron: "14 3 * * 3"
+      interval: "weekly"
+      day: "wednesday"
     open-pull-requests-limit: 10
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval:
-        cron: "14 3 * * 3"
+      interval: "weekly"
+      day: "wednesday"
     open-pull-requests-limit: 10
 
