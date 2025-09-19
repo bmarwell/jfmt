@@ -31,7 +31,7 @@ jobs:
         uses: actions/cache/restore@v4.2.4
         with:
           path: ~/.musl-toolchain
-          key: jdtfmt-musl-toolchain-11
+          key: jfmt-musl-toolchain-11
 
       - name: Get musl toolchain and compile libz against it
         id: prepare-musl
@@ -81,7 +81,7 @@ jobs:
         uses: actions/cache/save@v4.2.4
         with:
           path: ~/.musl-toolchain
-          key: jdtfmt-musl-toolchain-11
+          key: jfmt-musl-toolchain-11
 
       - name: Cache Maven packages
         id: restore-maven-package-cache
@@ -145,7 +145,7 @@ jobs:
         uses: actions/cache/restore@v4.2.4
         with:
           path: ~/.musl-toolchain
-          key: jdtfmt-musl-toolchain-11
+          key: jfmt-musl-toolchain-11
 
       - name: Get musl toolchain and compile libz against it
         id: prepare-musl
@@ -197,7 +197,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           path: ~/.musl-toolchain
-          key: jdtfmt-musl-toolchain-11
+          key: jfmt-musl-toolchain-11
 
       - name: Cache Maven packages
         id: restore-maven-package-cache

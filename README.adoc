@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
-= jdtfmt
+= jfmt
 :toc: macro
 
-*jdtfmt* is an opinionated Eclipse JDT-based Java source code formatter.
+*jfmt* is an opinionated Eclipse JDT-based Java source code formatter.
 
-image:https://github.com/bmarwell/jdtfmt/actions/workflows/build.yml/badge.svg["Build",link=https://github.com/bmarwell/jdtfmt/actions/workflows/build.yml]
-image:https://codecov.io/github/bmarwell/jdtfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jdtfmt]
+image:https://github.com/bmarwell/jfmt/actions/workflows/build.yml/badge.svg["Build",link=https://github.com/bmarwell/jfmt/actions/workflows/build.yml]
+image:https://codecov.io/github/bmarwell/jfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jfmt]
 image:https://img.shields.io/badge/License-Apache_2.0-blue.svg["License",link=https://opensource.org/licenses/Apache-2.0]
 image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=https://joinup.ec.europa.eu/software/page/eupl]
-image:https://img.shields.io/github/all-contributors/bmarwell/jdtfmt?color=ee8449&style=flat-square["All Contributors",link="#contributors"]
+image:https://img.shields.io/github/all-contributors/bmarwell/jfmt?color=ee8449&style=flat-square["All Contributors",link="#contributors"]
 
 toc::[]
 
@@ -55,7 +55,7 @@ Features:
 * [x] basic commands implemented
 * [x] basic tests implemented
 * [x] CI/CD implemented
-* [ ] Formatting of import statements (link:https://github.com/bmarwell/jdtfmt/issues/34[#34])
+* [ ] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
 * [ ] Refinement of default formatting rules
 
 Distribution:
@@ -76,7 +76,7 @@ Distribution:
 * JDK 21 required
 
 You can use `mvn verify` to create a tested and verified runnable application archive using jreleaser.
-You can find and execute the archive in the path `cli/target/jreleaser/assemble/jdtfmt/java-archive`.
+You can find and execute the archive in the path `cli/target/jreleaser/assemble/jfmt/java-archive`.
 More info about these kinds of archives can be found in my blog post: https://blog.bmarwell.de/2025/04/12/creating-app-distribution-using-maven-jreleaser.html[Creating an App Distribution with Apache Maven and JReleaser].
 
 Please note that Java 21 or better needs to be installed on your system and must be in the `PATH` environment variable.
@@ -91,32 +91,32 @@ Here is a simple comparison of this project running with both options:
 .Native Binary
 [source,console]
 ----
-❯ time ./cli/target/jdtfmt-0.1.0-SNAPSHOT list --all .
-Processing file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+❯ time ./cli/target/jfmt-0.1.0-SNAPSHOT list --all .
+Processing file: ./cli/src/main/java/io/github/bmarwell/jfmt/nio/PathUtils.java
 Processing file: ./cli/src/test/resources/diff/SomeRecord.java
 Not formatted correctly: ./cli/src/test/resources/diff/SomeRecord.java
 Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/correctly_formatted/CorrectlyFormatted.java
 Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
 Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
-Processing file: ./integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jdtfmt/its/jreleaser/builtin/WriteCommandIT.java
-Processing file: ./cli/src/test/java/io/github/bmarwell/jdtfmt/JdtFmtTest.java
+Processing file: ./integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/WriteCommandIT.java
+Processing file: ./cli/src/test/java/io/github/bmarwell/jfmt/JFmtTest.java
 Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/write/t001/SomeRecord.java
 Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/write/t001/SomeRecord.java
 [...]
-jdtfmt list --all .  0,03s user 0,02s system 95% cpu 0,057 total
+jfmt list --all .  0,03s user 0,02s system 95% cpu 0,057 total
 ----
 
 .JAR Distribution
 [source,console]
-❯ time ./cli/target/jreleaser/assemble/jdtfmt/java-archive/work/jdtfmt-0.1.0-SNAPSHOT/bin/jdtfmt list --all .
-Processing file: ./cli/src/main/java/io/github/bmarwell/jdtfmt/nio/PathUtils.java
+❯ time ./cli/target/jreleaser/assemble/jfmt/java-archive/work/jfmt-0.1.0-SNAPSHOT/bin/jfmt list --all .
+Processing file: ./cli/src/main/java/io/github/bmarwell/jfmt/nio/PathUtils.java
 Processing file: ./cli/src/test/resources/diff/SomeRecord.java
 Not formatted correctly: ./cli/src/test/resources/diff/SomeRecord.java
 Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/correctly_formatted/CorrectlyFormatted.java
 Processing file: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
 Not formatted correctly: ./integration-tests/jreleaser-builtin/src/test/resources/incorrectly_formatted/SomeRecord.java
 [...]
-jdtfmt list --all .  2,29s user 0,13s system 281% cpu 0,860 total
+jfmt list --all .  2,29s user 0,13s system 281% cpu 0,860 total
 ----
 
 As you can see, the native binary is about three times faster than the JAR distribution.
