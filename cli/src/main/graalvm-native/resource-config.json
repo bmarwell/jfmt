@@ -1,8 +1,8 @@
 {
   "resources": {
     "includes": [
-      { "pattern": "io/github/bmarwell/jdtfmt/config/default-config.xml" },
-      { "pattern": "io/github/bmarwell/jdtfmt/config/equalsverifier.xml" },
+      { "pattern": "io/github/bmarwell/jfmt/config/default-config.xml" },
+      { "pattern": "io/github/bmarwell/jfmt/config/equalsverifier.xml" },
       { "pattern": "org/eclipse/jdt/internal/compiler/.*\\.properties" },
       { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" },
       { "pattern": "org/eclipse/jdt/internal/compiler/messages.properties" },

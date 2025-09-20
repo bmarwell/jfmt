@@ -3,20 +3,20 @@
   <modelVersion>4.1.0</modelVersion>
 
   <parent>
-    <groupId>io.github.bmarwell.jdtfmt</groupId>
-    <artifactId>jdtfmt-integration-tests</artifactId>
+    <groupId>io.github.bmarwell.jfmt</groupId>
+    <artifactId>jfmt-integration-tests</artifactId>
   </parent>
 
-  <groupId>io.github.bmarwell.jdtfmt.its</groupId>
-  <artifactId>jdtfmt-its-jreleaser-builtin</artifactId>
+  <groupId>io.github.bmarwell.jfmt.its</groupId>
+  <artifactId>jfmt-its-jreleaser-builtin</artifactId>
   <packaging>jar</packaging>
 
-  <name>jdtfmt :: ITs :: JReleaser w/ builtin</name>
+  <name>jfmt :: ITs :: JReleaser w/ builtin</name>
 
   <dependencies>
     <dependency>
-      <groupId>io.github.bmarwell.jdtfmt.its</groupId>
-      <artifactId>jdtfmt-its-extension</artifactId>
+      <groupId>io.github.bmarwell.jfmt.its</groupId>
+      <artifactId>jfmt-its-extension</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

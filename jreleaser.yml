@@ -1,11 +1,11 @@
 project:
-  name: jdtfmt
-  description: JDT Formatter
+  name: jfmt
+  description: Formatter for Java source files (jfmt)
   longDescription: Format your Java source code using the Eclipse JDT formatter.
   links:
-    bugTracker: https://github.com/bmarwell/jdtfmt/issues
-    homepage: https://github.com/bmarwell/jdtfmt
-    vcsBrowser: https://github.com/bmarwell/jdtfmt
+    bugTracker: https://github.com/bmarwell/jfmt/issues
+    homepage: https://github.com/bmarwell/jfmt
+    vcsBrowser: https://github.com/bmarwell/jfmt
   authors:
     - Benjamin Marwell
   license: Apache-2.0 OR EUPL-1.2
@@ -21,7 +21,7 @@ release:
   github:
     enabled: true
     owner: bmarwell
-    name: jdtfmt
+    name: jfmt
     username: bmarwell
     update:
       enabled: true
@@ -36,12 +36,12 @@ release:
           - 'GitHub'
 
 distributions:
-  jdtfmt-archive:
+  jfmt-archive:
     stereotype: CLI
     type: JAVA_BINARY
     artifacts:
-      - path: ./cli/target/jreleaser/assemble/jdtfmt/java-archive/jdtfmt-{{projectVersion}}.jar
-  jdtfmt:
+      - path: ./cli/target/jreleaser/assemble/jfmt/java-archive/jfmt-{{projectVersion}}.jar
+  jfmt:
     stereotype: CLI
     type: BINARY
     artifacts:

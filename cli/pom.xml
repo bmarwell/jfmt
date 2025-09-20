@@ -3,16 +3,16 @@
   <modelVersion>4.1.0</modelVersion>
 
   <parent>
-    <groupId>io.github.bmarwell.jdtfmt</groupId>
-    <artifactId>jdtfmt-root</artifactId>
+    <groupId>io.github.bmarwell.jfmt</groupId>
+    <artifactId>jfmt-root</artifactId>
   </parent>
 
-  <artifactId>jdtfmt</artifactId>
+  <artifactId>jfmt</artifactId>
   <packaging>jar</packaging>
 
-  <name>jdtfmt :: cli</name>
+  <name>jfmt :: cli</name>
   <properties>
-    <main.class>io.github.bmarwell.jdtfmt.JdtFmt</main.class>
+    <main.class>io.github.bmarwell.jfmt.JFmt</main.class>
     <binary.name>${artifactId}</binary.name>
 
     <native.quick.build>false</native.quick.build>
@@ -207,12 +207,12 @@
               <jreleaser>
                 <project>
                   <links>
-                    <homepage>https://github.com/bmarwell/jdtfmt</homepage>
+                    <homepage>https://github.com/bmarwell/jfmt</homepage>
                   </links>
                 </project>
                 <assemble>
                   <javaArchive>
-                    <jdtfmt>
+                    <jfmt>
                       <active>ALWAYS</active>
                       <stereotype>DESKTOP</stereotype>
                       <formats>
@@ -267,7 +267,7 @@
                           </includes>
                         </fileSet>
                       </fileSets>
-                    </jdtfmt>
+                    </jfmt>
                   </javaArchive>
                 </assemble>
               </jreleaser>

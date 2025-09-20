@@ -3,14 +3,14 @@
   <modelVersion>4.1.0</modelVersion>
 
   <parent>
-    <groupId>io.github.bmarwell.jdtfmt</groupId>
-    <artifactId>jdtfmt-root</artifactId>
+    <groupId>io.github.bmarwell.jfmt</groupId>
+    <artifactId>jfmt-root</artifactId>
   </parent>
 
-  <artifactId>jdtfmt-integration-tests</artifactId>
+  <artifactId>jfmt-integration-tests</artifactId>
   <packaging>pom</packaging>
 
-  <name>jdtfmt :: ITs</name>
+  <name>jfmt :: ITs</name>
 
   <properties>
     <!-- do not upload ITs to any repository -->
@@ -19,8 +19,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.github.bmarwell.jdtfmt</groupId>
-      <artifactId>jdtfmt</artifactId>
+      <groupId>io.github.bmarwell.jfmt</groupId>
+      <artifactId>jfmt</artifactId>
       <version>${project.version}</version>
       <classifier>distribution</classifier>
       <type>tgz</type>
@@ -41,14 +41,14 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>io.github.bmarwell.jdtfmt</groupId>
-                  <artifactId>jdtfmt</artifactId>
+                  <groupId>io.github.bmarwell.jfmt</groupId>
+                  <artifactId>jfmt</artifactId>
                   <classifier>distribution</classifier>
                   <type>tgz</type>
                   <version>${project.version}</version>
                 </artifactItem>
               </artifactItems>
-              <outputDirectory>${project.build.directory}/jdtfmt</outputDirectory>
+              <outputDirectory>${project.build.directory}/jfmt</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -60,7 +60,7 @@
         <inherited>true</inherited>
         <configuration>
           <systemPropertyVariables combine.self="merge">
-            <jdtfmt.directory>${project.build.directory}/jdtfmt/jdtfmt-${project.version}</jdtfmt.directory>
+            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -71,7 +71,7 @@
         <inherited>true</inherited>
         <configuration>
           <systemPropertyVariables>
-            <jdtfmt.directory>${project.build.directory}/jdtfmt/jdtfmt-${project.version}</jdtfmt.directory>
+            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
           </systemPropertyVariables>
         </configuration>
       </plugin>
