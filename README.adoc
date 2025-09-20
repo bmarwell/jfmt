@@ -148,7 +148,9 @@ But I encourage everyone to use the default configuration – and let's discuss 
 [#contributors]
 == Contributors
 
-See link:CONTRIBUTORS.md[CONTRIBUTORS.md] for a list of all contributors.
+include::CONTRIBUTORS.adoc[leveloffset=2]
+
+See link:CONTRIBUTORS.adoc[CONTRIBUTORS.adoc] for a list of all contributors.
 
 == License
 

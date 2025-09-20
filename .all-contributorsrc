@@ -2,7 +2,6 @@
   "projectName": "jfmt",
   "projectOwner": "bmarwell",
   "files": [
-    "CONTRIBUTORS.md",
     "CONTRIBUTORS.adoc"
   ],
   "skipCi": true,
