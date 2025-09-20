@@ -28,6 +28,15 @@
         "design",
         "ideas"
       ]
+    },
+    {
+      "login": "mthmulders",
+      "name": "Maarten Mulders",
+      "avatar_url": "https://avatars.githubusercontent.com/u/430114?v=4",
+      "profile": "https://maarten.mulders.it/",
+      "contributions": [
+        "code"
+      ]
     }
   ]
 }
