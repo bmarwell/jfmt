@@ -39,18 +39,11 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.ide</groupId>
+      <groupId>org.eclipse.jdt</groupId>
       <artifactId>org.eclipse.jdt.core</artifactId>
-      <version>3.42.0.v20250523-0728</version>
+      <version>3.43.0</version>
     </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>eclipse-2025-06</id>
-      <url>https://p2repository.com/mvn4/eclipse-2025-06/</url>
-    </repository>
-  </repositories>
 
   <build>
     <plugins>
