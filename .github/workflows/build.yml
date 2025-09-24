@@ -28,7 +28,7 @@ jobs:
 
       - name: Cache Maven local repository
         id: restore-maven-package-cache
-        uses: actions/cache@v4.2.4
+        uses: actions/cache@v4.3.0
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m22-${{ hashFiles('**/pom.xml') }}
@@ -43,7 +43,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Save downloaded Maven packages
-        uses: actions/cache/save@v4.2.4
+        uses: actions/cache/save@v4.3.0
         with:
           path: ~/.m2
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
