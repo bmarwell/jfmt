@@ -167,3 +167,10 @@ nbdist/
 
 !build/**/*.xml
 !build
+
+version.properties
+
+# VSCode will generated this folder when running via the ide
+.vscode
+
+META-INF
