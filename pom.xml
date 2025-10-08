@@ -23,7 +23,7 @@
     <native.maven.plugin.version>0.11.0</native.maven.plugin.version>
 
     <!-- 3rd party plugins -->
-    <exec.plugin.version>3.5.1</exec.plugin.version>
+    <exec.plugin.version>3.6.1</exec.plugin.version>
 
     <!-- build config, e.g. formatters -->
     <analysis.spotless.formatter.config>build/eclipse-formatter-config.xml</analysis.spotless.formatter.config>
