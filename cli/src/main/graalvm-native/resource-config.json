@@ -1,6 +1,7 @@
 {
   "resources": {
     "includes": [
+      { "pattern": "version.properties" },
       { "pattern": "io/github/bmarwell/jfmt/config/default-config.xml" },
       { "pattern": "io/github/bmarwell/jfmt/config/equalsverifier.xml" },
       { "pattern": "org/eclipse/jdt/internal/compiler/.*\\.properties" },

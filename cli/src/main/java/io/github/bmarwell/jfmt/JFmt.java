@@ -11,7 +11,7 @@ import picocli.jansi.graalvm.AnsiConsole;
 @CommandLine.Command(
     name = "jfmt",
     mixinStandardHelpOptions = true,
-    version = "jfmt 1.0",
+    versionProvider = VersionProvider.class,
     description = "A command-line tool to format Java source code using JDT.",
     usageHelpAutoWidth = true,
     subcommands = {
