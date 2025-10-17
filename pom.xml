@@ -17,7 +17,7 @@
     <picocli.version>4.7.7</picocli.version>
 
     <junit.jupiter.version>5.13.4</junit.jupiter.version>
-    <jacoco.version>0.8.13</jacoco.version>
+    <jacoco.version>0.8.14</jacoco.version>
 
     <!-- plugins -->
     <native.maven.plugin.version>0.11.1</native.maven.plugin.version>
