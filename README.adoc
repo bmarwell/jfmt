@@ -73,13 +73,13 @@ Distribution:
 == Compiling
 
 * Use Maven 4 or the Maven wrapper
-* JDK 21 required
+* JDK 25 required
 
 You can use `mvn verify` to create a tested and verified runnable application archive using jreleaser.
 You can find and execute the archive in the path `cli/target/jreleaser/assemble/jfmt/java-archive`.
 More info about these kinds of archives can be found in my blog post: https://blog.bmarwell.de/2025/04/12/creating-app-distribution-using-maven-jreleaser.html[Creating an App Distribution with Apache Maven and JReleaser].
 
-Please note that Java 21 or better needs to be installed on your system and must be in the `PATH` environment variable.
+Please note that Java 25 or better needs to be installed on your system and must be in the `PATH` environment variable.
 
 === Native Binaries
 
