@@ -1,10 +1,9 @@
 package io.github.bmarwell.jfmt;
 
-import picocli.CommandLine;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import picocli.CommandLine;
 
 public class VersionProvider implements CommandLine.IVersionProvider {
 
