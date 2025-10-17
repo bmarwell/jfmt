@@ -34,6 +34,7 @@ jobs:
           key: jdtfmt-musl-toolchain-11
 
       - name: Get musl toolchain and compile libz against it
+        shell: bash
         id: prepare-musl
         run: |
           mkdir -p ~/.musl-toolchain
@@ -52,7 +53,7 @@ jobs:
                 --location \
                 --remote-name \
                 --remote-header-name \
-                "${MUSL_TOOLCHAIN_LOCATION}/11/x86_64-linux-musl-native.tgz"
+                --url "${MUSL_TOOLCHAIN_LOCATION}/11/x86_64-linux-musl-native.tgz"
           fi
           popd
           
