@@ -24,7 +24,7 @@ It’s designed for developers who want:
 * an easy way to enforce consistent formatting locally *and* in CI.
 
 In short:
-**Run it locally before you commit. Let CI check it again.**
+*Run it locally before you commit. Let CI check it again.*
 That’s all you need.
 
 == Quick Start
