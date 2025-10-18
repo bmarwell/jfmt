@@ -1,11 +1,16 @@
 package io.github.bmarwell.jfmt.commands;
 
+import static java.nio.file.Files.isRegularFile;
+
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.Patch;
 import io.github.bmarwell.jfmt.config.ConfigLoader;
 import io.github.bmarwell.jfmt.config.NamedConfig;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
+import io.github.bmarwell.jfmt.imports.CliNamedImportOrder;
+import io.github.bmarwell.jfmt.imports.ImportOrderLoader;
+import io.github.bmarwell.jfmt.imports.NamedImportOrder;
 import io.github.bmarwell.jfmt.nio.PathUtils;
 import io.github.bmarwell.jfmt.writer.OutputWriter;
 import java.io.IOException;
@@ -18,25 +23,19 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.text.edits.TextEdit;
 import picocli.CommandLine;
 
 public abstract class AbstractCommand implements Callable<Integer> {
@@ -133,7 +132,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         return ToolFactory.createCodeFormatter(config);
     }
 
-    static String createRevisedSourceCode(CodeFormatter formatter, Path javaFile, String sourceCode)
+    String createRevisedSourceCode(CodeFormatter formatter, Path javaFile, String sourceCode)
         throws BadLocationException, CoreException {
         CompilationUnit compilationUnit = getCompilationUnitFrom(sourceCode, javaFile);
 
@@ -145,71 +144,32 @@ public abstract class AbstractCommand implements Callable<Integer> {
             );
         }
 
-        // cannot use ImportRewrite which requires an Eclipse Workspace
-        // Collect imports
-        @SuppressWarnings("unchecked")
-        List<ImportDeclaration> imports = new ArrayList<>(compilationUnit.imports());
+        // If there are imports, reorder them deterministically, according to style.
+        final IDocument workingDoc = new Document(sourceCode);
 
-        StringBuilder sb = new StringBuilder();
-        List<ImportDeclaration> staticImports = new ArrayList<>();
-        List<ImportDeclaration> normalImports = new ArrayList<>();
-        List<ImportDeclaration> javaImports = new ArrayList<>();
+        ImportOrderProcessor importOrderProcessor = createImportOrderProcessor();
+        importOrderProcessor.rewriteImportsIfAny(compilationUnit, workingDoc);
 
-        for (ImportDeclaration id : imports) {
-            String name = id.getName().getFullyQualifiedName();
-            if ((Modifier.isStatic(id.getModifiers())))
-                staticImports.add(id);
-            else if (name.startsWith("java"))
-                javaImports.add(id);
-            else
-                normalImports.add(id);
+        // Now format the (possibly) updated document
+        FormatterProcessor formatterProcessor = new FormatterProcessor(formatter);
+        formatterProcessor.formatDocument(workingDoc);
+
+        return workingDoc.get();
+    }
+
+    private ImportOrderProcessor createImportOrderProcessor() {
+        // Resolve import-order tokens from CLI options
+        if (this.globalOptions.importOrderFile != null && isRegularFile(this.globalOptions.importOrderFile)) {
+            List<String> importOrderTokens = ImportOrderLoader.loadFromFile(this.globalOptions.importOrderFile);
+
+            return new ImportOrderProcessor(importOrderTokens);
+
         }
+        CliNamedImportOrder cli = this.globalOptions.importOrder;
+        var named = NamedImportOrder.fromCli(cli);
+        List<String> importOrderTokens = ImportOrderLoader.loadFromResource(named.getResourcePath());
 
-        Consumer<List<ImportDeclaration>> appendGroup = list -> {
-            for (ImportDeclaration id : list) {
-                // includes trailing newline
-                sb.append(id.toString());
-            }
-
-            // extra blank line between groups
-            sb.append("\n");
-        };
-
-        appendGroup.accept(staticImports);
-        appendGroup.accept(normalImports);
-        appendGroup.accept(javaImports);
-
-        // Replace imports list manually
-        int importStart = compilationUnit.imports().isEmpty()
-            ? 0
-            : ((ImportDeclaration) compilationUnit.imports().getFirst()).getStartPosition();
-        int importEnd = compilationUnit.imports().isEmpty()
-            ? 0
-            : compilationUnit.imports()
-                .stream()
-                .mapToInt(id -> ((ASTNode) id).getStartPosition() + ((ASTNode) id).getLength())
-                .max()
-                .orElse(0);
-
-        final IDocument docImport = new Document(sourceCode);
-        docImport.replace(importStart, importEnd - importStart, sb.toString());
-        TextEdit importRewrite = compilationUnit.rewrite(docImport, null);
-        importRewrite.apply(docImport);
-
-        final TextEdit edit = formatter.format(
-            CodeFormatter.K_COMPILATION_UNIT,
-            sourceCode,
-            0,
-            sourceCode.length(),
-            0,
-            "\n"
-        );
-
-        Objects.requireNonNull(edit, "Formatting edits must not be null.");
-
-        edit.apply(docImport);
-
-        return docImport.get();
+        return new ImportOrderProcessor(importOrderTokens);
     }
 
     private static CompilationUnit getCompilationUnitFrom(String sourceCode, Path javaFile) {
@@ -236,4 +196,5 @@ public abstract class AbstractCommand implements Callable<Integer> {
     public OutputWriter getWriter() {
         return writer;
     }
+
 }

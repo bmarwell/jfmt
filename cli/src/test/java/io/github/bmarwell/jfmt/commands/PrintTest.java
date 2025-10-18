@@ -1,4 +1,4 @@
-package io.github.bmarwell.jdtfmt.commands;
+package io.github.bmarwell.jfmt.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
