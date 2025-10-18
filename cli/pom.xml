@@ -16,7 +16,6 @@
     <binary.name>${artifactId}</binary.name>
 
     <native.quick.build>true</native.quick.build>
-    <native.quick.build.mode>-Ob</native.quick.build.mode>
 
     <!--set to empty for unix/mac-->
     <executable-suffix />
@@ -312,7 +311,6 @@
               <buildArgs>
                 <buildArg>--strict-image-heap</buildArg>
                 <buildArg>--initialize-at-build-time=org.eclipse.jdt.internal.compiler,org.eclipse.jdt.internal.compiler.util</buildArg>
-                <buildArg>${native.quick.build.mode}</buildArg>
               </buildArgs>
 
               <jvmArgs>
@@ -404,7 +402,6 @@
       <id>native-production</id>
       <properties>
         <native.quick.build>false</native.quick.build>
-        <native.quick.build.mode>-O2</native.quick.build.mode>
       </properties>
     </profile>
   </profiles>
