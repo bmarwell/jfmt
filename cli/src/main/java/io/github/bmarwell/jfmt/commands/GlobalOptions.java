@@ -1,6 +1,7 @@
 package io.github.bmarwell.jfmt.commands;
 
 import io.github.bmarwell.jfmt.config.CliNamedConfig;
+import io.github.bmarwell.jfmt.imports.CliNamedImportOrder;
 import java.nio.file.Path;
 import picocli.CommandLine;
 
@@ -42,4 +43,16 @@ public class GlobalOptions {
     )
     public boolean noColor;
 
+    @CommandLine.Option(
+        names = { "--import-order" },
+        description = "Named import order. Default: ${DEFAULT-VALUE}. Available: ${COMPLETION-CANDIDATES}",
+        defaultValue = "defaultorder"
+    )
+    public CliNamedImportOrder importOrder = CliNamedImportOrder.defaultorder;
+
+    @CommandLine.Option(
+        names = { "--import-order-file" },
+        description = "Path to an import-order properties file. If set, overrides --import-order."
+    )
+    public Path importOrderFile;
 }

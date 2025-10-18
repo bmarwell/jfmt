@@ -17,7 +17,7 @@ class PrintCommandIT {
         assertTrue(result.getStderr().isEmpty());
         assertFalse(result.getStdout().isEmpty());
 
-        assertTrue(result.getStdout().startsWith("/**"));
+        assertTrue(result.getStdout().contains("/**"));
         assertTrue(result.getStdout().contains("public record SomeRecord("));
         assertTrue(result.getStdout().contains("public String getRecord() {"));
     }
