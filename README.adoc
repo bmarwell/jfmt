@@ -58,8 +58,8 @@ jfmt diff --all .
 
 == Why not Spotless or Checkstyle?
 
-*Spotless* and *Checkstyle* are **Maven or Gradle plugins** that integrate deeply into build lifecycles.
-*jfmt*, on the other hand, is a **self-contained command-line tool** designed to be lightweight and fast — closer to `gofmt` or `rustfmt`.
+*Spotless* and *Checkstyle* are *Maven or Gradle plugins* that integrate deeply into build lifecycles.
+*jfmt*, on the other hand, is a *self-contained command-line tool* designed to be lightweight and fast — closer to `gofmt` or `rustfmt`.
 
 |===
 | Tool | Integration | Configuration | Typical Use
