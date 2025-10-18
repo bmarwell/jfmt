@@ -3,15 +3,14 @@ permissions:
 name: Build Native
 
 on:
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch: { }
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
 
 jobs:
   build-linux-x64-musl:
-    if: contains(github.event.head_commit.message, 'Releasing version') != true && contains(github.event.head_commit.message, 'Prepare next version') != true
+    if: github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.head_commit.message, 'Releasing version') != true && contains(github.event.workflow_run.head_commit.message, 'Prepare next version') != true
     runs-on: ubuntu-latest
-    environment: native-build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5.0.0
@@ -105,7 +104,7 @@ jobs:
         with:
           path: ~/.m2
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
-        if: github.event_name != 'pull_request'
+        if: github.event.workflow_run.event != 'pull_request'
 
   # 2nd part: build other platforms
   build-others:
@@ -228,7 +227,7 @@ jobs:
         with:
           path: ~/.m2
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
-        if: github.event_name != 'pull_request'
+        if: github.event.workflow_run.event != 'pull_request'
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.6.2

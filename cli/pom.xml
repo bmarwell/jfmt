@@ -15,7 +15,7 @@
     <main.class>io.github.bmarwell.jfmt.JFmt</main.class>
     <binary.name>${artifactId}</binary.name>
 
-    <native.quick.build>false</native.quick.build>
+    <native.quick.build>true</native.quick.build>
 
     <!--set to empty for unix/mac-->
     <executable-suffix />
@@ -314,12 +314,6 @@
 
   <profiles>
     <profile>
-      <id>quick</id>
-      <properties>
-        <native.quick.build>true</native.quick.build>
-      </properties>
-    </profile>
-    <profile>
       <id>native</id>
       <build>
         <plugins>
@@ -420,6 +414,12 @@
       <properties>
         <!-- not used in POM, but used in assembly descriptors -->
         <executable-suffix>.exe</executable-suffix>
+      </properties>
+    </profile>
+    <profile>
+      <id>native-production</id>
+      <properties>
+        <native.quick.build>false</native.quick.build>
       </properties>
     </profile>
   </profiles>
