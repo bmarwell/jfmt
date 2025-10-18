@@ -2,7 +2,7 @@
 = jfmt
 :toc: macro
 
-*jfmt* is an opinionated Eclipse JDT-based Java source code formatter.
+*jfmt* is a **standalone Java source code formatter** — fast, consistent, and ready for CI.
 
 image:https://github.com/bmarwell/jfmt/actions/workflows/build.yml/badge.svg["Build",link=https://github.com/bmarwell/jfmt/actions/workflows/build.yml]
 image:https://codecov.io/github/bmarwell/jfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jfmt]
@@ -11,6 +11,64 @@ image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=htt
 image:https://img.shields.io/github/all-contributors/bmarwell/jfmt?color=ee8449&style=flat-square["All Contributors",link="#contributors"]
 
 toc::[]
+
+== What is jfmt?
+
+*jfmt* is an **opinionated command-line Java formatter** with a **sane default configuration**.
+It is built on top of the Eclipse JDT formatter engine — but unlike the Eclipse IDE, *jfmt* runs completely standalone as a native binary or JAR.
+
+It’s designed for developers who want:
+
+* predictable, idempotent formatting;
+* a fast, zero-configuration CLI tool;
+* an easy way to enforce consistent formatting locally *and* in CI.
+
+In short:
+**Run it locally before you commit. Let CI check it again.**
+That’s all you need.
+
+== Quick Start
+
+. **Install or build jfmt**
++
+You can run jfmt as a native binary or as a portable JAR (see <<Compiling>>).
+
+. **Format your code locally**
++
+[source,console]
+----
+# Format and rewrite all Java files
+jfmt write src/
+
+# Or just check which files need formatting
+jfmt list --all .
+
+# Show a diff of what would change
+jfmt diff --all .
+----
+
+. **Workflow Summary**
++
+|===
+| Action | Who | Purpose
+| `jfmt write` | Developer | Format files locally before committing
+| `jfmt diff`  | CI pipeline | Verify formatting consistency
+| `jfmt list`  | Developer or CI | List unformatted files
+|===
+
+== Why not Spotless or Checkstyle?
+
+*Spotless* and *Checkstyle* are **Maven or Gradle plugins** that integrate deeply into build lifecycles.
+*jfmt*, on the other hand, is a **self-contained command-line tool** designed to be lightweight and fast — closer to `gofmt` or `rustfmt`.
+
+|===
+| Tool | Integration | Configuration | Typical Use
+| Spotless | Maven/Gradle plugin | Customizable | In build lifecycle
+| Checkstyle | Maven/Gradle plugin | Highly customizable | Style rule enforcement
+| jfmt | CLI tool / native binary | No config needed | Pre-commit & CI enforcement
+|===
+
+*jfmt* complements these tools: you can use it alongside Checkstyle or in projects where build tooling is minimal.
 
 == Goals
 
