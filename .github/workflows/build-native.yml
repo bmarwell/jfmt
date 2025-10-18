@@ -22,7 +22,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
         with:
-          java-version: 24
+          java-version: 25
           distribution: 'graalvm'
           cache: maven
 
@@ -136,7 +136,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
         with:
-          java-version: 24
+          java-version: 25
           distribution: 'graalvm'
           cache: maven
 
