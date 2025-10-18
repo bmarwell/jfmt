@@ -2,7 +2,7 @@
 = jfmt
 :toc: macro
 
-*jfmt* is a **standalone Java source code formatter** — fast, consistent, and ready for CI.
+*jfmt* is a *standalone Java source code formatter* — fast, consistent, and ready for CI.
 
 image:https://github.com/bmarwell/jfmt/actions/workflows/build.yml/badge.svg["Build",link=https://github.com/bmarwell/jfmt/actions/workflows/build.yml]
 image:https://codecov.io/github/bmarwell/jfmt/graph/badge.svg?token=97T490QXQ2["codecov",link=https://codecov.io/github/bmarwell/jfmt]
