@@ -3,9 +3,8 @@ permissions:
 name: Build Native
 
 on:
-  workflow_run:
-    workflows: ["Build"]
-    types: [completed]
+  # must be triggered by build.yml
+  workflow_call:
 
 jobs:
   build-linux-x64-musl:
