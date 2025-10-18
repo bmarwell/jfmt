@@ -14,7 +14,7 @@ toc::[]
 
 == What is jfmt?
 
-*jfmt* is an **opinionated command-line Java formatter** with a **sane default configuration**.
+*jfmt* is an *opinionated command-line Java formatter* with a *sane default configuration*.
 It is built on top of the Eclipse JDT formatter engine — but unlike the Eclipse IDE, *jfmt* runs completely standalone as a native binary or JAR.
 
 It’s designed for developers who want:
