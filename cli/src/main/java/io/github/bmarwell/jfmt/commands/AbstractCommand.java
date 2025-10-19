@@ -186,7 +186,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, String.valueOf(AST.getJLSLatest()));
         parser.setCompilerOptions(options);
 
-        org.eclipse.jdt.core.dom.CompilationUnit compilationUnit = (CompilationUnit) parser.createAST(null);
+        CompilationUnit compilationUnit = (CompilationUnit) parser.createAST(null);
         compilationUnit.recordModifications();
 
         // Create a package + CU

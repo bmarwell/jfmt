@@ -24,10 +24,13 @@ class PrintTest extends AbstractCommandTest {
         var executionResult = doExecute(args);
 
         // then
-        assertEquals(1, executionResult.returncode());
-        assertFalse(executionResult.stdout().getFirst().startsWith("import java.lang.String;"));
+        assertEquals(1, executionResult.returncode(), "returncode should be 1");
+        assertFalse(
+            executionResult.stdout().getFirst().startsWith("import java.lang.String;"),
+            "stdout should not contain java.lang.String"
+        );
 
         String formattedSource = String.join("\n", executionResult.stdout());
-        assertTrue(formattedSource.startsWith(importDec));
+        assertTrue(formattedSource.startsWith(importDec), "stdout should start with import declaration");
     }
 }
