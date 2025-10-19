@@ -31,6 +31,10 @@ class PrintTest extends AbstractCommandTest {
         );
 
         String formattedSource = String.join("\n", executionResult.stdout());
-        assertTrue(formattedSource.startsWith(importDec), "stdout should start with import declaration");
+        assertTrue(
+            formattedSource.startsWith(importDec),
+            "stdout should start with import declaration but started with: "
+                + formattedSource.substring(1, Math.min(formattedSource.length(), 100))
+        );
     }
 }
