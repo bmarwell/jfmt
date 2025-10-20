@@ -16,13 +16,13 @@ class DefaultImportOrderTest extends ImportOrderProcessorTestBase {
             "",
             "import a.b.c.Alpha;",
             "import com.example.App;",
-            "import org.assertj.core.api.Assertions;",
-            "import z.y.Xray;",
-            "",
+            "import jakarta.inject.Inject;",
             "import java.io.File;",
             "import java.lang.String;",
             "import java.util.List;",
             "import javax.annotation.Nullable;",
+            "import org.assertj.core.api.Assertions;",
+            "import z.y.Xray;",
             ""
         );
 

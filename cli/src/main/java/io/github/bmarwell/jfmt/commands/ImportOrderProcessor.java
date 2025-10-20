@@ -1,5 +1,6 @@
 package io.github.bmarwell.jfmt.commands;
 
+import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,9 +17,9 @@ import org.eclipse.text.edits.TextEdit;
  */
 public class ImportOrderProcessor {
 
-    private final List<String> importOrderTokens;
+    private final ImportOrderConfiguration importOrderTokens;
 
-    public ImportOrderProcessor(List<String> importOrderTokens) {
+    public ImportOrderProcessor(ImportOrderConfiguration importOrderTokens) {
         this.importOrderTokens = importOrderTokens;
     }
 
@@ -38,7 +39,7 @@ public class ImportOrderProcessor {
         Partition p = partitionImports(imports);
 
         // Decide configured vs fallback.
-        List<ImportOrderGroup> groups = buildGroupsFromConfig(this.importOrderTokens, p);
+        List<ImportOrderGroup> groups = buildGroupsFromConfig(p);
 
         String rendered = renderGroups(groups);
         replaceImportsInDocument(compilationUnit, workingDoc, rendered);
@@ -56,33 +57,39 @@ public class ImportOrderProcessor {
         return new Partition(staticImports, nonStaticImports);
     }
 
-    private List<ImportOrderGroup> buildGroupsFromConfig(List<String> importOrder, Partition p) {
+    protected List<ImportOrderGroup> buildGroupsFromConfig(Partition p) {
         List<ImportDeclaration> remainingNonStatic = new ArrayList<>(p.nonStatic);
+        // a group is defined by surrounding blank lines.
+        // within each group, multiple import prefixes (domains) can exist.
         List<ImportOrderGroup> groups = new ArrayList<>();
         // empty token collects leftovers AFTER other tokens
         ImportOrderGroup othersGroup = null;
         boolean staticConfigured = false;
 
-        for (String token : importOrder) {
-            String t = "\\#".equals(token) ? "#" : token; // unescape '#'
+        for (ImportOrderConfiguration.ImportOrderGroup importOrderGroup : this.importOrderTokens.importOrderGroups()) {
+            String t =
+                "\\#".equals(importOrderGroup.prefixes().getFirst()) ? "#" : importOrderGroup.prefixes().getFirst(); // unescape
+                                                                                                                     // '#'
             if ("#".equals(t)) {
-                ImportOrderGroup g = new ImportOrderGroup("#");
+                // todo: what if others exist?
+                ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
                 g.addAll(p.staticImports);
                 groups.add(g);
                 staticConfigured = true;
                 continue;
             }
+
             if (t.isEmpty()) {
-                othersGroup = new ImportOrderGroup("");
+                // todo: what if others exist?
+                othersGroup = ImportOrderGroup.catchAll();
                 groups.add(othersGroup);
                 continue;
             }
 
-            ImportOrderGroup g = new ImportOrderGroup(t);
+            ImportOrderGroup g = new ImportOrderGroup(importOrderGroup.prefixes());
             for (Iterator<ImportDeclaration> it = remainingNonStatic.iterator(); it.hasNext();) {
                 ImportDeclaration id = it.next();
-                String fqn = id.getName().getFullyQualifiedName();
-                if (fqn.startsWith(t)) {
+                if (g.acceptsImport(id)) {
                     g.add(id);
                     it.remove();
                 }
@@ -94,14 +101,14 @@ public class ImportOrderProcessor {
         if (othersGroup != null) {
             othersGroup.addAll(remainingNonStatic);
         } else if (!remainingNonStatic.isEmpty()) {
-            ImportOrderGroup trailingOthers = new ImportOrderGroup("");
+            ImportOrderGroup trailingOthers = ImportOrderGroup.catchAll();
             trailingOthers.addAll(remainingNonStatic);
             groups.add(trailingOthers);
         }
 
         // If no static token configured, but we have static imports, append them as last group
         if (!staticConfigured && !p.staticImports.isEmpty()) {
-            ImportOrderGroup g = new ImportOrderGroup("#");
+            ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
             g.addAll(p.staticImports);
             groups.add(g);
         }
@@ -156,5 +163,6 @@ public class ImportOrderProcessor {
         importRewrite.apply(workingDoc);
     }
 
-    private record Partition(List<ImportDeclaration> staticImports, List<ImportDeclaration> nonStatic) {}
+    // contians all imports read from the original source file.
+    record Partition(List<ImportDeclaration> staticImports, List<ImportDeclaration> nonStatic) {}
 }

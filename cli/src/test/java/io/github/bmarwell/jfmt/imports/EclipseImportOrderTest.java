@@ -24,6 +24,7 @@ class EclipseImportOrderTest extends ImportOrderProcessorTestBase {
             "import com.example.App;",
             "",
             "import a.b.c.Alpha;",
+            "import jakarta.inject.Inject;",
             "import z.y.Xray;",
             ""
         );

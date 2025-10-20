@@ -6,7 +6,8 @@ public enum NamedImportOrder {
     equalsverifier("/io/github/bmarwell/jfmt/config/importorder.equalsverifier.properties"),
     google("/io/github/bmarwell/jfmt/config/importorder.google.properties"),
     eclipse("/io/github/bmarwell/jfmt/config/importorder.eclipse.properties"),
-    intellij("/io/github/bmarwell/jfmt/config/importorder.intellij.properties");
+    intellij("/io/github/bmarwell/jfmt/config/importorder.intellij.properties"),
+    enterprise("/io/github/bmarwell/jfmt/config/importorder.enterprise.properties");
 
     private final String resourcePath;
 
