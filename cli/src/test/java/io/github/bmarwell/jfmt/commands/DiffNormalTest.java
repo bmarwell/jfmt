@@ -15,8 +15,12 @@ class DiffNormalTest extends AbstractCommandTest {
         var executionResult = doExecute(args);
 
         // then
-        assertEquals(1, executionResult.returncode(), "returncode should be 1");
-        assertTrue(executionResult.stdout().stream().anyMatch(s -> s.startsWith(">")), "stdout should contain >");
+        var stderr = String.join(System.lineSeparator(), executionResult.stderr());
+        assertEquals(1, executionResult.returncode(), "returncode should be 1 but was not. stderr: " + stderr);
+        assertTrue(
+            executionResult.stdout().stream().anyMatch(s -> s.startsWith(">")),
+            "stdout should contain > but did not. stderr: " + stderr
+        );
         assertTrue(executionResult.stdout().stream().anyMatch(s -> s.startsWith("<")), "stdout should contain <");
     }
 

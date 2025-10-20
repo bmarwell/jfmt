@@ -31,10 +31,15 @@ class PrintTest extends AbstractCommandTest {
         );
 
         String formattedSource = String.join(System.lineSeparator(), executionResult.stdout());
+        String stderr = String.join(System.lineSeparator(), executionResult.stderr());
+        assertFalse(
+            formattedSource.isEmpty(),
+            "formattedSource on stdout should not be empty, but is. stderr: " + stderr
+        );
         assertTrue(
             formattedSource.startsWith(importDec),
             "stdout should start with import declaration but started with: "
-                + formattedSource.substring(1, Math.min(formattedSource.length(), 100))
+                + formattedSource.substring(0, Math.min(formattedSource.length(), 100))
         );
     }
 }
