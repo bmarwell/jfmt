@@ -67,9 +67,10 @@ public class ImportOrderProcessor {
         boolean staticConfigured = false;
 
         for (ImportOrderConfiguration.ImportOrderGroup importOrderGroup : this.importOrderTokens.importOrderGroups()) {
+            // unescape '#' if necessary'
             String t =
-                "\\#".equals(importOrderGroup.prefixes().getFirst()) ? "#" : importOrderGroup.prefixes().getFirst(); // unescape
-                                                                                                                     // '#'
+                "\\#".equals(importOrderGroup.prefixes().getFirst()) ? "#" : importOrderGroup.prefixes().getFirst();
+
             if ("#".equals(t)) {
                 // todo: what if others exist?
                 ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
@@ -163,6 +164,6 @@ public class ImportOrderProcessor {
         importRewrite.apply(workingDoc);
     }
 
-    // contians all imports read from the original source file.
+    // contains all imports read from the original source file.
     record Partition(List<ImportDeclaration> staticImports, List<ImportDeclaration> nonStatic) {}
 }

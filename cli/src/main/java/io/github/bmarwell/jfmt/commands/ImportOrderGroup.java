@@ -2,10 +2,10 @@ package io.github.bmarwell.jfmt.commands;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 
 /**
@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
  */
 public final class ImportOrderGroup {
     private final String name;
-    private final Map<String, List<ImportDeclaration>> importsByPackage = new ConcurrentHashMap<>();
+    private final Map<String, List<ImportDeclaration>> importsByPackage = new HashMap<>();
 
     ImportOrderGroup(String name, List<String> packages) {
         this.name = name;
