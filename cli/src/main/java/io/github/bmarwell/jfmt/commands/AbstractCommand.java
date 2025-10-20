@@ -134,7 +134,8 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     String createRevisedSourceCode(CodeFormatter formatter, Path javaFile, String sourceCode)
         throws BadLocationException, CoreException {
-        CompilationUnit compilationUnit = getCompilationUnitFrom(sourceCode, javaFile);
+        var unixSourceCode = sourceCode.replace("\r\n", "\n");
+        CompilationUnit compilationUnit = getCompilationUnitFrom(unixSourceCode, javaFile);
 
         if (compilationUnit.getProblems() != null && compilationUnit.getProblems().length > 0) {
             Stream.of(compilationUnit.getProblems())
@@ -145,7 +146,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         }
 
         // If there are imports, reorder them deterministically, according to style.
-        final IDocument workingDoc = new Document(sourceCode);
+        final IDocument workingDoc = new Document(unixSourceCode);
 
         ImportOrderProcessor importOrderProcessor = createImportOrderProcessor();
         importOrderProcessor.rewriteImportsIfAny(compilationUnit, workingDoc);

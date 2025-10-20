@@ -4,10 +4,15 @@ import io.github.bmarwell.jfmt.JFmt;
 import io.github.bmarwell.jfmt.test.CommandExecutionResult;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.List;
 import picocli.CommandLine;
 
 public abstract class AbstractCommandTest {
+
+    protected static String pathToSomeRecord() {
+        return Path.of("target", "test-classes", "diff", "SomeRecord.java").toString();
+    }
 
     protected CommandExecutionResult doExecute(String[] args) throws CommandLine.UnmatchedArgumentException {
         JFmt jdtFmt = new JFmt();

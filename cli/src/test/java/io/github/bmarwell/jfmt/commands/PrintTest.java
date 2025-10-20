@@ -11,7 +11,7 @@ class PrintTest extends AbstractCommandTest {
     @Test
     void can_print_with_sorted_imports() {
         // given
-        var args = new String[] { "print", "target/test-classes/diff/SomeRecord.java" };
+        var args = new String[] { "print", pathToSomeRecord() };
         String importDec = """
                            import static io.github.bmarwell.jdtfmt.format.FormatterMode.DIFF;
 
