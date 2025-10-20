@@ -15,6 +15,10 @@ import io.github.bmarwell.jfmt.nio.PathUtils;
 import io.github.bmarwell.jfmt.writer.OutputWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,8 +90,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
     FileProcessingResult processFile(CodeFormatter formatter, Path javaFile) {
         getWriter().info("Processing file", javaFile.toString());
 
-        try (var javaSource = Files.newInputStream(javaFile)) {
-            final String sourceCode = new String(javaSource.readAllBytes(), StandardCharsets.UTF_8);
+        try {
+            var javaSourceBytes = Files.readAllBytes(javaFile);
+            var charset = detectEncoding(javaSourceBytes);
+            final String sourceCode = new String(javaSourceBytes, charset);
             final String revisedSourceCode = createRevisedSourceCode(formatter, javaFile, sourceCode);
 
             final List<String> originalSourceLines = List.of(sourceCode.split("\n"));
@@ -107,6 +113,27 @@ public abstract class AbstractCommand implements Callable<Integer> {
         } catch (BadLocationException | CoreException ble) {
             getWriter().warn("Error formatting file", javaFile.toString());
             throw new IllegalStateException(ble);
+        }
+    }
+
+    private static Charset detectEncoding(byte[] bytes) {
+        // Simple UTF-8 validity check
+        if (isValidUTF8(bytes)) {
+            return StandardCharsets.UTF_8;
+        }
+
+        // Otherwise, assume ISO-8859-1 or CP1252 (safe Latin fallbacks)
+        return StandardCharsets.ISO_8859_1;
+    }
+
+    private static boolean isValidUTF8(byte[] bytes) {
+        try {
+            StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .decode(ByteBuffer.wrap(bytes));
+            return true;
+        } catch (CharacterCodingException e) {
+            return false;
         }
     }
 
