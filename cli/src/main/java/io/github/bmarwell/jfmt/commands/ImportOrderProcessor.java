@@ -137,8 +137,15 @@ public class ImportOrderProcessor {
 
     private void replaceImportsInDocument(CompilationUnit compilationUnit, IDocument workingDoc, String rendered)
         throws BadLocationException {
-        int importStart = ((ImportDeclaration) compilationUnit.imports().getFirst()).getStartPosition();
-        int importEnd = compilationUnit.imports()
+        @SuppressWarnings("unchecked")
+        List<ImportDeclaration> imports = (List<ImportDeclaration>) compilationUnit.imports();
+
+        if (imports.isEmpty()) {
+            return;
+        }
+
+        int importStart = imports.getFirst().getStartPosition();
+        int importEnd = imports
             .stream()
             .mapToInt(id -> ((ASTNode) id).getStartPosition() + ((ASTNode) id).getLength())
             .max()

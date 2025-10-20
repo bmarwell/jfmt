@@ -166,7 +166,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
         if (compilationUnit.getProblems() != null && compilationUnit.getProblems().length > 0) {
             Stream.of(compilationUnit.getProblems())
-                .forEach(System.err::println);
+                .forEach(problem -> getWriter().warn(javaFile.toString(), problem.toString()));
             throw new IllegalStateException(
                 "CompilationUnit problems: " + Arrays.asList(compilationUnit.getProblems())
             );
