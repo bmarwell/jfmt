@@ -11,14 +11,13 @@ class PrintTest extends AbstractCommandTest {
     @Test
     void can_print_with_sorted_imports() {
         // given
-        var args = new String[] { "print", pathToSomeRecord() };
         String importDec = """
                            import static io.github.bmarwell.jdtfmt.format.FormatterMode.DIFF;
 
                            import io.github.bmarwell.jdtfmt.writer.OutputWriter;
-
                            import java.lang.String;
                            """;
+        var args = new String[] { "print", pathToSomeRecord() };
 
         // when
         var executionResult = doExecute(args);

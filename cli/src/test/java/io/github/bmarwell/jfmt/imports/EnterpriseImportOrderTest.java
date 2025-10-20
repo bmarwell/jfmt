@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class GoogleImportOrderTest extends ImportOrderProcessorTestBase {
+class EnterpriseImportOrderTest extends ImportOrderProcessorTestBase {
 
     @Test
-    void google_profile_orders_imports_correctly() {
+    void default_profile_orders_imports_correctly() {
         String expected = String.join(
             "\n",
             "import static com.example.Util.CONSTANT;",
@@ -16,13 +16,14 @@ class GoogleImportOrderTest extends ImportOrderProcessorTestBase {
             "",
             "import a.b.c.Alpha;",
             "import com.example.App;",
-            "import jakarta.inject.Inject;",
+            "import org.assertj.core.api.Assertions;",
+            "import z.y.Xray;",
+            "",
             "import java.io.File;",
             "import java.lang.String;",
             "import java.util.List;",
             "import javax.annotation.Nullable;",
-            "import org.assertj.core.api.Assertions;",
-            "import z.y.Xray;",
+            "import jakarta.inject.Inject;",
             ""
         );
 
@@ -32,6 +33,6 @@ class GoogleImportOrderTest extends ImportOrderProcessorTestBase {
 
     @Override
     protected String getProfileName() {
-        return "google";
+        return "enterprise";
     }
 }

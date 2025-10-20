@@ -9,6 +9,7 @@ import io.github.bmarwell.jfmt.config.NamedConfig;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
 import io.github.bmarwell.jfmt.imports.CliNamedImportOrder;
+import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
 import io.github.bmarwell.jfmt.imports.ImportOrderLoader;
 import io.github.bmarwell.jfmt.imports.NamedImportOrder;
 import io.github.bmarwell.jfmt.nio.PathUtils;
@@ -188,14 +189,14 @@ public abstract class AbstractCommand implements Callable<Integer> {
     private ImportOrderProcessor createImportOrderProcessor() {
         // Resolve import-order tokens from CLI options
         if (this.globalOptions.importOrderFile != null && isRegularFile(this.globalOptions.importOrderFile)) {
-            List<String> importOrderTokens = ImportOrderLoader.loadFromFile(this.globalOptions.importOrderFile);
+            var importOrderConfig = new ImportOrderLoader().loadFromFile(this.globalOptions.importOrderFile);
 
-            return new ImportOrderProcessor(importOrderTokens);
+            return new ImportOrderProcessor(importOrderConfig);
 
         }
         CliNamedImportOrder cli = this.globalOptions.importOrder;
         var named = NamedImportOrder.fromCli(cli);
-        List<String> importOrderTokens = ImportOrderLoader.loadFromResource(named.getResourcePath());
+        ImportOrderConfiguration importOrderTokens = new ImportOrderLoader().loadFromResource(named.getResourcePath());
 
         return new ImportOrderProcessor(importOrderTokens);
     }

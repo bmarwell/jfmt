@@ -10,5 +10,6 @@ public enum CliNamedImportOrder {
     equalsverifier,
     google,
     eclipse,
-    intellij
+    intellij,
+    enterprise
 }

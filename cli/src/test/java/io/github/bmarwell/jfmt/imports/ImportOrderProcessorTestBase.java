@@ -6,7 +6,6 @@ import io.github.bmarwell.jfmt.commands.ImportOrderProcessor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -41,7 +40,7 @@ abstract class ImportOrderProcessorTestBase {
 
             // Load tokens for the given profile
             NamedImportOrder nio = NamedImportOrder.valueOf(getProfileName());
-            List<String> tokens = ImportOrderLoader.loadFromResource(nio.getResourcePath());
+            ImportOrderConfiguration tokens = new ImportOrderLoader().loadFromResource(nio.getResourcePath());
 
             // Rewrite imports according to tokens
             new ImportOrderProcessor(tokens).rewriteImportsIfAny(cu, workingDoc);

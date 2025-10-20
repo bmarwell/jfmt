@@ -21,6 +21,7 @@ class EqualsVerifierImportOrderTest extends ImportOrderProcessorTestBase {
             "",
             "import a.b.c.Alpha;",
             "import com.example.App;",
+            "import jakarta.inject.Inject;",
             "import org.assertj.core.api.Assertions;",
             "import z.y.Xray;",
             ""
