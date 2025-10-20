@@ -33,6 +33,6 @@ class EnterpriseImportOrderTest extends ImportOrderProcessorTestBase {
 
     @Override
     protected String getProfileName() {
-        return "defaultorder";
+        return "enterprise";
     }
 }
