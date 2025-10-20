@@ -18,8 +18,7 @@ public abstract class AbstractCommandTest {
         cmd.setOut(new PrintWriter(out));
         cmd.setErr(new PrintWriter(err));
 
-        CommandLine.ParseResult parseResult = cmd.parseArgs(args);
-        CommandLine.ParseResult commandParseResult = parseResult;
+        CommandLine.ParseResult commandParseResult = cmd.parseArgs(args);
         while (commandParseResult.hasSubcommand()) {
             commandParseResult = commandParseResult.subcommand();
         }
@@ -33,8 +32,8 @@ public abstract class AbstractCommandTest {
 
         return new CommandExecutionResult(
             execute,
-            List.of(out.toString().split("\n")),
-            List.of(err.toString().split("\n"))
+            List.of(out.toString().split(System.lineSeparator())),
+            List.of(err.toString().split(System.lineSeparator()))
         );
     }
 }

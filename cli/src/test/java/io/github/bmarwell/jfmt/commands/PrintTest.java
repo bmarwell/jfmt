@@ -30,7 +30,7 @@ class PrintTest extends AbstractCommandTest {
             "stdout should not contain java.lang.String"
         );
 
-        String formattedSource = String.join("\n", executionResult.stdout());
+        String formattedSource = String.join(System.lineSeparator(), executionResult.stdout());
         assertTrue(
             formattedSource.startsWith(importDec),
             "stdout should start with import declaration but started with: "
