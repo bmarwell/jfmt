@@ -72,7 +72,7 @@ public class ImportOrderProcessor {
                 "\\#".equals(importOrderGroup.prefixes().getFirst()) ? "#" : importOrderGroup.prefixes().getFirst();
 
             if ("#".equals(t)) {
-                // todo: what if others exist?
+                // todo: what if others package groups exist in the group starting with '#'?
                 ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
                 g.addAll(p.staticImports);
                 groups.add(g);
@@ -81,7 +81,7 @@ public class ImportOrderProcessor {
             }
 
             if (t.isEmpty()) {
-                // todo: what if others exist?
+                // todo: what if others package groups exist in the group starting with catch-all?
                 othersGroup = ImportOrderGroup.catchAll();
                 groups.add(othersGroup);
                 continue;
