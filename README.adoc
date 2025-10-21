@@ -84,13 +84,19 @@ jfmt diff --all .
 * 🚀 FAST
   ** The project aims to create a GraalVM-based binary for most architectures, so it can operate
      almost as fast as `gofmt` or similar tools.
+* 🧠 consistent import ordering
+    ** automatically groups and sorts imports:
+    1. all static imports first, followed by
+    2. all other imports.
 
 == Implementation
 
 * 💻 Uses PicoCLI for command line parsing
 * 📝 Uses Eclipse JDT for formatting
 * ⚙️ Uses GraalVM for creating native, statically linked stand-alone binaries
-* Automatically converts non-UTF-8 inputs to UTF-8 and replaces mixed or Windows line endings (`\r\n`) with Unix (`\n`) endings before formatting.
+* 🌍 Automatically converts non-UTF-8 inputs to UTF-8 and replaces mixed or Windows line endings (`\r\n`) with Unix (`\n`) endings before formatting.
+* 🧩 Sorts import statements according to a default two-group scheme +
+(`+0=#+`, `+1=+` in Eclipse JDT syntax) — static imports first, then all others.
 
 === Implementation status
 
