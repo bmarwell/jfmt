@@ -67,7 +67,7 @@ public class ImportOrderProcessor {
         boolean staticConfigured = false;
 
         for (ImportOrderConfiguration.ImportOrderGroup importOrderGroup : this.importOrderTokens.importOrderGroups()) {
-            // unescape '#' if necessary'
+            // unescape '#' if necessary
             String t =
                 "\\#".equals(importOrderGroup.prefixes().getFirst()) ? "#" : importOrderGroup.prefixes().getFirst();
 
