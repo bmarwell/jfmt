@@ -1,7 +1,5 @@
 package io.github.bmarwell.jfmt.commands;
 
-import static java.nio.file.Files.isRegularFile;
-
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.Patch;
 import io.github.bmarwell.jfmt.config.ConfigLoader;
@@ -14,11 +12,23 @@ import io.github.bmarwell.jfmt.imports.ImportOrderLoader;
 import io.github.bmarwell.jfmt.imports.NamedImportOrder;
 import io.github.bmarwell.jfmt.nio.PathUtils;
 import io.github.bmarwell.jfmt.writer.OutputWriter;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.ToolFactory;
+import org.eclipse.jdt.core.compiler.IProblem;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import picocli.CommandLine;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,18 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Stream;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.ToolFactory;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.formatter.CodeFormatter;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
-import picocli.CommandLine;
+
+import static java.nio.file.Files.isRegularFile;
 
 public abstract class AbstractCommand implements Callable<Integer> {
 
@@ -92,10 +92,9 @@ public abstract class AbstractCommand implements Callable<Integer> {
         getWriter().info("Processing file", javaFile.toString());
 
         try {
-            var javaSourceBytes = Files.readAllBytes(javaFile);
-            var charset = detectEncoding(javaSourceBytes);
-            final String sourceCode = new String(javaSourceBytes, charset);
-            final String revisedSourceCode = createRevisedSourceCode(formatter, javaFile, sourceCode);
+            final var javaSourceBytes = Files.readAllBytes(javaFile);
+            final var sourceCode = getEncodedSourceCode(javaSourceBytes);
+            final var revisedSourceCode = createRevisedSourceCode(formatter, javaFile, sourceCode);
 
             final List<String> originalSourceLines = List.of(sourceCode.split("\n"));
             final List<String> revisedSourceLines = List.of(revisedSourceCode.split("\n"));
@@ -117,24 +116,15 @@ public abstract class AbstractCommand implements Callable<Integer> {
         }
     }
 
-    private static Charset detectEncoding(byte[] bytes) {
-        // Simple UTF-8 validity check
-        if (isValidUTF8(bytes)) {
-            return StandardCharsets.UTF_8;
-        }
-
-        // Otherwise, assume ISO-8859-1 or CP1252 (safe Latin fallbacks)
-        return StandardCharsets.ISO_8859_1;
-    }
-
-    private static boolean isValidUTF8(byte[] bytes) {
+    private static String getEncodedSourceCode(byte[] bytes) {
         try {
-            StandardCharsets.UTF_8.newDecoder()
+            // Simple UTF-8 validity check
+            return StandardCharsets.UTF_8.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
-                .decode(ByteBuffer.wrap(bytes));
-            return true;
+                .decode(ByteBuffer.wrap(bytes)).toString();
         } catch (CharacterCodingException e) {
-            return false;
+            // Otherwise, assume ISO-8859-1 or CP1252 (safe Latin fallbacks)
+            return new String(bytes, StandardCharsets.ISO_8859_1);
         }
     }
 
@@ -166,8 +156,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
         CompilationUnit compilationUnit = getCompilationUnitFrom(unixSourceCode, javaFile);
 
         if (compilationUnit.getProblems() != null && compilationUnit.getProblems().length > 0) {
-            Stream.of(compilationUnit.getProblems())
-                .forEach(problem -> getWriter().warn(javaFile.toString(), problem.toString()));
+            for (IProblem problem : compilationUnit.getProblems()) {
+                getWriter().warn(javaFile.toString(), problem.toString());
+            }
+
             throw new IllegalStateException(
                 "CompilationUnit problems: " + Arrays.asList(compilationUnit.getProblems())
             );

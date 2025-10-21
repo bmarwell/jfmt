@@ -18,7 +18,10 @@ public final class ImportOrderGroup {
 
     ImportOrderGroup(String name, List<String> packages) {
         this.name = name;
-        packages.forEach(pkg -> importsByPackage.put(pkg, new ArrayList<>()));
+
+        for (String pkg : packages) {
+            importsByPackage.put(pkg, new ArrayList<>());
+        }
     }
 
     ImportOrderGroup(List<String> packageNames) {
