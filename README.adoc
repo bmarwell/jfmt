@@ -25,6 +25,7 @@ It’s designed for developers who want:
 
 In short:
 *Run it locally before you commit. Let CI check it again.*
+*jfmt* also normalizes all source files to UTF-8 encoding and Unix line endings (`\n`) to ensure consistent formatting across operating systems and editors.
 That’s all you need.
 
 == Quick Start
@@ -89,6 +90,7 @@ jfmt diff --all .
 * 💻 Uses PicoCLI for command line parsing
 * 📝 Uses Eclipse JDT for formatting
 * ⚙️ Uses GraalVM for creating native, statically linked stand-alone binaries
+* Automatically converts non-UTF-8 inputs to UTF-8 and replaces mixed or Windows line endings (`\r\n`) with Unix (`\n`) endings before formatting.
 
 === Implementation status
 
