@@ -35,9 +35,18 @@ public class PathUtils {
         throw new IllegalArgumentException("Path is not a file or directory: " + path);
     }
 
+    /**
+     * Caller must close the stream.
+     * 
+     * @param path
+     *     the path to walk into recursively.
+     * @return an open stream of .java files.
+     */
+    @SuppressWarnings("resource")
     private static Stream<Path> resolveDirectory(Path path) {
-        try (var fileStream = Files.walk(path)) {
-            return fileStream.parallel()
+        try {
+            return Files.walk(path)
+                .parallel()
                 .filter(p -> p.toString().endsWith(".java"))
                 .filter(Files::isRegularFile);
         } catch (IOException ioException) {

@@ -1,6 +1,7 @@
 package io.github.bmarwell.jfmt.commands;
 
 import com.github.difflib.patch.Patch;
+import io.github.bmarwell.jfmt.concurrency.FailFastFileProcessingResultJoiner;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
 import io.github.bmarwell.jfmt.nio.PathUtils;
@@ -10,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
@@ -63,25 +63,17 @@ public class Write extends AbstractCommand {
     public Integer call() throws Exception {
         final Stream<Path> allFilesAndDirs = PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories));
         final CodeFormatter formatter = createCodeFormatter();
-        final ArrayList<FileProcessingResult> results = new ArrayList<>();
 
-        try (var scope =
-            StructuredTaskScope.open(StructuredTaskScope.Joiner.<FileProcessingResult>allSuccessfulOrThrow())) {
+        try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
             allFilesAndDirs
                 .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(formatter, javaFile))
                 .forEach(scope::fork);
 
             final List<StructuredTaskScope.Subtask<FileProcessingResult>> joins = scope.join().toList();
 
-            for (StructuredTaskScope.Subtask<FileProcessingResult> join : joins) {
-                if (join.exception() != null) {
-                    throw (Exception) join.exception();
-                }
-
-                results.add(join.get());
-            }
+            return joins.stream()
+                .map(StructuredTaskScope.Subtask::get)
+                .anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
         }
-
-        return results.stream().anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
     }
 }
