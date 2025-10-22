@@ -54,4 +54,5 @@ jobs:
 
   call-native:
     uses: ./.github/workflows/build-native.yml
+    secrets: inherit
     needs: build
