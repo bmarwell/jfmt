@@ -1,4 +1,6 @@
 permissions:
+  # required for codecov OIDC token
+  id-token: write
   contents: read
 name: Build
 
@@ -40,7 +42,8 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          use_oidc: true
 
       - name: Save downloaded Maven packages
         uses: actions/cache/save@v4.3.0
