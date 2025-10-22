@@ -1,5 +1,7 @@
 package io.github.bmarwell.jfmt.its.extension;
 
+import static org.awaitility.Awaitility.await;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
@@ -121,11 +123,14 @@ class JFmtExtension implements BeforeAllCallback, BeforeEachCallback, ParameterR
             executor
         );
 
-        boolean finished = process.waitFor(5, TimeUnit.SECONDS);
+        await("!process.isAlive")
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> !process.isAlive());
 
         // Wait for stream readers to complete
-        CompletableFuture.allOf(stdoutFuture, stderrFuture)
-            .get(1, TimeUnit.SECONDS);
+        await("stdout.isDone() && stderr.isDone()")
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> stdoutFuture.isDone() && stderrFuture.isDone());
 
         int exitCode = process.exitValue();
 
