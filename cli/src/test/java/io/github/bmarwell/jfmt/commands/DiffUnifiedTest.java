@@ -9,14 +9,18 @@ class DiffUnifiedTest extends AbstractCommandTest {
 
     @Test
     void can_output_unified_diff() {
-        var args = new String[] { "diff", "-u", "target/test-classes/diff/SomeRecord.java" };
+        var args = new String[] { "diff", "-u", pathToSomeRecord() };
 
         // when
         var executionResult = doExecute(args);
 
         // then
-        assertEquals(1, executionResult.returncode());
-        assertTrue(executionResult.stdout().stream().anyMatch(s -> s.startsWith("+")));
+        var stderr = String.join(System.lineSeparator(), executionResult.stderr());
+        assertEquals(1, executionResult.returncode(), "returncode should be 1 but was not. stderr: " + stderr);
+        assertTrue(
+            executionResult.stdout().stream().anyMatch(s -> s.startsWith("+")),
+            "stdout should contain + but did not. stderr: " + stderr
+        );
     }
 
 }

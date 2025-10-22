@@ -4,10 +4,15 @@ import io.github.bmarwell.jfmt.JFmt;
 import io.github.bmarwell.jfmt.test.CommandExecutionResult;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.List;
 import picocli.CommandLine;
 
 public abstract class AbstractCommandTest {
+
+    protected static String pathToSomeRecord() {
+        return Path.of("target", "test-classes", "diff", "SomeRecord.java").toString();
+    }
 
     protected CommandExecutionResult doExecute(String[] args) throws CommandLine.UnmatchedArgumentException {
         JFmt jdtFmt = new JFmt();
@@ -18,8 +23,7 @@ public abstract class AbstractCommandTest {
         cmd.setOut(new PrintWriter(out));
         cmd.setErr(new PrintWriter(err));
 
-        CommandLine.ParseResult parseResult = cmd.parseArgs(args);
-        CommandLine.ParseResult commandParseResult = parseResult;
+        CommandLine.ParseResult commandParseResult = cmd.parseArgs(args);
         while (commandParseResult.hasSubcommand()) {
             commandParseResult = commandParseResult.subcommand();
         }
@@ -33,8 +37,8 @@ public abstract class AbstractCommandTest {
 
         return new CommandExecutionResult(
             execute,
-            List.of(out.toString().split("\n")),
-            List.of(err.toString().split("\n"))
+            List.of(out.toString().split(System.lineSeparator())),
+            List.of(err.toString().split(System.lineSeparator()))
         );
     }
 }

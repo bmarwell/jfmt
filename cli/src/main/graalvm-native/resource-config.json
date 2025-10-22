@@ -4,24 +4,25 @@
       { "pattern": "version.properties" },
       { "pattern": "io/github/bmarwell/jfmt/config/default-config.xml" },
       { "pattern": "io/github/bmarwell/jfmt/config/equalsverifier.xml" },
-      { "pattern": "org/eclipse/jdt/internal/compiler/.*\\.properties" },
-      { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" },
-      { "pattern": "org/eclipse/jdt/internal/compiler/messages.properties" },
-      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en.properties" },
-      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en_GB.properties" },
-      { "pattern": "org/eclipse/jdt/internal/compiler/messages_en_US.properties" }
+      { "pattern": "org/eclipse/jdt/internal/compiler/messages(.*)?\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/problem/messages(.*)?\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/impl/messages(.*)?\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/problem/.*\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/parser/.*\\.rsc" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/parser/readableNames\\.props" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/parser/unicode.*/.*\\.rsc" },
+      { "pattern": "org/eclipse/jdt/internal/compiler/util/messages(.*)?\\.properties" },
+      { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" }
     ]
   },
   "bundles": [
+    { "name": "org.eclipse.jdt.internal.compiler" },
     { "name": "org.eclipse.jdt.internal.compiler.messages" },
-    {
-      "name":"org.eclipse.jdt.internal.compiler.batch.messages",
-      "locales": [ "", "en", "en_US", "en_GB" ]
-    },
-    {
-      "name":"org.eclipse.jdt.internal.compiler.problem.messages",
-      "locales": [ "", "en", "en_US", "en_GB" ]
-    },
+    { "name": "org.eclipse.jdt.internal.compiler.batch.messages" },
+    { "name": "org.eclipse.jdt.internal.compiler.impl.messages" },
+    { "name": "org.eclipse.jdt.internal.compiler.parser.messages" },
+    { "name": "org.eclipse.jdt.internal.compiler.problem.messages" },
+    { "name": "org.eclipse.jdt.internal.compiler.util.messages" },
     { "name": "org.eclipse.jdt.internal.formatter.messages" }
   ]
 }

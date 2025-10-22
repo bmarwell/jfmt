@@ -326,10 +326,6 @@
               <quickBuild>${native.quick.build}</quickBuild>
               <imageName>${project.artifactId}-${project.version}</imageName>
               <agentResourceDirectory>${project.basedir}/src/main/graalvm-native</agentResourceDirectory>
-              <buildArgs>
-                <buildArg>--strict-image-heap</buildArg>
-                <buildArg>--initialize-at-build-time=org.eclipse.jdt.internal.compiler,org.eclipse.jdt.internal.compiler.util</buildArg>
-              </buildArgs>
 
               <jvmArgs>
                 <jvmArg>-Duser.language=en</jvmArg>
@@ -393,7 +389,7 @@
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <!-- as of Maven 4.0.0-rc-4, combine.* does not work -->
-            <configuration combine.children="merge">
+            <configuration>
               <buildArgs>
                 <buildArg>--static</buildArg>
                 <buildArg>-march=compatibility</buildArg>
