@@ -4,24 +4,20 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathUtils {
 
-    public static Set<Path> resolveAll(List<Path> paths) {
-        return paths.stream()
-            .map(PathUtils::resolve)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
+    public static Stream<Path> streamAll(List<Path> paths) {
+        return paths.parallelStream()
+            .flatMap(PathUtils::resolveAsStream);
     }
 
-    public static Set<Path> resolve(Path path) {
+    public static Stream<Path> resolveAsStream(Path path) {
         if (Files.isSymbolicLink(path)) {
             // skip for now
-            return Set.of();
+            return Stream.empty();
         }
 
         if (!Files.exists(path)) {
@@ -33,18 +29,17 @@ public class PathUtils {
         }
 
         if (Files.isRegularFile(path) && path.toString().endsWith(".java")) {
-            return Set.of(path);
+            return Stream.of(path);
         }
 
         throw new IllegalArgumentException("Path is not a file or directory: " + path);
     }
 
-    private static Set<Path> resolveDirectory(Path path) {
+    private static Stream<Path> resolveDirectory(Path path) {
         try (var fileStream = Files.walk(path)) {
-            return fileStream
+            return fileStream.parallel()
                 .filter(p -> p.toString().endsWith(".java"))
-                .filter(Files::isRegularFile)
-                .collect(Collectors.toSet());
+                .filter(Files::isRegularFile);
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
         }

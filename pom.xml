@@ -13,6 +13,8 @@
     <maven.compiler.release>25</maven.compiler.release>
     <!-- for structured concurrency preview features, disable in Java 27+ -->
     <maven.compiler.enablePreview>true</maven.compiler.enablePreview>
+    <default.surefire.argline>--enable-preview</default.surefire.argline>
+    <forkCount>0.9C</forkCount>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <picocli.version>4.7.7</picocli.version>
@@ -223,6 +225,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <argLine>@{argLine} ${default.surefire.argline}</argLine>
           <systemPropertyVariables>
             <jacoco.agent.path>${org.jacoco:org.jacoco.agent:jar:runime}</jacoco.agent.path>
           </systemPropertyVariables>

@@ -103,6 +103,7 @@
             <configuration>
               <executable>java</executable>
               <arguments>
+                <argument>--enable-preview</argument>
                 <argument>-Dpicocli.autocomplete.systemExitOnError=true</argument>
                 <argument>-cp</argument>
                 <classpath />
@@ -117,14 +118,18 @@
           <execution>
             <id>generateManPages</id>
             <goals>
-              <goal>java</goal>
+              <goal>exec</goal>
             </goals>
             <phase>prepare-package</phase>
             <configuration>
               <includeProjectDependencies>true</includeProjectDependencies>
               <includePluginDependencies>true</includePluginDependencies>
-              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+              <executable>java</executable>
               <arguments>
+                <argument>--enable-preview</argument>
+                <argument>-cp</argument>
+                <classpath />
+                <argument>picocli.codegen.docgen.manpage.ManPageGenerator</argument>
                 <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
                 <argument>${main.class}</argument>
               </arguments>
@@ -236,6 +241,9 @@
                       </options>
                       <java>
                         <mainClass>${main.class}</mainClass>
+                        <jvmOptions>
+                          <universal>--enable-preview</universal>
+                        </jvmOptions>
                       </java>
                       <mainJar>
                         <path>${project.build.directory}/${project.build.finalName}.jar</path>
