@@ -1,18 +1,14 @@
 package io.github.bmarwell.jfmt.imports;
 
+import static io.github.bmarwell.jfmt.imports.ImportOrderTestUtil.loadTestResource;
+import static io.github.bmarwell.jfmt.imports.ImportOrderTestUtil.parseCompilationUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.github.bmarwell.jfmt.commands.ImportOrderProcessor;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,23 +17,20 @@ import org.junit.jupiter.api.Test;
  */
 class FallbackMatchesDefaultTest {
 
+    private String source;
+
+    @BeforeEach
+    void setUp() {
+        source = loadTestResource("imports/MixedImports.java");
+    }
+
     @Test
     void fallback_should_match_default_configuration() throws Exception {
-        // Load test file with mixed imports
-        String source;
-        try (InputStream in = FallbackMatchesDefaultTest.class.getClassLoader()
-            .getResourceAsStream("imports/MixedImports.java")) {
-            assertNotNull(in, "Test resource imports/MixedImports.java must exist");
-            source = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        // given
+        String resultWithDefault = processWithDefaultConfiguration();
+        String resultWithFallback = processWithEmptyConfiguration();
 
-        // Process with DEFAULT configuration
-        String resultWithDefault = processWithConfiguration(source, false);
-
-        // Process with EMPTY configuration (fallback)
-        String resultWithFallback = processWithConfiguration(source, true);
-
-        // Both should produce the same output
+        // when / then
         assertEquals(
             resultWithDefault,
             resultWithFallback,
@@ -45,45 +38,24 @@ class FallbackMatchesDefaultTest {
         );
     }
 
-    private String processWithConfiguration(String source, boolean useEmptyConfig) throws Exception {
-        // Parse the source
-        CompilationUnit cu = parseCompilationUnit(source);
-
-        // Prepare the working document
+    private String processWithDefaultConfiguration() throws Exception {
+        CompilationUnit cu = parseCompilationUnit(source, "MixedImports.java");
         IDocument workingDoc = new Document(source);
 
-        // Load configuration
-        ImportOrderConfiguration config;
-        if (useEmptyConfig) {
-            // Use empty config to trigger fallback
-            config = ImportOrderConfiguration.empty();
-        } else {
-            // Use default configuration
-            NamedImportOrder nio = NamedImportOrder.valueOf("defaultorder");
-            config = new ImportOrderLoader().loadFromResource(nio.getResourcePath());
-        }
+        NamedImportOrder nio = NamedImportOrder.valueOf("defaultorder");
+        ImportOrderConfiguration config = new ImportOrderLoader().loadFromResource(nio.getResourcePath());
 
-        // Process imports
         new ImportOrderProcessor(config).rewriteImportsIfAny(cu, workingDoc);
-
         return workingDoc.get();
     }
 
-    private static CompilationUnit parseCompilationUnit(String sourceCode) {
-        ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
-        parser.setSource(sourceCode.toCharArray());
-        parser.setUnitName("MixedImports.java");
-        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+    private String processWithEmptyConfiguration() throws Exception {
+        CompilationUnit cu = parseCompilationUnit(source, "MixedImports.java");
+        IDocument workingDoc = new Document(source);
 
-        Map<String, String> options = JavaCore.getOptions();
-        options.put(JavaCore.COMPILER_SOURCE, String.valueOf(AST.getJLSLatest()));
-        options.put(JavaCore.COMPILER_COMPLIANCE, String.valueOf(AST.getJLSLatest()));
-        options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, String.valueOf(AST.getJLSLatest()));
-        parser.setCompilerOptions(options);
+        ImportOrderConfiguration config = ImportOrderConfiguration.empty();
 
-        CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-        cu.recordModifications();
-
-        return cu;
+        new ImportOrderProcessor(config).rewriteImportsIfAny(cu, workingDoc);
+        return workingDoc.get();
     }
 }
