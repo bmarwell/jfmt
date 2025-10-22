@@ -235,7 +235,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <jacoco.agent.path>${org.jacoco:org.jacoco.agent:jar:runime}</jacoco.agent.path>
+            <jacoco.agent.path>${org.jacoco:org.jacoco.agent:jar:runtime}</jacoco.agent.path>
           </systemPropertyVariables>
         </configuration>
       </plugin>
