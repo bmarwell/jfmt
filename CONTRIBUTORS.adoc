@@ -12,6 +12,7 @@
       <td align="center" valign="top" width="14.28%"><a href="https://maarten.mulders.it/"><img src="https://avatars.githubusercontent.com/u/430114?v=4?s=100" width="100px;" alt="Maarten Mulders"/><br /><sub><b>Maarten Mulders</b></sub></a><br /><a href="#code-mthmulders" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bittu9975"><img src="https://avatars.githubusercontent.com/u/99003738?v=4?s=100" width="100px;" alt="bittu9975"/><br /><sub><b>bittu9975</b></sub></a><br /><a href="#code-bittu9975" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/vikash1703"><img src="https://avatars.githubusercontent.com/u/189118782?v=4?s=100" width="100px;" alt="Vikash Kumar Sinha"/><br /><sub><b>Vikash Kumar Sinha</b></sub></a><br /><a href="#tool-vikash1703" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/copilot-swe-agent"><img src="https://avatars.githubusercontent.com/u/203248971?v=4?s=100" width="100px;" alt="copilot-swe-agent"/><br /><sub><b>copilot-swe-agent</b></sub></a><br /><a href="#tool-copilot-swe-agent" title="Tools">🔧</a></td>
     </tr>
   </tbody>
 </table>
