@@ -152,8 +152,10 @@
             </goals>
             <phase>prepare-package</phase>
             <configuration>
-              <sourceHighlighter>coderay</sourceHighlighter>
               <backend>html5</backend>
+              <attributes>
+                <source-highlighter>coderay</source-highlighter>
+              </attributes>
               <outputDirectory>${project.build.directory}/generated-docs/usr/share/doc</outputDirectory>
             </configuration>
           </execution>
@@ -164,8 +166,10 @@
             </goals>
             <phase>prepare-package</phase>
             <configuration>
-              <sourceHighlighter>coderay</sourceHighlighter>
               <backend>manpage</backend>
+              <attributes>
+                <source-highlighter>coderay</source-highlighter>
+              </attributes>
               <outputDirectory>${project.build.directory}/generated-docs/usr/share/man/man1</outputDirectory>
             </configuration>
           </execution>
