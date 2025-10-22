@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.ToolFactory;
@@ -67,7 +67,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        final Set<Path> allFilesAndDirs = PathUtils.resolveAll(List.of(this.globalOptions.filesOrDirectories));
+        final Stream<Path> allFilesAndDirs = PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories));
         final CodeFormatter formatter = createCodeFormatter();
         final ArrayList<FileProcessingResult> results = new ArrayList<>();
 
@@ -137,7 +137,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         Patch<String> patch
     );
 
-    private CodeFormatter createCodeFormatter() {
+    protected CodeFormatter createCodeFormatter() {
         if (this.globalOptions.configFile != null && Files.isRegularFile(this.globalOptions.configFile)) {
             final Map<String, String> config = ConfigLoader.load(this.globalOptions.configFile);
 
