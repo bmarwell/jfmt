@@ -21,14 +21,14 @@ class DocumentationIT {
 
         // read the content and check for syntax highlighting
         String content = Files.readString(htmlDoc);
-        
+
         // Check for syntax highlighting elements
         // Coderay adds classes like 'CodeRay' or elements with syntax highlighting
         assertTrue(
-                content.contains("class=\"CodeRay\"") 
+            content.contains("class=\"CodeRay\"")
                 || content.contains("class=\"highlight\"")
                 || content.contains("class=\"listingblock\""),
-                "HTML documentation should contain syntax highlighting elements"
+            "HTML documentation should contain syntax highlighting elements"
         );
     }
 
