@@ -98,6 +98,13 @@ public class ImportOrderProcessor {
             groups.add(g);
         }
 
+        // If no static token configured, but we have static imports, prepend them as first group
+        if (!staticConfigured && !p.staticImports.isEmpty()) {
+            ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
+            g.addAll(p.staticImports);
+            groups.addFirst(g);
+        }
+
         // Fill others group with remaining non-static imports (if configured), otherwise create a trailing one
         if (othersGroup != null) {
             othersGroup.addAll(remainingNonStatic);
@@ -105,13 +112,6 @@ public class ImportOrderProcessor {
             ImportOrderGroup trailingOthers = ImportOrderGroup.catchAll();
             trailingOthers.addAll(remainingNonStatic);
             groups.add(trailingOthers);
-        }
-
-        // If no static token configured, but we have static imports, append them as last group
-        if (!staticConfigured && !p.staticImports.isEmpty()) {
-            ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
-            g.addAll(p.staticImports);
-            groups.add(g);
         }
 
         return groups;
