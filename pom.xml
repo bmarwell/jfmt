@@ -11,6 +11,8 @@
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
+    <!-- for structured concurrency preview features, disable in Java 27+ -->
+    <maven.compiler.enablePreview>true</maven.compiler.enablePreview>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <picocli.version>4.7.7</picocli.version>
