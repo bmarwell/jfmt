@@ -98,44 +98,21 @@ public class ImportOrderProcessor {
             groups.add(g);
         }
 
-        // Fill others group with remaining non-static imports (if configured), otherwise create a trailing one
-        if (othersGroup != null) {
-            othersGroup.addAll(remainingNonStatic);
-        } else if (!remainingNonStatic.isEmpty()) {
-            // Fallback: 0=#, 1=, 2=java (static first, then non-java, then java)
-            // Separate java.* imports from others
-            List<ImportDeclaration> javaImports = new ArrayList<>();
-            List<ImportDeclaration> nonJavaImports = new ArrayList<>();
-
-            for (ImportDeclaration id : remainingNonStatic) {
-                String fqn = id.getName().getFullyQualifiedName();
-                if (fqn.startsWith("java.") || fqn.startsWith("javax.")) {
-                    javaImports.add(id);
-                } else {
-                    nonJavaImports.add(id);
-                }
-            }
-
-            // Add non-java imports group if any
-            if (!nonJavaImports.isEmpty()) {
-                ImportOrderGroup nonJavaGroup = ImportOrderGroup.catchAll();
-                nonJavaGroup.addAll(nonJavaImports);
-                groups.add(nonJavaGroup);
-            }
-
-            // Add java imports group if any
-            if (!javaImports.isEmpty()) {
-                ImportOrderGroup javaGroup = new ImportOrderGroup("java", List.of("java", "javax"));
-                javaGroup.addAll(javaImports);
-                groups.add(javaGroup);
-            }
-        }
-
         // If no static token configured, but we have static imports, prepend them as first group
         if (!staticConfigured && !p.staticImports.isEmpty()) {
             ImportOrderGroup g = new ImportOrderGroup("#", List.of("#"));
             g.addAll(p.staticImports);
             groups.addFirst(g);
+        }
+
+        // Fill others group with remaining non-static imports (if configured), otherwise create a trailing one
+        if (othersGroup != null) {
+            othersGroup.addAll(remainingNonStatic);
+        } else if (!remainingNonStatic.isEmpty()) {
+            // Fallback: match default config (0=#, 1=) - all non-static imports in one group
+            ImportOrderGroup trailingOthers = ImportOrderGroup.catchAll();
+            trailingOthers.addAll(remainingNonStatic);
+            groups.add(trailingOthers);
         }
 
         return groups;
