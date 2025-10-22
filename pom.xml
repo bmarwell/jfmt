@@ -23,7 +23,7 @@
     <jacoco.version>0.8.14</jacoco.version>
 
     <!-- plugins -->
-    <native.maven.plugin.version>0.11.1</native.maven.plugin.version>
+    <native.maven.plugin.version>0.11.2</native.maven.plugin.version>
 
     <!-- 3rd party plugins -->
     <exec.plugin.version>3.6.1</exec.plugin.version>
