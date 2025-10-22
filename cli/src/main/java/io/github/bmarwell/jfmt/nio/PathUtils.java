@@ -7,7 +7,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class PathUtils {
+public final class PathUtils {
+
+    private PathUtils() {}
 
     public static Stream<Path> streamAll(List<Path> paths) {
         return paths.parallelStream()
@@ -32,7 +34,7 @@ public class PathUtils {
             return Stream.of(path);
         }
 
-        throw new IllegalArgumentException("Path is not a file or directory: " + path);
+        throw new IllegalArgumentException("Path is not a java file or directory: " + path);
     }
 
     /**
