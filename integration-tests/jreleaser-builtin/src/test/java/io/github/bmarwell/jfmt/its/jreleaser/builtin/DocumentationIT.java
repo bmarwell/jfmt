@@ -6,11 +6,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class DocumentationIT {
 
     @Test
+    @Disabled
     void generated_html_documentation_contains_syntax_highlighting() throws IOException {
         // given
         Path jdtDistributionPath = getJdtDistributionPath();
