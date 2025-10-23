@@ -102,6 +102,14 @@ jobs:
         env:
           TOOLCHAIN_DIR: ${{ steps.prepare-musl.outputs.TOOLCHAIN_DIR }}
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: artifacts-ubuntu-latest
+          path: |
+            cli/target/distributions/*.zip
+            cli/target/distributions/*.tar.gz
+
       - name: Save downloaded Maven packages
         uses: actions/cache/save@v4.3.0
         with:
