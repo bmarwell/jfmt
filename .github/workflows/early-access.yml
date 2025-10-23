@@ -32,6 +32,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up JDK
+        uses: actions/setup-java@v5.0.0
+        with:
+          java-version: 25
+          distribution: 'temurin'
+          cache: maven
+
       - name: Set Git ref to check out
         id: head
         run: echo "content=${GITHUB_SHA}" >> $GITHUB_OUTPUT
