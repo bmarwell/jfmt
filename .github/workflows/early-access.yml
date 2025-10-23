@@ -36,6 +36,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Download artifacts from the completed Build workflow.
+      # Using dawidd6/action-download-artifact because the official actions/download-artifact@v5
+      # does not support downloading artifacts from a different workflow run (workflow_run context).
+      # This third-party action provides the necessary functionality to download artifacts
+      # from the completed Build workflow using the run_id.
       - name: Download native binary artifacts from Build workflow
         uses: dawidd6/action-download-artifact@v9
         with:
@@ -66,11 +71,12 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Release with JReleaser
+        shell: bash
         run: |
           mvn \
             --batch-mode \
             -Prelease \
-            -DartifactsDir=${GITHUB_WORKSPACE}/artifacts \
+            -DartifactsDir="${GITHUB_WORKSPACE}/artifacts" \
             jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}

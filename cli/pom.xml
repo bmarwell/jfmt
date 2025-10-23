@@ -259,7 +259,7 @@
                       <stereotype>DESKTOP</stereotype>
                       <formats>
                         <format>ZIP</format>
-                        <format>TGZ</format>
+                        <format>TAR_GZ</format>
                       </formats>
                       <options>
                         <longFileMode>POSIX</longFileMode>
