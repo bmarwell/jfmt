@@ -1,0 +1,79 @@
+# Inspired by & copied from mthmulders/mcs:
+# https://github.com/mthmulders/mcs/blob/main/.github/workflows/early-access.yml
+# Itself inspired by & copied from JReleaser sample:
+# https://github.com/jreleaser/jreleaser/blob/main/.github/workflows/trigger-early-access.yml
+
+name: Publish Early Access builds
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Build native executable per runner
+  build:
+    uses: ./.github/workflows/build-native.yml
+    secrets: inherit
+
+  # Collect all executables and release
+  release:
+    needs: [ build ]
+    runs-on: ubuntu-24.04
+    permissions: write-all
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Set Git ref to check out
+        id: head
+        run: echo "content=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v5.0.0
+        with:
+          path: /tmp/artifacts
+
+      - name: Move build artifacts to correct folder
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          
+          # debug
+          find /tmp/artifacts/ -name "jfmt*"
+          
+          find /tmp/artifacts/ -name "jfmt*" -exec mv -v {} artifacts/ \;
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4.3.0
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Release with JReleaser
+        run: |
+          mvn \
+            --batch-mode \
+            -Prelease \
+            -DartifactsDir=${GITHUB_WORKSPACE}/artifacts \
+            jreleaser:full-release
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Capture JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: jreleaser-release-output
+          retention-days: 7
+          path: |
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties
