@@ -315,6 +315,10 @@ How opinionated is it?::
 While there is a default rule, you can use other named rules or even foreign config files created by Eclipse IDE as well.
 But I encourage everyone to use the default configuration – and let's discuss how well it is defined in the GitHub discussions and the issue tracker.
 
+== Contributing & Releasing
+
+For information about the release process, including early access builds and official releases, see link:RELEASING.adoc[RELEASING.adoc].
+
 [#contributors]
 == Contributors
 

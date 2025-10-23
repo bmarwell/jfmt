@@ -364,6 +364,40 @@
       </build>
     </profile>
 
+    <!-- JReleaser release automation profile
+         This profile is activated in CI workflows to create GitHub releases.
+         
+         JReleaser automates the release process by:
+         - Creating/updating GitHub releases
+         - Uploading distribution artifacts (native binaries, JARs)
+         - Generating changelog from conventional commits
+         - Managing release metadata and tags
+         
+         Maven Goals:
+         
+         1. jreleaser:assemble
+            - Creates distribution archives from build artifacts
+            - Executed automatically during 'package' phase in cli/pom.xml
+            - Bundles JAR with dependencies, docs, and scripts
+            - Output: cli/target/jreleaser/assemble/
+         
+         2. jreleaser:full-release
+            - Performs a complete release to GitHub
+            - Uploads all artifacts from artifactsDir parameter
+            - Requires: JRELEASER_GITHUB_TOKEN environment variable
+            - Used in: .github/workflows/early-access.yml
+            
+         Configuration:
+         - Main config: jreleaser.yml (project metadata, release settings)
+         - Assembly config: cli/pom.xml (JAR archive assembly definition)
+         
+         Example usage:
+         - Test assembly: ./mvnw clean package -Prelease
+         - Dry-run config: ./mvnw -Prelease jreleaser:config
+         - Full release: ./mvnw -Prelease -DartifactsDir=artifacts jreleaser:full-release
+         
+         See RELEASING.adoc for detailed documentation.
+    -->
     <profile>
       <id>release</id>
       <build>

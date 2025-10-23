@@ -213,6 +213,28 @@
         </executions>
       </plugin>
 
+      <!-- JReleaser assemble plugin
+           Creates a Java archive distribution from the compiled JAR and dependencies.
+           This assembles a portable, runnable distribution that can be used without
+           building a native image.
+           
+           Execution:
+           - Phase: package
+           - Goal: assemble
+           - Triggered automatically when using -Prelease profile
+           
+           The assembly includes:
+           - Main JAR file
+           - All runtime dependencies (in lib/)
+           - Generated documentation and man pages
+           - Bash completion scripts
+           - License files (project and third-party)
+           
+           Output location: cli/target/jreleaser/assemble/jfmt/java-archive/
+           
+           This JAR archive is also referenced in the root jreleaser.yml as the
+           'jfmt-archive' distribution, which is uploaded during releases.
+      -->
       <plugin>
         <groupId>org.jreleaser</groupId>
         <artifactId>jreleaser-maven-plugin</artifactId>

@@ -1,0 +1,225 @@
+// SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+= Releasing jfmt
+:toc: macro
+
+This document describes the release process for jfmt, including both early-access (pre-release) builds and official releases.
+
+toc::[]
+
+== Overview
+
+jfmt uses https://jreleaser.org/[JReleaser] to automate the release process.
+There are two types of releases:
+
+* **Early Access builds**: Automated pre-releases from the `main` branch
+* **Official releases**: Tagged releases created manually
+
+Both processes build native binaries for multiple platforms:
+
+* Linux x86_64 (static binary with musl)
+* macOS x86_64 (Intel)
+* macOS aarch64 (Apple Silicon)
+* Windows x86_64
+
+== Early Access Builds (Automated)
+
+Early access builds are automatically created on every push to the `main` branch.
+
+=== How it Works
+
+1. When code is pushed to `main`, the `.github/workflows/early-access.yml` workflow is triggered
+2. The workflow calls `.github/workflows/build-native.yml` to build native binaries for all platforms
+3. Build artifacts are collected from all platform builds
+4. JReleaser creates a pre-release on GitHub with all artifacts attached
+
+=== What Gets Built
+
+The `build-native.yml` workflow builds:
+
+* A static native binary for each platform
+* Distribution archives (`.zip` and `.tar.gz`) containing:
+  - The native executable
+  - Bash completion scripts
+  - Man pages
+  - License files
+  - Third-party license information
+
+=== Viewing Early Access Builds
+
+Early access builds appear as pre-releases on the https://github.com/bmarwell/jfmt/releases[GitHub Releases page].
+They are tagged with a version like `early-access` and are marked as pre-releases.
+
+== Official Releases
+
+Official releases are created manually by project maintainers.
+
+=== Prerequisites
+
+Before creating a release, ensure:
+
+1. All tests pass on the `main` branch
+2. The changelog is up to date
+3. You have write access to the repository
+4. You have the `GH_PAT` secret configured (for maintainers)
+
+=== Release Process
+
+The release process will be documented when the release workflow is set up.
+For now, early access builds are the primary distribution method.
+
+[NOTE]
+====
+The release workflow template is available at: https://github.com/mthmulders/mcs/blob/main/.github/workflows/release.yml
+
+This will be adapted in a future issue.
+====
+
+== Technical Details
+
+=== JReleaser Configuration
+
+The JReleaser configuration is split between two files:
+
+* `jreleaser.yml`: Main configuration file at the repository root
+  - Project metadata (name, description, license)
+  - Release configuration (GitHub settings)
+  - Distribution definitions (artifacts to release)
+
+* `cli/pom.xml`: Maven-specific assembly configuration
+  - JReleaser Maven plugin execution
+  - Java archive assembly definition
+  - File sets for documentation and completions
+
+=== Maven Goals
+
+The release process uses the following Maven goals:
+
+* `jreleaser:assemble`: Creates distribution archives from build artifacts
+  - Executed during the `package` phase in the `cli` module
+  - Bundles the JAR with dependencies, docs, and scripts
+
+* `jreleaser:full-release`: Performs a complete release
+  - Creates/updates GitHub release
+  - Uploads all distribution artifacts
+  - Generates changelog from conventional commits
+  - Executed in the early-access workflow's release job
+
+[TIP]
+====
+To test the assembly locally without releasing:
+
+[source,console]
+----
+./mvnw clean package -Prelease
+----
+
+This will create distributions in `cli/target/jreleaser/assemble/`.
+====
+
+=== Workflow Architecture
+
+The workflow architecture uses GitHub Actions' reusable workflow feature:
+
+[source]
+----
+early-access.yml
+  ├─ calls: build-native.yml (builds on all platforms)
+  │    ├─ build-linux-x64-musl
+  │    └─ build-others (matrix: macOS x64, macOS aarch64, Windows x64)
+  └─ release job (collects artifacts, runs jreleaser:full-release)
+----
+
+This design:
+
+* Keeps build logic in one place (`build-native.yml`)
+* Allows testing native builds independently
+* Shares secrets securely using `secrets: inherit`
+* Enables parallel builds across platforms
+
+=== Artifact Locations
+
+After a successful build, artifacts are available in several locations:
+
+* **GitHub Actions artifacts**: Temporary storage during workflow runs
+  - `artifacts-ubuntu-latest`: Linux binaries
+  - `artifacts-macos-13`: macOS Intel binaries
+  - `artifacts-macos-14`: macOS ARM binaries
+  - `artifacts-windows-2022`: Windows binaries
+
+* **GitHub Releases**: Permanent storage for released artifacts
+  - Early access: https://github.com/bmarwell/jfmt/releases/tag/early-access
+  - Tagged releases: `https://github.com/bmarwell/jfmt/releases/tag/v{version}`
+
+=== Secrets Required
+
+The following secrets must be configured in the repository (for maintainers):
+
+* `GH_PAT`: GitHub Personal Access Token with repo and packages permissions
+  - Used by JReleaser to create releases and upload artifacts
+
+* `MUSL_TOOLCHAIN_LOCATION`: URL to musl toolchain download location
+* `MUSL_TOOLCHAIN_USER`: Username for musl toolchain authentication
+* `MUSL_TOOLCHAIN_PASS`: Password for musl toolchain authentication
+
+== Troubleshooting
+
+=== Build Failures
+
+If the early access build fails:
+
+1. Check the GitHub Actions logs for the failing job
+2. Look for errors in the build output
+3. Common issues:
+   - Compilation errors: Fix the code and push again
+   - Test failures: Fix the tests or investigate test flakiness
+   - Native image build failures: Check GraalVM compatibility
+
+=== Release Failures
+
+If JReleaser fails to create a release:
+
+1. Check the `jreleaser-release-output` artifact for detailed logs
+2. Common issues:
+   - Missing artifacts: Ensure all platform builds completed successfully
+   - GitHub API errors: Check `GH_PAT` secret is valid and has required permissions
+   - Configuration errors: Validate `jreleaser.yml` syntax
+
+=== Testing Locally
+
+To test the native build locally:
+
+[source,console]
+----
+# Build native image for your platform
+./mvnw clean package -Pnative
+
+# Test the native binary
+./cli/target/jfmt-0.1.0-SNAPSHOT --help
+----
+
+To test JReleaser configuration without releasing:
+
+[source,console]
+----
+# Dry-run to check configuration
+./mvnw -Prelease jreleaser:config
+
+# Assemble distributions without releasing
+./mvnw -Prelease jreleaser:assemble
+----
+
+== Future Enhancements
+
+Potential improvements to the release process:
+
+* Add package manager integrations (Homebrew, Chocolatey, Scoop, SDKMAN)
+* Set up Docker image releases
+* Add social media announcements (Mastodon, Bluesky)
+* Implement automated changelog generation
+* Add release notes templates
+
+== References
+
+* https://jreleaser.org/[JReleaser Documentation]
+* https://jreleaser.org/guide/latest/examples/maven/maven.html[JReleaser Maven Examples]
+* https://github.com/mthmulders/mcs[MCS Project] (reference implementation)
