@@ -8,23 +8,20 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
+  # Triggered after the Build workflow completes successfully
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
     branches: [ main ]
 
 jobs:
-  # Build native executable per runner
-  build:
-    uses: ./.github/workflows/build-native.yml
-    secrets: inherit
-
   # Collect all executables and release
   release:
-    needs: [ build ]
     runs-on: ubuntu-24.04
     permissions: write-all
-    if: github.event_name != 'pull_request'
+    # Only run if the Build workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out repository
@@ -39,14 +36,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Set Git ref to check out
-        id: head
-        run: echo "content=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v5.0.0
+      - name: Download native binary artifacts from Build workflow
+        uses: dawidd6/action-download-artifact@v9
         with:
+          run_id: ${{ github.event.workflow_run.id }}
           path: /tmp/artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Move build artifacts to correct folder
         shell: bash
