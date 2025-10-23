@@ -334,8 +334,8 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tgz</file>
-                  <type>tgz</type>
+                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tar.gz</file>
+                  <type>tar.gz</type>
                   <classifier>distribution</classifier>
                 </artifact>
               </artifacts>
