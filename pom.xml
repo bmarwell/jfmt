@@ -30,6 +30,7 @@
 
     <!-- build config, e.g. formatters -->
     <analysis.spotless.formatter.config>build/eclipse-formatter-config.xml</analysis.spotless.formatter.config>
+    <jreleaser.publish.skip>true</jreleaser.publish.skip>
   </properties>
 
   <dependencyManagement>
@@ -372,6 +373,7 @@
             <groupId>org.jreleaser</groupId>
             <artifactId>jreleaser-maven-plugin</artifactId>
             <configuration>
+              <skip>${jreleaser.publish.skip}</skip>
               <configFile>${maven.multiModuleProjectDirectory}/jreleaser.yml</configFile>
             </configuration>
           </plugin>

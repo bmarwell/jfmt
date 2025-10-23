@@ -21,6 +21,7 @@
     <executable-suffix />
 
     <completions.dir>./usr/share/bash-completion/completions</completions.dir>
+    <jreleaser.publish.skip>false</jreleaser.publish.skip>
   </properties>
 
   <dependencies>
@@ -237,7 +238,7 @@
                       <stereotype>DESKTOP</stereotype>
                       <formats>
                         <format>ZIP</format>
-                        <format>TGZ</format>
+                        <format>TAR_GZ</format>
                       </formats>
                       <options>
                         <longFileMode>POSIX</longFileMode>
@@ -312,7 +313,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tgz</file>
+                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tar.gz</file>
                   <type>tgz</type>
                   <classifier>distribution</classifier>
                 </artifact>

@@ -14,14 +14,8 @@ on:
     branches: [ main ]
 
 jobs:
-  # Build native executable per runner
-  build:
-    uses: ./.github/workflows/build-native.yml
-    secrets: inherit
-
   # Collect all executables and release
   release:
-    needs: [ build ]
     runs-on: ubuntu-24.04
     permissions: write-all
     if: github.event_name != 'pull_request'
@@ -37,7 +31,7 @@ jobs:
         run: echo "content=${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
       - name: Download all build artifacts
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v5
         with:
           path: /tmp/artifacts
 
@@ -60,7 +54,7 @@ jobs:
 
       - name: Release with JReleaser
         run: |
-          mvn \
+          ./mvnw \
             --batch-mode \
             -Prelease \
             -DartifactsDir=${GITHUB_WORKSPACE}/artifacts \

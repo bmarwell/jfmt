@@ -60,7 +60,12 @@ jobs:
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
         if: github.event_name != 'pull_request'
 
-  call-native:
+  build-native:
     uses: ./.github/workflows/build-native.yml
     secrets: inherit
     needs: build
+
+  early-access:
+    uses: ./.github/workflows/early-access.yml
+    secrets: inherit
+    needs: build-native
