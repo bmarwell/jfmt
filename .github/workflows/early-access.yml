@@ -8,10 +8,8 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # must be triggered by build.yml
+  workflow_call:
 
 jobs:
   # Collect all executables and release
