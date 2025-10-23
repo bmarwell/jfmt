@@ -396,6 +396,8 @@
          - Dry-run config: ./mvnw -Prelease jreleaser:config
          - Full release: ./mvnw -Prelease -DartifactsDir=artifacts jreleaser:full-release
          
+         Note: JReleaser goals should only run on the root module, not on submodules.
+         
          See RELEASING.adoc for detailed documentation.
     -->
     <profile>
@@ -405,6 +407,7 @@
           <plugin>
             <groupId>org.jreleaser</groupId>
             <artifactId>jreleaser-maven-plugin</artifactId>
+            <inherited>false</inherited>
             <configuration>
               <configFile>${maven.multiModuleProjectDirectory}/jreleaser.yml</configFile>
             </configuration>

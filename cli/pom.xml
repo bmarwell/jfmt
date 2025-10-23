@@ -394,6 +394,17 @@
                 <phase>package</phase>
                 <configuration combine.self="merge">
                   <skipAssembly>false</skipAssembly>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <!-- Use os.detected.classifier from os-detector-maven-plugin extension
+                       to create platform-specific distribution names like:
+                       - jfmt-0.1.0-SNAPSHOT-linux-x86_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-osx-x86_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-osx-aarch_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-windows-x86_64.zip
+                       
+                       This naming matches the expectations in jreleaser.yml distributions.
+                  -->
+                  <finalName>${project.artifactId}-${project.version}-${os.detected.classifier}</finalName>
                   <descriptors>
                     <descriptor>src/main/assembly/assembly-native.xml</descriptor>
                   </descriptors>

@@ -53,9 +53,14 @@ jobs:
         run: |
           mkdir -p artifacts
           
-          # debug
-          find /tmp/artifacts/ -name "jfmt*"
-          
+          # Move all jfmt distribution artifacts to the artifacts directory for JReleaser.
+          # The artifacts are already correctly named with platform classifiers by the
+          # maven-assembly-plugin using ${os.detected.classifier} from the os-detector extension:
+          # - jfmt-VERSION-linux-x86_64.{zip,tar.gz}
+          # - jfmt-VERSION-osx-x86_64.zip
+          # - jfmt-VERSION-osx-aarch_64.zip
+          # - jfmt-VERSION-windows-x86_64.zip
+          # These names match the expectations in jreleaser.yml distributions.
           find /tmp/artifacts/ -name "jfmt*" -exec mv -v {} artifacts/ \;
 
       - name: Cache Maven packages
