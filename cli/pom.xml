@@ -213,6 +213,11 @@
         </executions>
       </plugin>
 
+      <!-- JReleaser assemble plugin - creates JAR archive distribution.
+           Bundles JAR with dependencies, docs, and completion scripts.
+           Output: cli/target/jreleaser/assemble/jfmt/java-archive/
+           See RELEASING.adoc for details.
+      -->
       <plugin>
         <groupId>org.jreleaser</groupId>
         <artifactId>jreleaser-maven-plugin</artifactId>
@@ -237,7 +242,7 @@
                       <stereotype>DESKTOP</stereotype>
                       <formats>
                         <format>ZIP</format>
-                        <format>TGZ</format>
+                        <format>TAR_GZ</format>
                       </formats>
                       <options>
                         <longFileMode>POSIX</longFileMode>
@@ -312,8 +317,8 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tgz</file>
-                  <type>tgz</type>
+                  <file>${project.build.directory}/jreleaser/assemble/${project.artifactId}/java-archive/${project.artifactId}-${project.version}.tar.gz</file>
+                  <type>tar.gz</type>
                   <classifier>distribution</classifier>
                 </artifact>
               </artifacts>
@@ -372,6 +377,17 @@
                 <phase>package</phase>
                 <configuration combine.self="merge">
                   <skipAssembly>false</skipAssembly>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <!-- Use os.detected.classifier from os-detector-maven-plugin extension
+                       to create platform-specific distribution names like:
+                       - jfmt-0.1.0-SNAPSHOT-linux-x86_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-osx-x86_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-osx-aarch_64.zip
+                       - jfmt-0.1.0-SNAPSHOT-windows-x86_64.zip
+                       
+                       This naming matches the expectations in jreleaser.yml distributions.
+                  -->
+                  <finalName>${project.artifactId}-${project.version}-${os.detected.classifier}</finalName>
                   <descriptors>
                     <descriptor>src/main/assembly/assembly-native.xml</descriptor>
                   </descriptors>

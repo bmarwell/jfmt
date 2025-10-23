@@ -364,6 +364,12 @@
       </build>
     </profile>
 
+    <!-- JReleaser release automation profile.
+         Activated in CI workflows to create GitHub releases.
+         - jreleaser:assemble creates distribution archives (in cli/pom.xml)
+         - jreleaser:full-release uploads artifacts to GitHub
+         See RELEASING.adoc for detailed documentation.
+    -->
     <profile>
       <id>release</id>
       <build>
@@ -371,6 +377,7 @@
           <plugin>
             <groupId>org.jreleaser</groupId>
             <artifactId>jreleaser-maven-plugin</artifactId>
+            <inherited>false</inherited>
             <configuration>
               <configFile>${maven.multiModuleProjectDirectory}/jreleaser.yml</configFile>
             </configuration>

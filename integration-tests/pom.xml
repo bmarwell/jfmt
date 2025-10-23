@@ -23,7 +23,7 @@
       <artifactId>jfmt</artifactId>
       <version>${project.version}</version>
       <classifier>distribution</classifier>
-      <type>tgz</type>
+      <type>tar.gz</type>
     </dependency>
   </dependencies>
 
@@ -44,7 +44,7 @@
                   <groupId>io.github.bmarwell.jfmt</groupId>
                   <artifactId>jfmt</artifactId>
                   <classifier>distribution</classifier>
-                  <type>tgz</type>
+                  <type>tar.gz</type>
                   <version>${project.version}</version>
                 </artifactItem>
               </artifactItems>

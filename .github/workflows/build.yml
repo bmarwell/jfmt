@@ -39,6 +39,20 @@ jobs:
       - name: Build and test all
         run: ./mvnw --batch-mode --strict-checksum --errors spotless:check verify -Pci
 
+      - name: Build JAR archive for release
+        run: ./mvnw --batch-mode -Prelease package -DskipTests -pl cli -am
+        if: github.event_name != 'pull_request'
+
+      - name: Upload JAR archive artifact
+        uses: actions/upload-artifact@v4.6.2
+        if: github.event_name != 'pull_request'
+        with:
+          name: jfmt-jar-archive
+          path: |
+            cli/target/jreleaser/assemble/jfmt/java-archive/*.zip
+            cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.gz
+          retention-days: 1
+
       - name: Upload coverage reports to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5

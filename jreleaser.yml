@@ -40,7 +40,8 @@ distributions:
     stereotype: CLI
     type: JAVA_BINARY
     artifacts:
-      - path: ./cli/target/jreleaser/assemble/jfmt/java-archive/jfmt-{{projectVersion}}.jar
+      - path: ./{{artifactsDir}}/jfmt-{{projectVersion}}.zip
+      - path: ./{{artifactsDir}}/jfmt-{{projectVersion}}.tar.gz
   jfmt:
     stereotype: CLI
     type: BINARY
@@ -55,6 +56,8 @@ distributions:
           graalVMNativeImage: true
       - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-windows-x86_64.zip
         platform: windows-x86_64
+        extraProperties:
+          graalVMNativeImage: true
       - path: ./{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-x86_64.zip
         platform: osx-x86_64
         extraProperties:

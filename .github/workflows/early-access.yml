@@ -8,23 +8,20 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
+  # Triggered after the Build workflow completes successfully
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
     branches: [ main ]
 
 jobs:
-  # Build native executable per runner
-  build:
-    uses: ./.github/workflows/build-native.yml
-    secrets: inherit
-
   # Collect all executables and release
   release:
-    needs: [ build ]
     runs-on: ubuntu-24.04
     permissions: write-all
-    if: github.event_name != 'pull_request'
+    # Only run if the Build workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out repository
@@ -32,23 +29,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set Git ref to check out
-        id: head
-        run: echo "content=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v5.0.0
+      - name: Set up JDK
+        uses: actions/setup-java@v5.0.0
         with:
+          java-version: 25
+          distribution: 'temurin'
+          cache: maven
+
+      # Using third-party action because actions/download-artifact@v5 cannot download from different workflow runs (workflow_run context).
+      - name: Download native binary artifacts from Build workflow
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
           path: /tmp/artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Move build artifacts to correct folder
         shell: bash
         run: |
           mkdir -p artifacts
           
-          # debug
-          find /tmp/artifacts/ -name "jfmt*"
-          
+          # Move jfmt distribution artifacts to artifacts/ directory for JReleaser. Names use platform classifiers from os-detector-maven-plugin.
           find /tmp/artifacts/ -name "jfmt*" -exec mv -v {} artifacts/ \;
 
       - name: Cache Maven packages
@@ -59,11 +60,12 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Release with JReleaser
+        shell: bash
         run: |
           mvn \
             --batch-mode \
             -Prelease \
-            -DartifactsDir=${GITHUB_WORKSPACE}/artifacts \
+            -DartifactsDir="${GITHUB_WORKSPACE}/artifacts" \
             jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
