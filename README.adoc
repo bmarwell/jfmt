@@ -54,6 +54,7 @@ jfmt diff --all .
 | Action | Who | Purpose
 | `jfmt write` | Developer | Format files locally before committing
 | `jfmt diff`  | CI pipeline | Verify formatting consistency
+| `jfmt print` | Tooling | Print the correctly formatted output for the given file
 | `jfmt list`  | Developer or CI | List unformatted files
 |===
 
@@ -89,6 +90,125 @@ jfmt diff --all .
     1. all static imports first, followed by
     2. all other imports.
 
+== Synopsis
+
+[source]
+----
+Usage: jfmt [-hlV] [COMMAND]
+A command-line tool to format Java source code using JDT.
+  -h, --help      Show this help message and exit.
+  -l, --list      Just report the name of the files which are not indented correctly.
+  -V, --version   Print version information and exit.
+Commands:
+  list        Just list files which are not formatted correctly without printing a diff or writing changes.
+  write, fix  Write the formatted source code back to the file(s).
+              If not given, the non-indented file(s) will be printed to stdout.
+              Only the first file is printed, unless -a is also given.
+  print       Print the correctly formatted output for the given file(s).
+              Stops on the first file unless -a (--all) is given.
+              In this case, the file name is printed before each output.
+  diff        Output in diff format. Normal diff is used unless -u is also given.
+----
+
+=== `list` command
+
+[source]
+----
+Usage: jfmt list [-ahV] [--no-color] [--config=<config>]
+                 [--config-file=<configFile>] [--import-order=<importOrder>]
+                 [--import-order-file=<importOrderFile>] <filesOrDirectories>...
+Just list files which are not formatted correctly without printing a diff or
+writing changes.
+      <filesOrDirectories>...
+                          Files or directory to scan and to format.
+  -a, --all               Report all errors, not just the first one.
+      --config=<config>   Named config. Default: builtin.
+                          Available configs: builtin, equalsverifier
+      --config-file=<configFile>
+                          Path to a config file. If unset (default), the named
+                            config (--config) will be used.
+  -h, --help              Show this help message and exit.
+      --import-order=<importOrder>
+                          Named import order. Default: defaultorder. Available:
+                            defaultorder, equalsverifier, google, eclipse,
+                            intellij, enterprise
+      --import-order-file=<importOrderFile>
+                          Path to an import-order properties file. If set,
+                            overrides --import-order.
+      --no-color, --no-colour
+                          Force no colored output, even if the terminal
+                            supports it.
+  -V, --version           Print version information and exit.
+----
+
+=== `write`/`fix` command
+
+[source]
+----
+Usage: jfmt write [-ahV] [--no-color] [--config=<config>]
+                  [--config-file=<configFile>] [--import-order=<importOrder>]
+                  [--import-order-file=<importOrderFile>]
+                  <filesOrDirectories>...
+Write the formatted source code back to the file(s).
+If not given, the non-indented file(s) will be printed to stdout.
+Only the first file is printed, unless -e is also given.
+      <filesOrDirectories>...
+                          Files or directory to scan and to format.
+  -a, --all               Report all errors, not just the first one.
+      --config=<config>   Named config. Default: builtin.
+                          Available configs: builtin, equalsverifier
+      --config-file=<configFile>
+                          Path to a config file. If unset (default), the named
+                            config (--config) will be used.
+  -h, --help              Show this help message and exit.
+      --import-order=<importOrder>
+                          Named import order. Default: defaultorder. Available:
+                            defaultorder, equalsverifier, google, eclipse,
+                            intellij, enterprise
+      --import-order-file=<importOrderFile>
+                          Path to an import-order properties file. If set,
+                            overrides --import-order.
+      --no-color, --no-colour
+                          Force no colored output, even if the terminal
+                            supports it.
+  -V, --version           Print version information and exit.
+----
+
+=== `diff` command
+
+[source]
+----
+Usage: jfmt diff [-ahuV] [--no-color] [--config=<config>]
+                 [--config-file=<configFile>] [--context=<context>]
+                 [--import-order=<importOrder>]
+                 [--import-order-file=<importOrderFile>] <filesOrDirectories>...
+Output in diff format. Normal diff is used unless -u is also given.
+      <filesOrDirectories>...
+                            Files or directory to scan and to format.
+  -a, --all                 Report all errors, not just the first one.
+      --config=<config>     Named config. Default: builtin.
+                            Available configs: builtin, equalsverifier
+      --config-file=<configFile>
+                            Path to a config file. If unset (default), the
+                              named config (--config) will be used.
+      --context=<context>   Number of context lines when in unified diff mode
+                              (-u). Defaults to 3.
+  -h, --help                Show this help message and exit.
+      --import-order=<importOrder>
+                            Named import order. Default: defaultorder.
+                              Available: defaultorder, equalsverifier, google,
+                              eclipse, intellij, enterprise
+      --import-order-file=<importOrderFile>
+                            Path to an import-order properties file. If set,
+                              overrides --import-order.
+      --no-color, --no-colour
+                            Force no colored output, even if the terminal
+                              supports it.
+  -u, --unified             Output diff in unified format.
+                            Deactivated by default.
+  -V, --version             Print version information and exit.
+----
+
 == Implementation
 
 * 💻 Uses PicoCLI for command line parsing
@@ -98,22 +218,6 @@ jfmt diff --all .
 * 🧩 Sorts import statements according to a default two-group scheme +
 (`+0=#+`, `+1=+` in Eclipse JDT syntax) — static imports first, then all others.
 
-=== Implementation status
-
-The following commands are implemented:
-
-write/fix::
-    Rewrite the given files in place, if they are not formatted correctly.
-
-list::
-    List all files that are not formatted correctly.
-
-print::
-    Print the formatted version of the given files to stdout.
-
-diff::
-    Print a (unified) diff of the given files to stdout.
-
 === Roadmap
 
 Features:
@@ -121,7 +225,7 @@ Features:
 * [x] basic commands implemented
 * [x] basic tests implemented
 * [x] CI/CD implemented
-* [ ] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
+* [X] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
 * [ ] Refinement of default formatting rules
 
 Distribution:
