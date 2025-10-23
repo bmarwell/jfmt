@@ -298,9 +298,13 @@ If you do not have musl and `libz.a` installed, you can use the profile `'-Pnati
 
 == Further reading
 
-* https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-java/[Why are there no decent code formatters for Java?] – by Jan Ouwens.
+* https://jqno.nl/post/2024/08/24/why-are-there-no-decent-code-formatters-for-Java/[Why are there no decent code formatters for Java?] – by Jan Ouwens.
 * link:++https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fformatter%2FDefaultCodeFormatterConstants.html++[Class DefaultCodeFormatterConstants] – the reference for the JDT code formatter config.
 * https://github.com/diffplug/spotless/tree/main/plugin-maven#eclipse-jdt[Spotless Maven Plugin JDT setup] – the reference.
+
+== Releasing
+
+See link:RELEASING.adoc[RELEASING.adoc] for step-by-step instructions for Early Access builds and full releases with JReleaser.
 
 == FAQ
 

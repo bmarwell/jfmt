@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+= Releasing jfmt
+
+This document explains how maintainers can publish Early Access builds and perform full releases using JReleaser.
+
+== Overview
+
+jfmt uses:
+
+- GitHub Actions for CI and packaging native binaries
+- JReleaser for assembling and publishing release artifacts
+- A repository-wide configuration file: `jreleaser.yml`
+
+There are two paths:
+
+- Early Access (pre-release) builds on pushes to `main`
+- Full releases (to be refined in a dedicated follow-up issue)
+
+== Early Access (pre-release)
+
+The workflow `Publish Early Access builds` combines two jobs:
+
+. Build native binaries per target platform via the reusable workflow `./.github/workflows/build-native.yml`.
+. Collect those artifacts and publish a pre-release with `jreleaser:full-release`.
+
+Secrets:
+
+- The build job inherits repository secrets (`secrets: inherit`) so it can access the MUSL toolchain credentials.
+- The release job uses `JRELEASER_GITHUB_TOKEN` set from the `GH_PAT` secret for publishing the pre-release.
+
+Manual verification (optional):
+
+[source,shell]
+----
+# Show the effective JReleaser config (no network/publish)
+./mvnw -Prelease jreleaser:config
+
+# Dry-run a full release locally (no publish)
+./mvnw -Prelease jreleaser:full-release -Ddryrun
+----
+
+== Full release (follow-up)
+
+An additional workflow (based on `mcs/.github/workflows/release.yml`) can be added in a separate issue to cut full releases.
+It will likely:
+
+- Build artifacts (or reuse those from early-access)
+- Run `jreleaser:full-release` with appropriate configuration
+- Tag and publish a non-prerelease on GitHub
+
+== Where things live
+
+- JReleaser config: `jreleaser.yml`
+- Root POM release profile: `-Prelease` with `jreleaser-maven-plugin`
+- Reusable native build workflow: `./.github/workflows/build-native.yml`
+- Early Access workflow: `./.github/workflows/early-access.yml`
+
+== Notes
+
+- The Java archive (JAR) distribution is taken directly from `cli/target/jfmt-${project.version}.jar`.
+- Native binary archives are collected from the `artifacts` directory prepared by the early-access workflow.
+- Formatting: run `./mvnw spotless:apply` before committing changes to POMs or XML files.

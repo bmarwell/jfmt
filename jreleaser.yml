@@ -40,7 +40,9 @@ distributions:
     stereotype: CLI
     type: JAVA_BINARY
     artifacts:
-      - path: ./cli/target/jreleaser/assemble/jfmt/java-archive/jfmt-{{projectVersion}}.jar
+      # Ship the plain runnable JAR from the CLI module
+      # This JAR is produced by Maven during the regular build (no JReleaser assemble step required)
+      - path: ./cli/target/jfmt-{{projectVersion}}.jar
   jfmt:
     stereotype: CLI
     type: BINARY

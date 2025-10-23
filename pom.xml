@@ -371,6 +371,19 @@
           <plugin>
             <groupId>org.jreleaser</groupId>
             <artifactId>jreleaser-maven-plugin</artifactId>
+            <!--
+              Running a full release:
+              Use `-Prelease jreleaser:full-release` to perform a release via GitHub Actions or locally.
+              This profile points JReleaser to the repository-wide `jreleaser.yml`.
+
+              In CI, the early-access workflow builds native binaries first
+              (via `.github/workflows/build-native.yml`) and then runs
+              `jreleaser:full-release` with `-DartifactsDir=...` to publish them.
+
+              Locally you can test the configuration with:
+              `./mvnw -Prelease jreleaser:config` (dry run) or
+              `./mvnw -Prelease jreleaser:full-release -Ddryrun`.
+            -->
             <configuration>
               <configFile>${maven.multiModuleProjectDirectory}/jreleaser.yml</configFile>
             </configuration>
