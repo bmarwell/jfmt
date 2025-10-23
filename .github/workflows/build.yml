@@ -40,7 +40,15 @@ jobs:
         run: ./mvnw --batch-mode --strict-checksum --errors spotless:check verify -Pci
 
       - name: Upload coverage reports to Codecov
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          use_oidc: true
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           fail_ci_if_error: true
           use_oidc: true
