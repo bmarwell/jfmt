@@ -103,7 +103,7 @@ Commands:
   list        Just list files which are not formatted correctly without printing a diff or writing changes.
   write, fix  Write the formatted source code back to the file(s).
               If not given, the non-indented file(s) will be printed to stdout.
-              Only the first file is printed, unless -e is also given.
+              Only the first file is printed, unless -a is also given.
   print       Print the correctly formatted output for the given file(s).
               Stops on the first file unless -a (--all) is given.
               In this case, the file name is printed before each output.
