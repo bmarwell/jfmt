@@ -36,11 +36,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Download artifacts from the completed Build workflow.
-      # Using dawidd6/action-download-artifact because the official actions/download-artifact@v5
-      # does not support downloading artifacts from a different workflow run (workflow_run context).
-      # This third-party action provides the necessary functionality to download artifacts
-      # from the completed Build workflow using the run_id.
+      # Using third-party action because actions/download-artifact@v5 cannot download from different workflow runs (workflow_run context).
       - name: Download native binary artifacts from Build workflow
         uses: dawidd6/action-download-artifact@v9
         with:
