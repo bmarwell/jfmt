@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
-import java.util.stream.Stream;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.ToolFactory;
@@ -57,7 +56,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
         this.writer = new OutputWriter(
             ansiMode,
-            getFormatterMode().verbose(),
+            globalOptions.verbose,
             spec.commandLine().getOut(),
             spec.commandLine().getErr()
         );
@@ -67,10 +66,8 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        final Stream<Path> allFilesAndDirs = PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories));
-
         try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
-            allFilesAndDirs
+            PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
                 .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
                 .forEach(scope::fork);
 
@@ -106,11 +103,19 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
                 .map(StructuredTaskScope.Subtask::get)
                 .anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
+        } catch (IllegalArgumentException iae) {
+            spec.commandLine().getErr().println(iae.getMessage());
+            if (globalOptions.verbose) {
+                iae.printStackTrace(spec.commandLine().getErr());
+            }
+            return 3;
         }
     }
 
     FileProcessingResult processFile(Path javaFile) {
-        getWriter().info("Processing file", javaFile.toString());
+        if (globalOptions.verbose) {
+            getWriter().info("Processing file", javaFile.toString());
+        }
 
         try {
             final var javaSourceBytes = Files.readAllBytes(javaFile);

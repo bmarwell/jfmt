@@ -9,7 +9,8 @@ public class GlobalOptions {
 
     @CommandLine.Parameters(
         description = """
-                      Files or directory to scan and to format.""",
+                      Files or directory to (recursively) scan and to format.
+                      `-` means 'read from stdin'.""",
         arity = "1..*"
     )
     Path[] filesOrDirectories;
@@ -55,4 +56,9 @@ public class GlobalOptions {
         description = "Path to an import-order properties file. If set, overrides --import-order."
     )
     public Path importOrderFile;
+
+    @CommandLine.Option(
+        names = { "-v", "--verbose" }
+    )
+    public boolean verbose;
 }

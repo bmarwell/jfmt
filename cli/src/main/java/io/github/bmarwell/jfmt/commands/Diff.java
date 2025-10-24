@@ -12,30 +12,12 @@ import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
 
-@CommandLine.Command(
-    name = "diff",
-    description = """
-                  Output in diff format. Normal diff is used unless -u is also given.""",
-    mixinStandardHelpOptions = true
-)
 public class Diff extends AbstractCommand {
 
-    @CommandLine.Option(
-        names = { "-u", "--unified" },
-        description = """
-                      Output diff in unified format.
-                      Deactivated by default.""",
-        defaultValue = "false"
+    @CommandLine.Mixin(
+        name = "diff options"
     )
-    private boolean unified;
-
-    @CommandLine.Option(
-        names = { "--context" },
-        description = """
-                      Number of context lines when in unified diff mode (-u). Defaults to ${DEFAULT-VALUE}.""",
-        defaultValue = "3"
-    )
-    private int context;
+    DiffOptions diffOptions = new DiffOptions();
 
     @Override
     FormatterMode getFormatterMode() {
@@ -51,7 +33,7 @@ public class Diff extends AbstractCommand {
         List<String> revisedSourceLines,
         Patch<String> patch
     ) {
-        if (unified) {
+        if (diffOptions.unified) {
             return unifiedDiff(javaFile, originalSourceLines, patch);
         }
 
@@ -99,7 +81,7 @@ public class Diff extends AbstractCommand {
             javaFile + ".new",
             originalSourceLines,
             patch,
-            this.context
+            this.diffOptions.context
         );
 
         return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll, theDiff);

@@ -29,7 +29,7 @@ public class List extends AbstractCommand {
         Patch<String> patch
     ) {
         if (!patch.getDeltas().isEmpty()) {
-            getWriter().warn("Not formatted correctly", javaFile.toString());
+            getWriter().warn("", javaFile.toString());
 
             return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
         }

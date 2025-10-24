@@ -9,7 +9,7 @@ class DiffNormalTest extends AbstractCommandTest {
 
     @Test
     void can_output_unified_diff() {
-        var args = new String[] { "diff", pathToSomeRecord() };
+        var args = new String[] { "--diff", pathToSomeRecord() };
 
         // when
         var executionResult = doExecute(args);

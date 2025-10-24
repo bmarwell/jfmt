@@ -9,7 +9,7 @@ class DiffUnifiedTest extends AbstractCommandTest {
 
     @Test
     void can_output_unified_diff() {
-        var args = new String[] { "diff", "-u", pathToSomeRecord() };
+        var args = new String[] { "--diff", "-u", pathToSomeRecord() };
 
         // when
         var executionResult = doExecute(args);
