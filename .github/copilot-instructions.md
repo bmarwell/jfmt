@@ -1,5 +1,9 @@
 # jfmt Code Style Guide
 
+This file contains instructions for GitHub Copilot and AI assistants working on the jfmt codebase.
+
+For human developers, see link:../CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+
 ## General Principles
 
 ### No `else` Keyword
@@ -30,3 +34,18 @@
 - Add comments explaining non-obvious design decisions
 - Document why a particular approach was chosen over alternatives
 - Use JavaDoc for public APIs
+
+## Build Commands for AI Assistants
+
+When making code changes, use these commands:
+
+```bash
+# Apply code style (always run before compiling or committing)
+./mvnw spotless:apply
+
+# Run CLI module tests (fast, no integration tests)
+./mvnw -am -pl cli test
+
+# Run jfmt locally after building
+./cli/target/jreleaser/assemble/jfmt/java-archive/work/jfmt-*/bin/jfmt --help
+```

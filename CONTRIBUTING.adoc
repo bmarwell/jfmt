@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+= Contributing to jfmt
+:toc: macro
+
+Thank you for your interest in contributing to jfmt!
+This guide will help you understand our coding standards and development workflow.
+
+toc::[]
+
+== Code Style Guidelines
+
+=== No `else` Keyword
+
+**Never use the `else` keyword** in this codebase.
+Use guard statements (early returns) instead.
+Extract methods if needed to avoid `else` blocks.
+
+This applies to all code: production code, tests, and utilities.
+
+.Bad Example
+[source,java]
+----
+if (condition) {
+    doSomething();
+} else {
+    doSomethingElse();
+}
+----
+
+.Good Example
+[source,java]
+----
+if (condition) {
+    doSomething();
+    return;
+}
+
+doSomethingElse();
+----
+
+=== Code Organization
+
+* Keep methods short and focused (easily comprehensible by human brain)
+* Follow the "given-when-then" pattern in tests:
+** `// given` - setup test data
+** `// when` - execute the code under test
+** `// then` - verify the results
+
+=== DRY Principle
+
+* Do not repeat yourself - extract common code to utility classes or methods
+* Consider creating JUnit extensions for common test patterns
+* Comment about future improvements where appropriate
+
+=== Test Code Quality
+
+* Remove all debug output (`System.out.println`, etc.) from tests
+* Keep test methods concise and readable
+* Use meaningful variable names
+* Extract helper methods for complex operations
+
+=== Comments
+
+* Add comments explaining non-obvious design decisions
+* Document why a particular approach was chosen over alternatives
+* Use JavaDoc for public APIs
+
+== Development Workflow
+
+=== Building and Testing
+
+Apply code style before compiling or committing:
+
+[source,console]
+----
+./mvnw spotless:apply
+----
+
+Run tests in the CLI module (without integration tests):
+
+[source,console]
+----
+./mvnw -am -pl cli test
+----
+
+Run the full verification including integration tests:
+
+[source,console]
+----
+./mvnw verify
+----
+
+=== Running jfmt Locally
+
+After building with at least the package phase, you can run jfmt directly:
+
+[source,console]
+----
+./cli/target/jreleaser/assemble/jfmt/java-archive/work/jfmt-*/bin/jfmt --help
+----
+
+This makes it easier to test subcommands and arguments when there are no tests available.
+
+=== Example Workflow
+
+. Make your changes
+. Apply code style: `./mvnw spotless:apply`
+. Run tests: `./mvnw -am -pl cli test`
+. Test manually if needed using the assembled jfmt binary
+. Commit your changes
+
+== Pull Request Guidelines
+
+* Ensure all tests pass
+* Follow the code style guidelines
+* Add tests for new features
+* Update documentation as needed
+* Keep commits focused and well-described
+
+== Questions?
+
+If you have questions about contributing, feel free to:
+
+* Open a discussion on GitHub
+* Ask in an existing issue
+* Reach out to the maintainers
+
+Thank you for contributing to jfmt!

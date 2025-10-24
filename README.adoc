@@ -317,6 +317,8 @@ But I encourage everyone to use the default configuration – and let's discuss 
 
 == Contributing & Releasing
 
+For contribution guidelines, code style standards, and development workflow, see link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+
 For information about the release process, including early access builds and official releases, see link:RELEASING.adoc[RELEASING.adoc].
 
 [#contributors]

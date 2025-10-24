@@ -31,12 +31,16 @@ public class Print extends AbstractCommand {
         List<String> revisedSourceLines,
         Patch<String> patch
     ) {
-        getWriter().output(revisedSourceCode);
-
         if (patch.getDeltas().isEmpty()) {
-            return new FileProcessingResult(javaFile, false, false, true);
+            return new FileProcessingResult(javaFile, false, false, true, List.of(revisedSourceCode));
         }
 
-        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
+        return new FileProcessingResult(
+            javaFile,
+            true,
+            false,
+            this.globalOptions.reportAll,
+            List.of(revisedSourceCode)
+        );
     }
 }
