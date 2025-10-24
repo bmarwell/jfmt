@@ -4,6 +4,7 @@ import static java.nio.file.Files.isRegularFile;
 
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.Patch;
+import io.github.bmarwell.jfmt.concurrency.FailFastFileProcessingResultJoiner;
 import io.github.bmarwell.jfmt.config.ConfigLoader;
 import io.github.bmarwell.jfmt.config.NamedConfig;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
@@ -22,12 +23,11 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.StructuredTaskScope;
 import java.util.stream.Stream;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
@@ -68,31 +68,54 @@ public abstract class AbstractCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         final Stream<Path> allFilesAndDirs = PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories));
-        final CodeFormatter formatter = createCodeFormatter();
-        final ArrayList<FileProcessingResult> results = new ArrayList<>();
 
-        Iterator<Path> iterator = allFilesAndDirs.iterator();
-        while (iterator.hasNext()) {
-            Path javaFile = iterator.next();
-            final FileProcessingResult processingResult = processFile(formatter, javaFile);
+        try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
+            allFilesAndDirs
+                .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
+                .forEach(scope::fork);
 
-            results.add(processingResult);
+            final List<StructuredTaskScope.Subtask<FileProcessingResult>> joins = scope.join().toList();
 
-            // short-circuit if not -e was given
-            if (!processingResult.shouldContinue() && iterator.hasNext()) {
+            // Report any failed subtasks
+            joins.stream()
+                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
+                .forEach(subtask -> {
+                    Throwable exception = subtask.exception();
+                    String message = exception.getMessage() != null
+                        ? exception.getMessage()
+                        : exception.getClass().getSimpleName();
+                    getWriter().warn("Error processing file", message);
+                });
+
+            // Print output sequentially after all parallel processing is complete
+            joins.stream()
+                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
+                .map(StructuredTaskScope.Subtask::get)
+                .forEach(result -> result.outputLines().forEach(getWriter()::output));
+
+            // Check if we have any failures
+            boolean hasFailures = joins.stream()
+                .anyMatch(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED);
+
+            // Return error code if there were failures
+            if (hasFailures) {
                 return 1;
             }
-        }
 
-        return results.stream().anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
+            return joins.stream()
+                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
+                .map(StructuredTaskScope.Subtask::get)
+                .anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
+        }
     }
 
-    FileProcessingResult processFile(CodeFormatter formatter, Path javaFile) {
+    FileProcessingResult processFile(Path javaFile) {
         getWriter().info("Processing file", javaFile.toString());
 
         try {
             final var javaSourceBytes = Files.readAllBytes(javaFile);
             final var sourceCode = getEncodedSourceCode(javaSourceBytes);
+            final var formatter = createCodeFormatter();
             final var revisedSourceCode = createRevisedSourceCode(formatter, javaFile, sourceCode);
 
             final List<String> originalSourceLines = List.of(sourceCode.split("\n"));
@@ -108,10 +131,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 patch
             );
         } catch (IOException ioException) {
-            throw new UncheckedIOException(ioException);
+            throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
             getWriter().warn("Error formatting file", javaFile.toString());
-            throw new IllegalStateException(ble);
+            throw new IllegalStateException("Failed to format file: " + javaFile, ble);
         }
     }
 
