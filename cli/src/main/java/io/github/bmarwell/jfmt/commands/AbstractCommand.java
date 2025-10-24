@@ -81,7 +81,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
                 .forEach(subtask -> {
                     Throwable exception = subtask.exception();
-                    getWriter().warn("Error processing file", exception.getMessage());
+                    String message = exception.getMessage() != null
+                        ? exception.getMessage()
+                        : exception.getClass().getSimpleName();
+                    getWriter().warn("Error processing file", message);
                 });
 
             // Print output sequentially after all parallel processing is complete
@@ -128,10 +131,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 patch
             );
         } catch (IOException ioException) {
-            throw new UncheckedIOException(ioException);
+            throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
             getWriter().warn("Error formatting file", javaFile.toString());
-            throw new IllegalStateException(ble);
+            throw new IllegalStateException("Failed to format file: " + javaFile, ble);
         }
     }
 

@@ -93,6 +93,7 @@ public class Diff extends AbstractCommand {
             return new FileProcessingResult(javaFile, false, false, true);
         }
 
+        // UnifiedDiffUtils.generateUnifiedDiff returns List<String> where each element is one line
         final List<String> theDiff = UnifiedDiffUtils.generateUnifiedDiff(
             javaFile.toString(),
             javaFile + ".new",
