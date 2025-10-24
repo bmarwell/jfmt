@@ -65,7 +65,7 @@ jobs:
           ./mvnw \
             --batch-mode \
             -Prelease \
-            -DartifactsDir="${GITHUB_WORKSPACE}/artifacts" \
+            -DartifactsDir=artifacts \
             jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
