@@ -62,7 +62,7 @@ jobs:
       - name: Release with JReleaser
         shell: bash
         run: |
-          mvn \
+          ./mvnw \
             --batch-mode \
             -Prelease \
             -DartifactsDir="${GITHUB_WORKSPACE}/artifacts" \
