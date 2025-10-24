@@ -7,6 +7,7 @@ import com.github.difflib.patch.Patch;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -62,7 +63,8 @@ public class Diff extends AbstractCommand {
             return new FileProcessingResult(javaFile, false, false, true);
         }
 
-        getWriter().output(javaFile.toString());
+        final ArrayList<String> output = new java.util.ArrayList<>();
+        output.add(javaFile.toString());
 
         // print normal diff
         for (AbstractDelta<String> delta : patch.getDeltas()) {
@@ -70,20 +72,20 @@ public class Diff extends AbstractCommand {
                 continue;
             }
 
-            getWriter().output(delta.getSource().getPosition() + "c" + delta.getTarget().getPosition());
+            output.add(delta.getSource().getPosition() + "c" + delta.getTarget().getPosition());
 
             for (String line : delta.getSource().getLines()) {
-                getWriter().output("< " + line);
+                output.add("< " + line);
             }
 
-            getWriter().output("---");
+            output.add("---");
 
             for (String line : delta.getTarget().getLines()) {
-                getWriter().output("> " + line);
+                output.add("> " + line);
             }
         }
 
-        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
+        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll, output);
     }
 
     private FileProcessingResult unifiedDiff(Path javaFile, List<String> originalSourceLines, Patch<String> patch) {
@@ -99,8 +101,6 @@ public class Diff extends AbstractCommand {
             this.context
         );
 
-        getWriter().output(theDiff);
-
-        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
+        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll, theDiff);
     }
 }
