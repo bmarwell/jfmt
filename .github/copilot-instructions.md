@@ -2,7 +2,7 @@
 
 This file contains instructions for GitHub Copilot and AI assistants working on the jfmt codebase.
 
-For human developers, see link:../CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+For human developers, see [CONTRIBUTING.adoc](../CONTRIBUTING.adoc).
 
 ## General Principles
 
