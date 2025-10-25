@@ -16,10 +16,13 @@ public class GlobalOptions {
 
     @CommandLine.Option(
         names = { "-a", "--all" },
+        negatable = true,
         description = """
-                      Report all errors, not just the first one."""
+                      Process all files. This is the default.
+                      Use --no-all to stop after the first file with differences.""",
+        defaultValue = "true"
     )
-    boolean reportAll;
+    boolean reportAll = true;
 
     @CommandLine.Option(
         names = { "--config" },

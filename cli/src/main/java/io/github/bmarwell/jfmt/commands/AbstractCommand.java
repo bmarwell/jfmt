@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
-import java.util.stream.Stream;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.ToolFactory;
@@ -63,16 +62,30 @@ public abstract class AbstractCommand implements Callable<Integer> {
         );
     }
 
+    /**
+     * Check if input should come from stdin instead of files.
+     * This is for future implementation when stdin support is added.
+     * When reading from stdin, the behavior should default to print mode.
+     *
+     * @return true if stdin should be used (not yet implemented)
+     */
+    protected boolean isStdinInput() {
+        // TODO: Future implementation - detect if stdin has data
+        // Could check: System.console() == null or filesOrDirectories is empty/special marker
+        return false;
+    }
+
     abstract FormatterMode getFormatterMode();
 
     @Override
     public Integer call() throws Exception {
-        final Stream<Path> allFilesAndDirs = PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories));
+        final List<Callable<FileProcessingResult>> allFilesAndDirs =
+            PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
+                .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
+                .toList();
 
         try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
-            allFilesAndDirs
-                .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
-                .forEach(scope::fork);
+            allFilesAndDirs.forEach(scope::fork);
 
             final List<StructuredTaskScope.Subtask<FileProcessingResult>> joins = scope.join().toList();
 
