@@ -59,7 +59,12 @@ public class JFmt implements Callable<Integer> {
             // assume they meant 'write' as the default command
             // Note: This means "jfmt --help" won't show <filesOrDirectories> parameters,
             // since those belong to the Write subcommand, not the parent JFmt command.
-            // The footer in @Command helps users discover this.
+            // Trade-off: We use the footer in @Command to help users discover that 'write' is the default subcommand,
+            // because picocli does not natively support showing subcommand parameters in the parent help output.
+            // This is a UX limitation: users may not immediately see which parameters are accepted by default.
+
+            // TODO: If picocli adds support for showing default subcommand parameters in the parent help,
+            // or if we can find a workaround, update the help output to make this clearer.
             //
             // TODO: Future enhancement - when stdin support is added:
             // - If input comes from stdin (no files specified), default to 'print' instead of 'write'
@@ -71,7 +76,7 @@ public class JFmt implements Callable<Integer> {
                 newArgs[0] = "write";
                 System.arraycopy(originalArgs, 0, newArgs, 1, originalArgs.length);
 
-                // Re-parse and execute with 'write' command
+                // Reparse and execute with 'write' command
                 return parseResult.commandSpec().commandLine().execute(newArgs);
             }
 
