@@ -55,13 +55,7 @@ public class JFmt implements Callable<Integer> {
     private static class WriteDefaultExecutionStrategy implements CommandLine.IExecutionStrategy {
         @Override
         public int execute(CommandLine.ParseResult parseResult) throws CommandLine.ExecutionException {
-            // If no subcommand was specified but there are unmatched arguments,
-            // assume they meant 'write' as the default command
-            // Note: This means "jfmt --help" won't show <filesOrDirectories> parameters,
-            // since those belong to the Write subcommand, not the parent JFmt command.
-            // Trade-off: We use the footer in @Command to help users discover that 'write' is the default subcommand,
-            // because picocli does not natively support showing subcommand parameters in the parent help output.
-            // This is a UX limitation: users may not immediately see which parameters are accepted by default.
+            // Note: Parent help won't show filesOrDirectories parameters since they belong to the Write subcommand. The footer guides users to the default command.
 
             // TODO: If picocli adds support for showing default subcommand parameters in the parent help,
             // or if we can find a workaround, update the help output to make this clearer.
