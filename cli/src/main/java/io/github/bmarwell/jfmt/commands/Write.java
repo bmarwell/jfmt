@@ -17,8 +17,8 @@ import picocli.CommandLine;
     aliases = { "fix" },
     description = """
                   Write the formatted source code back to the file(s).
-                  If not given, the non-indented file(s) will be printed to stdout.
-                  Only the first file is printed, unless -a (all) is also given.""",
+                  All files are processed by default.
+                  This is the default operation if no sub-command is given.""",
     mixinStandardHelpOptions = true
 )
 public class Write extends AbstractCommand {

@@ -5,6 +5,7 @@ import io.github.bmarwell.jfmt.commands.Diff;
 import io.github.bmarwell.jfmt.commands.List;
 import io.github.bmarwell.jfmt.commands.Print;
 import io.github.bmarwell.jfmt.commands.Write;
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.jansi.graalvm.AnsiConsole;
 
@@ -13,6 +14,11 @@ import picocli.jansi.graalvm.AnsiConsole;
     mixinStandardHelpOptions = true,
     versionProvider = VersionProvider.class,
     description = "A command-line tool to format Java source code using JDT.",
+    footer = {
+        "",
+        "If no subcommand is specified, 'write' is used as the default.",
+        "Run 'jfmt write --help' to see all available options and parameters."
+    },
     usageHelpAutoWidth = true,
     subcommands = {
         List.class,
@@ -21,58 +27,65 @@ import picocli.jansi.graalvm.AnsiConsole;
         Diff.class,
     }
 )
-public class JFmt {
+public class JFmt implements Callable<Integer> {
 
-    @CommandLine.Option(
-        names = { "-l", "--list" },
-        description = """
-                      Just report the name of the files which are not indented correctly."""
-    )
-    private boolean listOnly;
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
 
     public static void main(String[] args) {
         int exitCode;
 
         try (AnsiConsole ansi = AnsiConsole.windowsInstall()) {
-            final JFmt jdtFmt = new JFmt();
-            final CommandLine cmd = new CommandLine(jdtFmt);
+            final CommandLine cmd = new CommandLine(new JFmt());
+            cmd.setUnmatchedArgumentsAllowed(true);
+            cmd.setExecutionStrategy(new WriteDefaultExecutionStrategy());
+            exitCode = cmd.execute(args);
+        }
 
-            try {
-                final var parseResult = cmd.parseArgs(args);
+        System.exit(exitCode);
+    }
 
-                CommandLine.ParseResult command = parseResult;
-                while (command.hasSubcommand()) {
-                    command = command.subcommand();
-                }
+    @Override
+    public Integer call() {
+        // JFmt should not be called directly - subcommands should be used
+        spec.commandLine().usage(spec.commandLine().getOut());
+        return CommandLine.ExitCode.USAGE;
+    }
 
-                if (command.isUsageHelpRequested()) {
-                    command.commandSpec().commandLine().usage(cmd.getErr());
-                    System.exit(0);
-                }
+    private static class WriteDefaultExecutionStrategy implements CommandLine.IExecutionStrategy {
+        @Override
+        public int execute(CommandLine.ParseResult parseResult) throws CommandLine.ExecutionException {
+            // Note: Parent help won't show filesOrDirectories parameters since they belong to the Write subcommand. The
+            // footer guides users to the default command.
 
-                if (!command.errors().isEmpty()) {
-                    for (Exception error : command.errors()) {
-                        cmd.getErr().println(error.getMessage());
-                    }
+            // TODO: If picocli adds support for showing default subcommand parameters in the parent help,
+            // or if we can find a workaround, update the help output to make this clearer.
+            //
+            // TODO: Future enhancement - when stdin support is added:
+            // - If input comes from stdin (no files specified), default to 'print' instead of 'write'
+            // - This allows: cat MyFile.java | jfmt | less
+            if (parseResult.subcommand() == null && !parseResult.unmatched().isEmpty()) {
+                // Build new args with 'write' prepended
+                String[] originalArgs = parseResult.originalArgs().toArray(new String[0]);
+                String[] newArgs = new String[originalArgs.length + 1];
+                newArgs[0] = "write";
+                System.arraycopy(originalArgs, 0, newArgs, 1, originalArgs.length);
 
-                    command.commandSpec().commandLine().usage(cmd.getErr());
-
-                    System.exit(2);
-                }
-
-                if (command.commandSpec().userObject() instanceof AbstractCommand abstractCommand) {
-                    abstractCommand.init();
-                }
-
-                exitCode = cmd.execute(args);
-
-                System.exit(exitCode);
-            } catch (CommandLine.PicocliException mpe) {
-                cmd.getErr().println(mpe.getMessage());
-                cmd.getErr().println();
-                cmd.usage(cmd.getErr());
-                System.exit(2);
+                // Reparse and execute with 'write' command
+                return parseResult.commandSpec().commandLine().execute(newArgs);
             }
+
+            // Initialize AbstractCommand if a subcommand was used
+            CommandLine.ParseResult commandResult = parseResult;
+            while (commandResult.hasSubcommand()) {
+                commandResult = commandResult.subcommand();
+            }
+
+            if (commandResult.commandSpec().userObject() instanceof AbstractCommand abstractCommand) {
+                abstractCommand.init();
+            }
+
+            return new CommandLine.RunLast().execute(parseResult);
         }
     }
 
