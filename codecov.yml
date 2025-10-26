@@ -1,2 +1,13 @@
 ignore:
   - "integration-tests/it-extension"
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        # allow a 2% drop before marking it as failed
+        threshold: 2%
+    patch:
+      default:
+        target: auto
+        threshold: 2%
