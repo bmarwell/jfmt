@@ -10,6 +10,7 @@ import io.github.bmarwell.jfmt.config.ConfigLoader;
 import io.github.bmarwell.jfmt.config.NamedConfig;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
+import io.github.bmarwell.jfmt.format.InvalidSyntaxException;
 import io.github.bmarwell.jfmt.imports.CliNamedImportOrder;
 import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
 import io.github.bmarwell.jfmt.imports.ImportOrderLoader;
@@ -24,9 +25,9 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
 import org.eclipse.core.runtime.CoreException;
@@ -129,15 +130,32 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     private void reportExceptions(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
-        results.stream()
-            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
-            .forEach(subtask -> {
-                Throwable exception = subtask.exception();
-                String message = exception.getMessage() != null
-                    ? exception.getMessage()
-                    : exception.getClass().getSimpleName();
-                getWriter().warn("Error processing file", message);
-            });
+        for (StructuredTaskScope.Subtask<FileProcessingResult> result : results) {
+            reportException(result);
+        }
+    }
+
+    private void reportException(StructuredTaskScope.Subtask<FileProcessingResult> subtask) {
+        FileProcessingResult fileProcessingResult = subtask.get();
+        fileProcessingResult.exception().ifPresent((e) -> {
+            getWriter().warn("Error processing file", e.getMessage());
+
+            if (e instanceof InvalidSyntaxException ise) {
+                for (IProblem problem : ise.getProblems()) {
+                    getWriter().warn(
+                        fileProcessingResult.javaFile().toString(),
+                        "Line " + problem.getSourceLineNumber() + ": " + problem
+                    );
+                }
+            } else {
+                getWriter().debug(
+                    "Exception details for " + fileProcessingResult.javaFile(),
+                    e.getClass().getSimpleName() + ": " + e.getMessage()
+                );
+            }
+
+        });
+
     }
 
     private void printOutput(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
@@ -204,6 +222,18 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 revisedSourceLines,
                 patch
             );
+        } catch (InvalidSyntaxException invalidSyntaxException) {
+            // File has syntax errors - skip formatting but mark as having diffs
+            // shouldContinue based on reportAll flag for fail-fast behavior
+            // Exception is stored for verbose logging
+            return new FileProcessingResult(
+                javaFile,
+                true,
+                false,
+                this.globalOptions.reportAll,
+                List.of(),
+                Optional.of(invalidSyntaxException)
+            );
         } catch (IOException ioException) {
             throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
@@ -248,18 +278,12 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     String createRevisedSourceCode(CodeFormatter formatter, Path javaFile, String sourceCode)
-        throws BadLocationException, CoreException {
+        throws BadLocationException, CoreException, InvalidSyntaxException {
         var unixSourceCode = sourceCode.replace("\r\n", "\n");
         CompilationUnit compilationUnit = getCompilationUnitFrom(unixSourceCode, javaFile);
 
         if (compilationUnit.getProblems() != null && compilationUnit.getProblems().length > 0) {
-            for (IProblem problem : compilationUnit.getProblems()) {
-                getWriter().warn(javaFile.toString(), problem.toString());
-            }
-
-            throw new IllegalStateException(
-                "CompilationUnit problems: " + Arrays.asList(compilationUnit.getProblems())
-            );
+            throw new InvalidSyntaxException("CompilationUnit has syntax errors", compilationUnit.getProblems());
         }
 
         // If there are imports, reorder them deterministically, according to style.
