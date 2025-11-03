@@ -17,6 +17,25 @@ class ListTest extends AbstractCommandTest {
         return Path.of("target", "test-classes", "imports", "StaticImportsAtEnd.java").toString();
     }
 
+    /**
+     * Helper method to count occurrences of a search string within text.
+     *
+     * @param text
+     *     the text to search in
+     * @param searchString
+     *     the string to search for
+     * @return the number of occurrences found
+     */
+    private static int countOccurrences(String text, String searchString) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(searchString, index)) != -1) {
+            count++;
+            index += searchString.length();
+        }
+        return count;
+    }
+
     @Test
     void reports_all_incorrectly_formatted_files_by_default() {
         // given - two files with formatting issues
@@ -109,13 +128,7 @@ class ListTest extends AbstractCommandTest {
         String stderr = String.join(System.lineSeparator(), result.stderr());
 
         // Count occurrences of the filename in error messages
-        int count = 0;
-        int index = 0;
-        String searchString = "Not formatted correctly";
-        while ((index = stderr.indexOf(searchString, index)) != -1) {
-            count++;
-            index += searchString.length();
-        }
+        int count = countOccurrences(stderr, "Not formatted correctly");
 
         assertEquals(
             1,
@@ -138,13 +151,7 @@ class ListTest extends AbstractCommandTest {
         String stderr = String.join(System.lineSeparator(), result.stderr());
 
         // Count occurrences of the filename in error messages
-        int count = 0;
-        int index = 0;
-        String searchString = "Not formatted correctly";
-        while ((index = stderr.indexOf(searchString, index)) != -1) {
-            count++;
-            index += searchString.length();
-        }
+        int count = countOccurrences(stderr, "Not formatted correctly");
 
         assertEquals(
             1,
@@ -167,13 +174,7 @@ class ListTest extends AbstractCommandTest {
         String stderr = String.join(System.lineSeparator(), result.stderr());
 
         // Count total error messages
-        int count = 0;
-        int index = 0;
-        String searchString = "Not formatted correctly";
-        while ((index = stderr.indexOf(searchString, index)) != -1) {
-            count++;
-            index += searchString.length();
-        }
+        int count = countOccurrences(stderr, "Not formatted correctly");
 
         assertEquals(
             2,
