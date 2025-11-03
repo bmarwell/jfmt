@@ -54,9 +54,6 @@ public abstract class AbstractCommand implements Callable<Integer> {
     private OutputWriter writer;
 
     public void init() {
-        // Update reportAll based on the --no-all flag after parsing
-        this.globalOptions.updateReportAll();
-
         CommandLine.Help.Ansi ansiMode =
             this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
 
@@ -136,24 +133,39 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     private void reportException(StructuredTaskScope.Subtask<FileProcessingResult> subtask) {
+        if (subtask.state() == StructuredTaskScope.Subtask.State.FAILED) {
+            Throwable exception = subtask.exception();
+            if (exception != null) {
+                getWriter().warn("Error processing file", exception.getMessage());
+            }
+
+            return;
+        }
+
+        if (subtask.state() == StructuredTaskScope.Subtask.State.UNAVAILABLE) {
+            // No exception to report
+            return;
+        }
+
         FileProcessingResult fileProcessingResult = subtask.get();
         fileProcessingResult.exception().ifPresent((e) -> {
             getWriter().warn("Error processing file", e.getMessage());
 
-            if (e instanceof InvalidSyntaxException ise) {
-                for (IProblem problem : ise.getProblems()) {
-                    getWriter().warn(
-                        fileProcessingResult.javaFile().toString(),
-                        "Line " + problem.getSourceLineNumber() + ": " + problem
-                    );
-                }
-            } else {
+            if (!(e instanceof InvalidSyntaxException ise)) {
                 getWriter().debug(
                     "Exception details for " + fileProcessingResult.javaFile(),
                     e.getClass().getSimpleName() + ": " + e.getMessage()
                 );
+
+                return;
             }
 
+            for (IProblem problem : ise.getProblems()) {
+                getWriter().warn(
+                    fileProcessingResult.javaFile().toString(),
+                    "Line " + problem.getSourceLineNumber() + ": " + problem
+                );
+            }
         });
 
     }
@@ -173,7 +185,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             .toList();
 
         // For --no-all mode, only report the first error
-        if (!this.globalOptions.reportAll && !errorsToReport.isEmpty()) {
+        if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
             var firstError = errorsToReport.getFirst();
             getWriter().error("Not formatted correctly", firstError.javaFile().toString());
             return;
@@ -230,7 +242,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 javaFile,
                 true,
                 false,
-                this.globalOptions.reportAll,
+                this.globalOptions.reportAll(),
                 List.of(),
                 Optional.of(invalidSyntaxException)
             );

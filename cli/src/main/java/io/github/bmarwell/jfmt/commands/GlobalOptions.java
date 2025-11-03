@@ -22,12 +22,9 @@ public class GlobalOptions {
     )
     boolean noAll = false;
 
-    // reportAll is true (process all files) unless --no-all is specified
-    public boolean reportAll = true;
-
     // Update reportAll after parsing based on noAll flag
-    void updateReportAll() {
-        this.reportAll = !this.noAll;
+    boolean reportAll() {
+        return !this.noAll;
     }
 
     @CommandLine.Option(

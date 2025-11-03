@@ -32,7 +32,7 @@ public class List extends AbstractCommand {
         if (!patch.getDeltas().isEmpty()) {
             // Return shouldContinue based on reportAll flag for fail-fast behavior
             // AbstractCommand skips printing for List mode to avoid duplicates
-            return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
+            return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll());
         }
 
         return new FileProcessingResult(javaFile, false, false, true);

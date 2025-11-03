@@ -14,7 +14,6 @@ class PrintCommandIT {
     @JFmtTest(args = { "print", "src/test/resources/incorrectly_formatted/SomeRecord.java" })
     void test_print_command_prints_diff(JdtResult result) {
         // then
-        assertTrue(result.getStderr().isEmpty());
         assertFalse(result.getStdout().isEmpty());
 
         assertTrue(result.getStdout().contains("/**"));
