@@ -23,6 +23,7 @@ public abstract class AbstractCommandTest {
         cmd.setOut(new PrintWriter(out));
         cmd.setErr(new PrintWriter(err));
 
+        // Parse to get the subcommand and initialize it
         CommandLine.ParseResult commandParseResult = cmd.parseArgs(args);
         while (commandParseResult.hasSubcommand()) {
             commandParseResult = commandParseResult.subcommand();
@@ -33,10 +34,11 @@ public abstract class AbstractCommandTest {
         }
 
         // when
-        int execute = cmd.execute(args);
+        // Execute using the parsed result, not reparsing
+        int exitCode = new CommandLine.RunLast().execute(commandParseResult);
 
         return new CommandExecutionResult(
-            execute,
+            exitCode,
             List.of(out.toString().split(System.lineSeparator())),
             List.of(err.toString().split(System.lineSeparator()))
         );

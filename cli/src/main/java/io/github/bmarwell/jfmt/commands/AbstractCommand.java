@@ -4,6 +4,7 @@ import static java.nio.file.Files.isRegularFile;
 
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.Patch;
+import io.github.bmarwell.jfmt.concurrency.BoundedVirtualThreadExecutor;
 import io.github.bmarwell.jfmt.concurrency.FailFastFileProcessingResultJoiner;
 import io.github.bmarwell.jfmt.config.ConfigLoader;
 import io.github.bmarwell.jfmt.config.NamedConfig;
@@ -52,14 +53,32 @@ public abstract class AbstractCommand implements Callable<Integer> {
     private OutputWriter writer;
 
     public void init() {
+        // Update reportAll based on the --no-all flag after parsing
+        this.globalOptions.updateReportAll();
+
         CommandLine.Help.Ansi ansiMode =
             this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
+
+        OutputWriter.VerbosityLevel verbosity = determineVerbosityLevel();
+
         this.writer = new OutputWriter(
             ansiMode,
-            getFormatterMode().verbose(),
+            verbosity,
             spec.commandLine().getOut(),
             spec.commandLine().getErr()
         );
+    }
+
+    private OutputWriter.VerbosityLevel determineVerbosityLevel() {
+        if (this.globalOptions.verbosityOptions.isVerbose()) {
+            return OutputWriter.VerbosityLevel.VERBOSE;
+        }
+
+        if (this.globalOptions.verbosityOptions.isSilent()) {
+            return OutputWriter.VerbosityLevel.SILENT;
+        }
+
+        return OutputWriter.VerbosityLevel.DEFAULT;
     }
 
     /**
@@ -77,6 +96,16 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     abstract FormatterMode getFormatterMode();
 
+    /**
+     * Processes all files in parallel using Structured Concurrency.
+     *
+     * <p>Uses custom joiner for fail-fast support (--no-all flag) while preserving output from completed tasks.
+     * Structured Concurrency provides automatic cleanup and prevents thread leaks.</p>
+     *
+     * @return {@code 0} if all files formatted correctly, {@code 1} otherwise.
+     * @throws Exception
+     *     if processing fails
+     */
     @Override
     public Integer call() throws Exception {
         final List<Callable<FileProcessingResult>> allFilesAndDirs =
@@ -84,42 +113,74 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
                 .toList();
 
-        try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
+        try (var scope = StructuredTaskScope.open(
+            new FailFastFileProcessingResultJoiner(),
+            cf -> cf.withThreadFactory(BoundedVirtualThreadExecutor.create())
+        )) {
             allFilesAndDirs.forEach(scope::fork);
+            final List<StructuredTaskScope.Subtask<FileProcessingResult>> results = scope.join().toList();
 
-            final List<StructuredTaskScope.Subtask<FileProcessingResult>> joins = scope.join().toList();
+            reportExceptions(results);
+            printOutput(results);
+            reportFormattingErrors(results);
 
-            // Report any failed subtasks
-            joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
-                .forEach(subtask -> {
-                    Throwable exception = subtask.exception();
-                    String message = exception.getMessage() != null
-                        ? exception.getMessage()
-                        : exception.getClass().getSimpleName();
-                    getWriter().warn("Error processing file", message);
-                });
-
-            // Print output sequentially after all parallel processing is complete
-            joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-                .map(StructuredTaskScope.Subtask::get)
-                .forEach(result -> result.outputLines().forEach(getWriter()::output));
-
-            // Check if we have any failures
-            boolean hasFailures = joins.stream()
-                .anyMatch(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED);
-
-            // Return error code if there were failures
-            if (hasFailures) {
-                return 1;
-            }
-
-            return joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-                .map(StructuredTaskScope.Subtask::get)
-                .anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
+            return hasFailures(results) ? 1 : 0;
         }
+    }
+
+    private void reportExceptions(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+        results.stream()
+            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
+            .forEach(subtask -> {
+                Throwable exception = subtask.exception();
+                String message = exception.getMessage() != null
+                    ? exception.getMessage()
+                    : exception.getClass().getSimpleName();
+                getWriter().warn("Error processing file", message);
+            });
+    }
+
+    private void printOutput(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+        results.stream()
+            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
+            .map(StructuredTaskScope.Subtask::get)
+            .forEach(result -> result.outputLines().forEach(getWriter()::output));
+    }
+
+    private void reportFormattingErrors(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+        var errorsToReport = results.stream()
+            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
+            .map(StructuredTaskScope.Subtask::get)
+            .filter(this::shouldReportError)
+            .toList();
+
+        // For --no-all mode, only report the first error
+        if (!this.globalOptions.reportAll && !errorsToReport.isEmpty()) {
+            var firstError = errorsToReport.getFirst();
+            getWriter().error("Not formatted correctly", firstError.javaFile().toString());
+            return;
+        }
+
+        // For --all mode (default), report all errors
+        errorsToReport.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
+    }
+
+    private boolean shouldReportError(FileProcessingResult result) {
+        // List mode reports all files with diffs
+        if (getFormatterMode() == FormatterMode.LIST) {
+            return result.hasDiff();
+        }
+
+        // Other modes only report fail-fast files (--no-all: shouldContinue=false)
+        return !result.shouldContinue();
+    }
+
+    private boolean hasFailures(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+        return results.stream()
+            .anyMatch(
+                subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED
+                    || (subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS && subtask.get().hasDiff())
+            );
     }
 
     FileProcessingResult processFile(Path javaFile) {

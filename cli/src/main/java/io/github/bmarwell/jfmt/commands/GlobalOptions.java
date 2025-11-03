@@ -15,14 +15,20 @@ public class GlobalOptions {
     Path[] filesOrDirectories;
 
     @CommandLine.Option(
-        names = { "-a", "--all" },
-        negatable = true,
+        names = { "--no-all" },
         description = """
-                      Process all files. This is the default.
-                      Use --no-all to stop after the first file with differences.""",
-        defaultValue = "true"
+                      Stop after the first file with differences.
+                      By default, all files are processed."""
     )
-    boolean reportAll = true;
+    boolean noAll = false;
+
+    // reportAll is true (process all files) unless --no-all is specified
+    public boolean reportAll = true;
+
+    // Update reportAll after parsing based on noAll flag
+    void updateReportAll() {
+        this.reportAll = !this.noAll;
+    }
 
     @CommandLine.Option(
         names = { "--config" },
@@ -58,4 +64,7 @@ public class GlobalOptions {
         description = "Path to an import-order properties file. If set, overrides --import-order."
     )
     public Path importOrderFile;
+
+    @CommandLine.Mixin
+    public VerbosityOptions verbosityOptions = new VerbosityOptions();
 }

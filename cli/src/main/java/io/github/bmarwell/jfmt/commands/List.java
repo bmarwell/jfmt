@@ -30,8 +30,8 @@ public class List extends AbstractCommand {
         Patch<String> patch
     ) {
         if (!patch.getDeltas().isEmpty()) {
-            getWriter().warn("Not formatted correctly", javaFile.toString());
-
+            // Return shouldContinue based on reportAll flag for fail-fast behavior
+            // AbstractCommand skips printing for List mode to avoid duplicates
             return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll);
         }
 
