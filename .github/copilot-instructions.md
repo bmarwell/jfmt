@@ -7,10 +7,36 @@ For human developers, see [CONTRIBUTING.adoc](../CONTRIBUTING.adoc).
 ## General Principles
 
 ### No `else` Keyword
-- **Never use the `else` keyword** in this codebase
-- Use guard statements (early returns) instead
-- Extract methods if needed to avoid `else` blocks
-- This applies to all code: production code, tests, and utilities
+- **Do not use the `else` keyword** in this codebase.  
+Code should use guard clauses and early returns instead of if–else or nested conditionals.
+- Sequential if returns are allowed.  
+You may use multiple if statements in a row if each one returns or exits early.
+This pattern is acceptable:
+```java
+if (conditionA) return A;
+if (conditionB) return B;
+return C;
+```
+- Avoid indentation pyramids.  
+Prefer one level of indentation per method. If you find yourself nesting ifs, extract a method or use early returns.
+- Goal: Flatten control flow, not forbid normal branching logic.  
+The rule targets keyword usage (else), not the logical pattern of mutually exclusive if branches.
+
+```java
+// ❌ Bad
+if (isVerbose()) {
+    return VERBOSE;
+} else if (isSilent()) {
+    return SILENT;
+} else {
+    return DEFAULT;
+}
+
+// ✅ Good
+if (isVerbose()) return VERBOSE;
+if (isSilent()) return SILENT;
+return DEFAULT;
+```
 
 ### Code Organization
 - Keep methods short and focused (easily comprehensible by human brain)
