@@ -178,30 +178,45 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     private void reportFormattingErrors(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
-        var errorsToReport = results.stream()
-            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-            .map(StructuredTaskScope.Subtask::get)
-            .filter(this::shouldReportError)
-            .toList();
+        boolean firstErrorReported = false;
 
-        // Limit to first error in fail-fast mode
-        var errorsToOutput = (!this.globalOptions.reportAll() && !errorsToReport.isEmpty())
-            ? List.of(errorsToReport.getFirst())
-            : errorsToReport;
+        for (StructuredTaskScope.Subtask<FileProcessingResult> subtask : results) {
+            if (subtask.state() != StructuredTaskScope.Subtask.State.SUCCESS) {
+                continue;
+            }
 
-        // For list mode: output filenames to stdout (machine-readable)
-        if (getFormatterMode() == FormatterMode.LIST) {
-            errorsToOutput.forEach(result -> getWriter().output(result.javaFile().toString()));
-            return;
+            FileProcessingResult result = subtask.get();
+            if (!shouldReportError(result)) {
+                continue;
+            }
+
+            // In fail-fast mode (--no-all), stop after first error
+            if (!this.globalOptions.reportAll() && firstErrorReported) {
+                return;
+            }
+
+            // For list and write modes: output filenames to stdout (machine-readable)
+            if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
+                getWriter().output(result.javaFile().toString());
+            }
+
+            // For other modes: output to stderr (human-readable)
+            if (getFormatterMode() != FormatterMode.LIST && getFormatterMode() != FormatterMode.WRITE) {
+                getWriter().error("Not formatted correctly", result.javaFile().toString());
+            }
+
+            firstErrorReported = true;
         }
-
-        // For other modes: output to stderr (human-readable)
-        errorsToOutput.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
     }
 
     private boolean shouldReportError(FileProcessingResult result) {
         // List mode reports all files with diffs
         if (getFormatterMode() == FormatterMode.LIST) {
+            return result.hasDiff();
+        }
+
+        // Write mode reports files with diffs (including syntax errors)
+        if (getFormatterMode() == FormatterMode.WRITE) {
             return result.hasDiff();
         }
 
