@@ -184,26 +184,19 @@ public abstract class AbstractCommand implements Callable<Integer> {
             .filter(this::shouldReportError)
             .toList();
 
+        // Limit to first error in fail-fast mode
+        var errorsToOutput = (!this.globalOptions.reportAll() && !errorsToReport.isEmpty())
+            ? List.of(errorsToReport.getFirst())
+            : errorsToReport;
+
         // For list mode: output filenames to stdout (machine-readable)
         if (getFormatterMode() == FormatterMode.LIST) {
-            if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
-                var firstError = errorsToReport.getFirst();
-                getWriter().output(firstError.javaFile().toString());
-                return;
-            }
-
-            errorsToReport.forEach(result -> getWriter().output(result.javaFile().toString()));
+            errorsToOutput.forEach(result -> getWriter().output(result.javaFile().toString()));
             return;
         }
 
         // For other modes: output to stderr (human-readable)
-        if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
-            var firstError = errorsToReport.getFirst();
-            getWriter().error("Not formatted correctly", firstError.javaFile().toString());
-            return;
-        }
-
-        errorsToReport.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
+        errorsToOutput.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
     }
 
     private boolean shouldReportError(FileProcessingResult result) {
