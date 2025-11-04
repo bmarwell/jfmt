@@ -28,6 +28,10 @@ public class OutputWriter {
         this.err = err;
     }
 
+    /**
+     * Writes machine-readable output to stdout without any formatting or colors.
+     * This is for structured output like filenames, diffs, or formatted code.
+     */
     public void output(String line) {
         out.println(line);
     }

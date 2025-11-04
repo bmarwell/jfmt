@@ -184,14 +184,25 @@ public abstract class AbstractCommand implements Callable<Integer> {
             .filter(this::shouldReportError)
             .toList();
 
-        // For --no-all mode, only report the first error
+        // For list mode: output filenames to stdout (machine-readable)
+        if (getFormatterMode() == FormatterMode.LIST) {
+            if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
+                var firstError = errorsToReport.getFirst();
+                getWriter().output(firstError.javaFile().toString());
+                return;
+            }
+
+            errorsToReport.forEach(result -> getWriter().output(result.javaFile().toString()));
+            return;
+        }
+
+        // For other modes: output to stderr (human-readable)
         if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
             var firstError = errorsToReport.getFirst();
             getWriter().error("Not formatted correctly", firstError.javaFile().toString());
             return;
         }
 
-        // For --all mode (default), report all errors
         errorsToReport.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
     }
 
@@ -214,7 +225,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     FileProcessingResult processFile(Path javaFile) {
-        getWriter().info("Processing file", javaFile.toString());
+        getWriter().debug("Processing file", javaFile.toString());
 
         try {
             final var javaSourceBytes = Files.readAllBytes(javaFile);
