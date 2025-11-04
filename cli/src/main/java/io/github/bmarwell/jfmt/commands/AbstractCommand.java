@@ -136,7 +136,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         if (subtask.state() == StructuredTaskScope.Subtask.State.FAILED) {
             Throwable exception = subtask.exception();
             if (exception != null) {
-                getWriter().warn("Error processing file", exception.getMessage());
+                getWriter().error("Error processing file", exception.getMessage());
             }
 
             return;
@@ -149,7 +149,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
         FileProcessingResult fileProcessingResult = subtask.get();
         fileProcessingResult.exception().ifPresent((e) -> {
-            getWriter().warn("Error processing file", e.getMessage());
+            getWriter().error("Error processing file", e.getMessage());
 
             if (!(e instanceof InvalidSyntaxException ise)) {
                 getWriter().debug(
@@ -161,7 +161,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             }
 
             for (IProblem problem : ise.getProblems()) {
-                getWriter().warn(
+                getWriter().error(
                     fileProcessingResult.javaFile().toString(),
                     "Line " + problem.getSourceLineNumber() + ": " + problem
                 );
@@ -260,7 +260,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         } catch (IOException ioException) {
             throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
-            getWriter().warn("Error formatting file", javaFile.toString());
+            getWriter().error("Error formatting file", javaFile.toString());
             throw new IllegalStateException("Failed to format file: " + javaFile, ble);
         }
     }
