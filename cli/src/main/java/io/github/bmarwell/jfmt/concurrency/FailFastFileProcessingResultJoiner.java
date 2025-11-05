@@ -1,10 +1,10 @@
 package io.github.bmarwell.jfmt.concurrency;
 
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.StructuredTaskScope;
-import java.util.stream.Stream;
 
 /**
  * Custom joiner for Structured Concurrency that cancels remaining tasks when shouldContinue=false.
@@ -16,22 +16,11 @@ import java.util.stream.Stream;
  * output from successful tasks to be printed before reporting failure.</p>
  */
 public class FailFastFileProcessingResultJoiner implements
-    StructuredTaskScope.Joiner<FileProcessingResult, Stream<StructuredTaskScope.Subtask<FileProcessingResult>>> {
+    StructuredTaskScope.Joiner<FileProcessingResult, List<FileProcessingResult>> {
 
-    private final List<StructuredTaskScope.Subtask<FileProcessingResult>> subtasks = new ArrayList<>();
+    private final Collection<FileProcessingResult> results = new ConcurrentLinkedDeque<>();
 
-    private volatile Throwable firstException;
-
-    @Override
-    public boolean onFork(StructuredTaskScope.Subtask<? extends FileProcessingResult> subtask) {
-        StructuredTaskScope.Joiner.super.onFork(subtask);
-
-        @SuppressWarnings("unchecked")
-        final var subtaskToAdd = (StructuredTaskScope.Subtask<FileProcessingResult>) subtask;
-        this.subtasks.add(subtaskToAdd);
-
-        return false;
-    }
+    private final Collection<Throwable> exceptions = new ConcurrentLinkedDeque<>();
 
     /**
      * Returns true to cancel remaining unstarted tasks when:
@@ -42,10 +31,15 @@ public class FailFastFileProcessingResultJoiner implements
     public boolean onComplete(StructuredTaskScope.Subtask<? extends FileProcessingResult> subtask) {
         StructuredTaskScope.Joiner.super.onComplete(subtask);
 
-        return (subtask.state() == StructuredTaskScope.Subtask.State.FAILED
-            && firstException == null
-            && (firstException = subtask.exception()) != null)
-            || !subtask.get().shouldContinue();
+        if (subtask.state() == StructuredTaskScope.Subtask.State.FAILED) {
+            exceptions.add(subtask.exception());
+            return true;
+        }
+
+        FileProcessingResult result = subtask.get();
+        this.results.add(result);
+
+        return !result.shouldContinue();
     }
 
     /**
@@ -54,13 +48,14 @@ public class FailFastFileProcessingResultJoiner implements
      * <p>Note: Does not throw for shouldContinue=false, allowing output to be printed.</p>
      */
     @Override
-    public Stream<StructuredTaskScope.Subtask<FileProcessingResult>> result() throws Throwable {
-        Throwable ex = firstException;
+    public List<FileProcessingResult> result() throws Throwable {
+        if (!this.exceptions.isEmpty()) {
+            final var illegalStateException = new IllegalStateException("One or more tasks failed");
+            this.exceptions.forEach(illegalStateException::addSuppressed);
 
-        if (ex != null) {
-            throw ex;
+            throw illegalStateException;
         }
 
-        return subtasks.stream();
+        return List.copyOf(this.results);
     }
 }

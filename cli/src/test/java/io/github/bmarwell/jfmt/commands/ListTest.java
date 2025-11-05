@@ -1,7 +1,6 @@
 package io.github.bmarwell.jfmt.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -47,18 +46,14 @@ class ListTest extends AbstractCommandTest {
         // then
         assertEquals(1, result.returncode(), "Should return error code 1 when files have formatting issues");
 
-        String stderr = String.join(System.lineSeparator(), result.stderr());
+        String stdout = String.join(System.lineSeparator(), result.stdout());
         assertTrue(
-            stderr.contains("MixedImports.java"),
-            "stderr should contain first file name but was: " + stderr
+            stdout.contains("MixedImports.java"),
+            "stdout should contain first file name but was: " + stdout
         );
         assertTrue(
-            stderr.contains("StaticImportsAtEnd.java"),
-            "stderr should contain second file name but was: " + stderr
-        );
-        assertTrue(
-            stderr.contains("Not formatted correctly"),
-            "stderr should contain error message but was: " + stderr
+            stdout.contains("StaticImportsAtEnd.java"),
+            "stdout should contain second file name but was: " + stdout
         );
     }
 
@@ -73,25 +68,21 @@ class ListTest extends AbstractCommandTest {
         // then
         assertEquals(1, result.returncode(), "Should return error code 1");
 
-        String stderr = String.join(System.lineSeparator(), result.stderr());
+        String stdout = String.join(System.lineSeparator(), result.stdout());
         assertTrue(
-            stderr.contains("MixedImports.java") || stderr.contains("StaticImportsAtEnd.java"),
-            "stderr should contain at least one file name but was: " + stderr
-        );
-        assertTrue(
-            stderr.contains("Not formatted correctly"),
-            "stderr should contain error message but was: " + stderr
+            stdout.contains("MixedImports.java") || stdout.contains("StaticImportsAtEnd.java"),
+            "stdout should contain at least one file name but was: " + stdout
         );
 
-        // Verify only ONE error message is printed (fail-fast)
-        long errorCount = stderr.lines()
-            .filter(line -> line.contains("Not formatted correctly"))
+        // Verify only ONE filename is printed (fail-fast)
+        long fileCount = stdout.lines()
+            .filter(line -> line.contains(".java"))
             .count();
-        assertEquals(1, errorCount, "With --no-all, only first error should be reported, but got " + errorCount);
+        assertEquals(1, fileCount, "With --no-all, only first error should be reported, but got " + fileCount);
     }
 
     @Test
-    void error_output_goes_to_stderr_not_stdout() {
+    void filenames_output_to_stdout() {
         // given
         var args = new String[] { "list", pathToMixedImports() };
 
@@ -102,15 +93,10 @@ class ListTest extends AbstractCommandTest {
         assertEquals(1, result.returncode());
 
         String stdout = String.join(System.lineSeparator(), result.stdout());
-        String stderr = String.join(System.lineSeparator(), result.stderr());
 
-        assertFalse(
-            stdout.contains("Not formatted correctly"),
-            "stdout should not contain error messages"
-        );
         assertTrue(
-            stderr.contains("Not formatted correctly"),
-            "stderr should contain error messages"
+            stdout.contains("MixedImports.java"),
+            "stdout should contain filename for machine-readable output"
         );
     }
 
@@ -125,15 +111,15 @@ class ListTest extends AbstractCommandTest {
         // then
         assertEquals(1, result.returncode());
 
-        String stderr = String.join(System.lineSeparator(), result.stderr());
+        String stdout = String.join(System.lineSeparator(), result.stdout());
 
-        // Count occurrences of the filename in error messages
-        int count = countOccurrences(stderr, "Not formatted correctly");
+        // Count occurrences of the filename
+        int count = countOccurrences(stdout, "MixedImports.java");
 
         assertEquals(
             1,
             count,
-            "File should be reported exactly once, not " + count + " times. stderr:\n" + stderr
+            "File should be reported exactly once, not " + count + " times. stdout:\n" + stdout
         );
     }
 
@@ -148,15 +134,15 @@ class ListTest extends AbstractCommandTest {
         // then
         assertEquals(1, result.returncode());
 
-        String stderr = String.join(System.lineSeparator(), result.stderr());
+        String stdout = String.join(System.lineSeparator(), result.stdout());
 
-        // Count occurrences of the filename in error messages
-        int count = countOccurrences(stderr, "Not formatted correctly");
+        // Count occurrences of the filename
+        int count = countOccurrences(stdout, "MixedImports.java");
 
         assertEquals(
             1,
             count,
-            "File should be reported exactly once, not " + count + " times. stderr:\n" + stderr
+            "File should be reported exactly once, not " + count + " times. stdout:\n" + stdout
         );
     }
 
@@ -171,39 +157,25 @@ class ListTest extends AbstractCommandTest {
         // then
         assertEquals(1, result.returncode());
 
-        String stderr = String.join(System.lineSeparator(), result.stderr());
+        String stdout = String.join(System.lineSeparator(), result.stdout());
 
-        // Count total error messages
-        int count = countOccurrences(stderr, "Not formatted correctly");
-
-        assertEquals(
-            2,
-            count,
-            "Each file should be reported exactly once (2 files = 2 messages), not " + count + " times. stderr:\n"
-                + stderr
-        );
-
-        // Verify each file appears exactly once in "Not formatted correctly" messages
-        String[] errorLines = stderr.lines()
-            .filter(line -> line.contains("Not formatted correctly"))
-            .toArray(String[]::new);
-
-        long mixedErrorCount = java.util.Arrays.stream(errorLines)
+        // Verify each file appears exactly once
+        long mixedCount = stdout.lines()
             .filter(line -> line.contains("MixedImports.java"))
             .count();
-        long staticErrorCount = java.util.Arrays.stream(errorLines)
+        long staticCount = stdout.lines()
             .filter(line -> line.contains("StaticImportsAtEnd.java"))
             .count();
 
         assertEquals(
             1,
-            mixedErrorCount,
-            "MixedImports.java should appear in error message exactly once, not " + mixedErrorCount + " times"
+            mixedCount,
+            "MixedImports.java should appear exactly once, not " + mixedCount + " times. stdout:\n" + stdout
         );
         assertEquals(
             1,
-            staticErrorCount,
-            "StaticImportsAtEnd.java should appear in error message exactly once, not " + staticErrorCount + " times"
+            staticCount,
+            "StaticImportsAtEnd.java should appear exactly once, not " + staticCount + " times. stdout:\n" + stdout
         );
     }
 

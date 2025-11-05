@@ -116,7 +116,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             cf -> cf.withThreadFactory(BoundedVirtualThreadExecutor.create())
         )) {
             allFilesAndDirs.forEach(scope::fork);
-            final List<StructuredTaskScope.Subtask<FileProcessingResult>> results = scope.join().toList();
+            final List<FileProcessingResult> results = scope.join();
 
             reportExceptions(results);
             printOutput(results);
@@ -126,30 +126,15 @@ public abstract class AbstractCommand implements Callable<Integer> {
         }
     }
 
-    private void reportExceptions(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
-        for (StructuredTaskScope.Subtask<FileProcessingResult> result : results) {
+    private void reportExceptions(List<FileProcessingResult> results) {
+        for (FileProcessingResult result : results) {
             reportException(result);
         }
     }
 
-    private void reportException(StructuredTaskScope.Subtask<FileProcessingResult> subtask) {
-        if (subtask.state() == StructuredTaskScope.Subtask.State.FAILED) {
-            Throwable exception = subtask.exception();
-            if (exception != null) {
-                getWriter().warn("Error processing file", exception.getMessage());
-            }
-
-            return;
-        }
-
-        if (subtask.state() == StructuredTaskScope.Subtask.State.UNAVAILABLE) {
-            // No exception to report
-            return;
-        }
-
-        FileProcessingResult fileProcessingResult = subtask.get();
+    private void reportException(FileProcessingResult fileProcessingResult) {
         fileProcessingResult.exception().ifPresent((e) -> {
-            getWriter().warn("Error processing file", e.getMessage());
+            getWriter().error("Error processing file", e.getMessage());
 
             if (!(e instanceof InvalidSyntaxException ise)) {
                 getWriter().debug(
@@ -161,7 +146,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             }
 
             for (IProblem problem : ise.getProblems()) {
-                getWriter().warn(
+                getWriter().error(
                     fileProcessingResult.javaFile().toString(),
                     "Line " + problem.getSourceLineNumber() + ": " + problem
                 );
@@ -170,29 +155,37 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     }
 
-    private void printOutput(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+    private void printOutput(List<FileProcessingResult> results) {
         results.stream()
-            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-            .map(StructuredTaskScope.Subtask::get)
+            .filter(subtask -> subtask.exception().isEmpty())
             .forEach(result -> result.outputLines().forEach(getWriter()::output));
     }
 
-    private void reportFormattingErrors(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
-        var errorsToReport = results.stream()
-            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-            .map(StructuredTaskScope.Subtask::get)
-            .filter(this::shouldReportError)
-            .toList();
+    private void reportFormattingErrors(List<FileProcessingResult> results) {
+        boolean firstErrorReported = false;
 
-        // For --no-all mode, only report the first error
-        if (!this.globalOptions.reportAll() && !errorsToReport.isEmpty()) {
-            var firstError = errorsToReport.getFirst();
-            getWriter().error("Not formatted correctly", firstError.javaFile().toString());
-            return;
+        for (FileProcessingResult result : results) {
+            if (!shouldReportError(result)) {
+                continue;
+            }
+
+            // In fail-fast mode (--no-all), stop after first error
+            if (!this.globalOptions.reportAll() && firstErrorReported) {
+                return;
+            }
+
+            // For list and write modes: output filenames to stdout (machine-readable)
+            if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
+                getWriter().output(result.javaFile().toString());
+            }
+
+            // For other modes: output to stderr (human-readable)
+            if (getFormatterMode() != FormatterMode.LIST && getFormatterMode() != FormatterMode.WRITE) {
+                getWriter().error("Not formatted correctly", result.javaFile().toString());
+            }
+
+            firstErrorReported = true;
         }
-
-        // For --all mode (default), report all errors
-        errorsToReport.forEach(result -> getWriter().error("Not formatted correctly", result.javaFile().toString()));
     }
 
     private boolean shouldReportError(FileProcessingResult result) {
@@ -201,20 +194,22 @@ public abstract class AbstractCommand implements Callable<Integer> {
             return result.hasDiff();
         }
 
+        // Write mode reports files with diffs (including syntax errors)
+        if (getFormatterMode() == FormatterMode.WRITE) {
+            return result.hasDiff();
+        }
+
         // Other modes only report fail-fast files (--no-all: shouldContinue=false)
         return !result.shouldContinue();
     }
 
-    private boolean hasFailures(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+    private boolean hasFailures(List<FileProcessingResult> results) {
         return results.stream()
-            .anyMatch(
-                subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED
-                    || (subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS && subtask.get().hasDiff())
-            );
+            .anyMatch(st -> st.exception().isPresent() || !st.shouldContinue() || st.hasDiff());
     }
 
     FileProcessingResult processFile(Path javaFile) {
-        getWriter().info("Processing file", javaFile.toString());
+        getWriter().debug("Processing file", javaFile.toString());
 
         try {
             final var javaSourceBytes = Files.readAllBytes(javaFile);
@@ -249,7 +244,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         } catch (IOException ioException) {
             throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
-            getWriter().warn("Error formatting file", javaFile.toString());
+            getWriter().error("Error formatting file", javaFile.toString());
             throw new IllegalStateException("Failed to format file: " + javaFile, ble);
         }
     }
