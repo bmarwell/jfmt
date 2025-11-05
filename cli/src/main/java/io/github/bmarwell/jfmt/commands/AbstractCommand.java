@@ -174,17 +174,17 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 return;
             }
 
+            firstErrorReported = true;
+
             // For list and write modes: output filenames to stdout (machine-readable)
             if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
                 getWriter().output(result.javaFile().toString());
+
+                continue;
             }
 
             // For other modes: output to stderr (human-readable)
-            if (getFormatterMode() != FormatterMode.LIST && getFormatterMode() != FormatterMode.WRITE) {
-                getWriter().error("Not formatted correctly", result.javaFile().toString());
-            }
-
-            firstErrorReported = true;
+            getWriter().error("Not formatted correctly", result.javaFile().toString());
         }
     }
 
