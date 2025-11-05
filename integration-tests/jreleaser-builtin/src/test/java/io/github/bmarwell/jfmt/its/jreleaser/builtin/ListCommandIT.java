@@ -24,7 +24,7 @@ class ListCommandIT {
     @DisplayName("runs list command with correctly formatted files should exit 0 and produce no output")
     void runs_list_command_with_path(JdtResult result) {
         assertEquals(0, result.exitCode());
-        assertTrue(result.getStdout().isEmpty() || !result.getStdout().contains(".java"));
+        assertTrue(!result.getStdout().contains(".java"), "stdout should not contain any .java filenames");
     }
 
     @Test
