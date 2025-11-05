@@ -4,11 +4,13 @@ import static java.nio.file.Files.isRegularFile;
 
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.Patch;
+import io.github.bmarwell.jfmt.concurrency.BoundedVirtualThreadExecutor;
 import io.github.bmarwell.jfmt.concurrency.FailFastFileProcessingResultJoiner;
 import io.github.bmarwell.jfmt.config.ConfigLoader;
 import io.github.bmarwell.jfmt.config.NamedConfig;
 import io.github.bmarwell.jfmt.format.FileProcessingResult;
 import io.github.bmarwell.jfmt.format.FormatterMode;
+import io.github.bmarwell.jfmt.format.InvalidSyntaxException;
 import io.github.bmarwell.jfmt.imports.CliNamedImportOrder;
 import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
 import io.github.bmarwell.jfmt.imports.ImportOrderLoader;
@@ -23,9 +25,9 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
 import org.eclipse.core.runtime.CoreException;
@@ -54,12 +56,27 @@ public abstract class AbstractCommand implements Callable<Integer> {
     public void init() {
         CommandLine.Help.Ansi ansiMode =
             this.globalOptions.noColor ? CommandLine.Help.Ansi.OFF : CommandLine.Help.Ansi.AUTO;
+
+        OutputWriter.VerbosityLevel verbosity = determineVerbosityLevel();
+
         this.writer = new OutputWriter(
             ansiMode,
-            getFormatterMode().verbose(),
+            verbosity,
             spec.commandLine().getOut(),
             spec.commandLine().getErr()
         );
+    }
+
+    private OutputWriter.VerbosityLevel determineVerbosityLevel() {
+        if (this.globalOptions.verbosityOptions.isVerbose()) {
+            return OutputWriter.VerbosityLevel.VERBOSE;
+        }
+
+        if (this.globalOptions.verbosityOptions.isSilent()) {
+            return OutputWriter.VerbosityLevel.SILENT;
+        }
+
+        return OutputWriter.VerbosityLevel.DEFAULT;
     }
 
     /**
@@ -77,6 +94,16 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     abstract FormatterMode getFormatterMode();
 
+    /**
+     * Processes all files in parallel using Structured Concurrency.
+     *
+     * <p>Uses custom joiner for fail-fast support (--no-all flag) while preserving output from completed tasks.
+     * Structured Concurrency provides automatic cleanup and prevents thread leaks.</p>
+     *
+     * @return {@code 0} if all files formatted correctly, {@code 1} otherwise.
+     * @throws Exception
+     *     if processing fails
+     */
     @Override
     public Integer call() throws Exception {
         final List<Callable<FileProcessingResult>> allFilesAndDirs =
@@ -84,46 +111,99 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
                 .toList();
 
-        try (var scope = StructuredTaskScope.open(new FailFastFileProcessingResultJoiner())) {
+        try (var scope = StructuredTaskScope.open(
+            new FailFastFileProcessingResultJoiner(),
+            cf -> cf.withThreadFactory(BoundedVirtualThreadExecutor.create())
+        )) {
             allFilesAndDirs.forEach(scope::fork);
+            final List<FileProcessingResult> results = scope.join();
 
-            final List<StructuredTaskScope.Subtask<FileProcessingResult>> joins = scope.join().toList();
+            reportExceptions(results);
+            printOutput(results);
+            reportFormattingErrors(results);
 
-            // Report any failed subtasks
-            joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED)
-                .forEach(subtask -> {
-                    Throwable exception = subtask.exception();
-                    String message = exception.getMessage() != null
-                        ? exception.getMessage()
-                        : exception.getClass().getSimpleName();
-                    getWriter().warn("Error processing file", message);
-                });
-
-            // Print output sequentially after all parallel processing is complete
-            joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-                .map(StructuredTaskScope.Subtask::get)
-                .forEach(result -> result.outputLines().forEach(getWriter()::output));
-
-            // Check if we have any failures
-            boolean hasFailures = joins.stream()
-                .anyMatch(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED);
-
-            // Return error code if there were failures
-            if (hasFailures) {
-                return 1;
-            }
-
-            return joins.stream()
-                .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-                .map(StructuredTaskScope.Subtask::get)
-                .anyMatch(FileProcessingResult::hasDiff) ? 1 : 0;
+            return hasFailures(results) ? 1 : 0;
         }
     }
 
+    private void reportExceptions(List<FileProcessingResult> results) {
+        for (FileProcessingResult result : results) {
+            reportException(result);
+        }
+    }
+
+    private void reportException(FileProcessingResult fileProcessingResult) {
+        fileProcessingResult.exception().ifPresent((e) -> {
+            getWriter().error("Error processing file", e.getMessage());
+
+            if (!(e instanceof InvalidSyntaxException ise)) {
+                getWriter().debug(
+                    "Exception details for " + fileProcessingResult.javaFile(),
+                    e.getClass().getSimpleName() + ": " + e.getMessage()
+                );
+
+                return;
+            }
+
+            for (IProblem problem : ise.getProblems()) {
+                getWriter().error(
+                    fileProcessingResult.javaFile().toString(),
+                    "Line " + problem.getSourceLineNumber() + ": " + problem
+                );
+            }
+        });
+
+    }
+
+    private void printOutput(List<FileProcessingResult> results) {
+        results.stream()
+            .filter(subtask -> subtask.exception().isEmpty())
+            .forEach(result -> result.outputLines().forEach(getWriter()::output));
+    }
+
+    private void reportFormattingErrors(List<FileProcessingResult> results) {
+        boolean firstErrorReported = false;
+
+        for (FileProcessingResult result : results) {
+            if (!shouldReportError(result)) {
+                continue;
+            }
+
+            // In fail-fast mode (--no-all), stop after first error
+            if (!this.globalOptions.reportAll() && firstErrorReported) {
+                return;
+            }
+
+            firstErrorReported = true;
+
+            // For list and write modes: output filenames to stdout (machine-readable)
+            if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
+                getWriter().output(result.javaFile().toString());
+
+                continue;
+            }
+
+            // For other modes: output to stderr (human-readable)
+            getWriter().error("Not formatted correctly", result.javaFile().toString());
+        }
+    }
+
+    private boolean shouldReportError(FileProcessingResult result) {
+        // List and Write modes report all files with diffs
+        if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
+            return result.hasDiff();
+        }
+        // Other modes only report fail-fast files (--no-all: shouldContinue=false)
+        return !result.shouldContinue();
+    }
+
+    private boolean hasFailures(List<FileProcessingResult> results) {
+        return results.stream()
+            .anyMatch(st -> st.exception().isPresent() || !st.shouldContinue() || st.hasDiff());
+    }
+
     FileProcessingResult processFile(Path javaFile) {
-        getWriter().info("Processing file", javaFile.toString());
+        getWriter().debug("Processing file", javaFile.toString());
 
         try {
             final var javaSourceBytes = Files.readAllBytes(javaFile);
@@ -143,10 +223,22 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 revisedSourceLines,
                 patch
             );
+        } catch (InvalidSyntaxException invalidSyntaxException) {
+            // File has syntax errors - skip formatting but mark as having diffs
+            // shouldContinue based on reportAll flag for fail-fast behavior
+            // Exception is stored for verbose logging
+            return new FileProcessingResult(
+                javaFile,
+                true,
+                false,
+                this.globalOptions.reportAll(),
+                List.of(),
+                Optional.of(invalidSyntaxException)
+            );
         } catch (IOException ioException) {
             throw new UncheckedIOException("Failed to process file: " + javaFile, ioException);
         } catch (BadLocationException | CoreException ble) {
-            getWriter().warn("Error formatting file", javaFile.toString());
+            getWriter().error("Error formatting file", javaFile.toString());
             throw new IllegalStateException("Failed to format file: " + javaFile, ble);
         }
     }
@@ -187,18 +279,12 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     String createRevisedSourceCode(CodeFormatter formatter, Path javaFile, String sourceCode)
-        throws BadLocationException, CoreException {
+        throws BadLocationException, CoreException, InvalidSyntaxException {
         var unixSourceCode = sourceCode.replace("\r\n", "\n");
         CompilationUnit compilationUnit = getCompilationUnitFrom(unixSourceCode, javaFile);
 
         if (compilationUnit.getProblems() != null && compilationUnit.getProblems().length > 0) {
-            for (IProblem problem : compilationUnit.getProblems()) {
-                getWriter().warn(javaFile.toString(), problem.toString());
-            }
-
-            throw new IllegalStateException(
-                "CompilationUnit problems: " + Arrays.asList(compilationUnit.getProblems())
-            );
+            throw new InvalidSyntaxException("CompilationUnit has syntax errors", compilationUnit.getProblems());
         }
 
         // If there are imports, reorder them deterministically, according to style.

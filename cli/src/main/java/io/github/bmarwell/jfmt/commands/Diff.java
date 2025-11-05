@@ -86,7 +86,7 @@ public class Diff extends AbstractCommand {
             }
         }
 
-        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll, output);
+        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll(), output);
     }
 
     private FileProcessingResult unifiedDiff(Path javaFile, List<String> originalSourceLines, Patch<String> patch) {
@@ -103,6 +103,6 @@ public class Diff extends AbstractCommand {
             this.context
         );
 
-        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll, theDiff);
+        return new FileProcessingResult(javaFile, true, false, this.globalOptions.reportAll(), theDiff);
     }
 }

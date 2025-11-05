@@ -6,17 +6,32 @@ import picocli.CommandLine;
 
 public class OutputWriter {
     private final CommandLine.Help.Ansi ansiMode;
-    private final boolean verbose;
+    private final VerbosityLevel verbosityLevel;
     private final PrintWriter out;
     private final PrintWriter err;
 
-    public OutputWriter(CommandLine.Help.Ansi ansiMode, boolean verbose, PrintWriter out, PrintWriter err) {
+    public enum VerbosityLevel {
+        SILENT, // Errors only
+        DEFAULT, // Warnings and info
+        VERBOSE // Warnings, info, and debug
+    }
+
+    public OutputWriter(
+        CommandLine.Help.Ansi ansiMode,
+        VerbosityLevel verbosityLevel,
+        PrintWriter out,
+        PrintWriter err
+    ) {
         this.ansiMode = ansiMode;
-        this.verbose = verbose;
+        this.verbosityLevel = verbosityLevel;
         this.out = out;
         this.err = err;
     }
 
+    /**
+     * Writes machine-readable output to stdout without any formatting or colors.
+     * This is for structured output like filenames, diffs, or formatted code.
+     */
     public void output(String line) {
         out.println(line);
     }
@@ -26,14 +41,35 @@ public class OutputWriter {
     }
 
     public void info(String prefix, String message) {
-        if (verbose) {
-            err.println(ansiMode.string("@|bold,green " + prefix + ":|@ " + message));
+        if (verbosityLevel == VerbosityLevel.SILENT) {
+            return;
         }
+
+        err.println(ansiMode.string("@|bold,green " + prefix + ":|@ " + message));
+    }
+
+    public void debug(String prefix, String message) {
+        if (verbosityLevel != VerbosityLevel.VERBOSE) {
+            return;
+        }
+
+        err.println(ansiMode.string("@|bold,cyan " + prefix + ":|@ " + message));
     }
 
     public void warn(String prefix, String message) {
-        if (verbose) {
-            err.println(ansiMode.string("@|bold,red " + prefix + ":|@ " + message));
+        if (verbosityLevel == VerbosityLevel.SILENT) {
+            return;
         }
+
+        err.println(ansiMode.string("@|bold,yellow " + prefix + ":|@ " + message));
+    }
+
+    /**
+     * Prints error to stderr unconditionally.
+     * Used for critical errors that must always be reported.
+     */
+    public void error(String prefix, String message) {
+        err.println(ansiMode.string("@|bold,red " + prefix + ":|@ " + message));
+        err.flush();
     }
 }

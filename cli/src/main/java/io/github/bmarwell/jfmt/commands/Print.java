@@ -40,7 +40,7 @@ public class Print extends AbstractCommand {
             javaFile,
             true,
             false,
-            this.globalOptions.reportAll,
+            this.globalOptions.reportAll(),
             List.of(revisedSourceCode)
         );
     }

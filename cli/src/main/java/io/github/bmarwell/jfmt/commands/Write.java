@@ -47,7 +47,7 @@ public class Write extends AbstractCommand {
 
             getWriter().info("Wrote formatted file", javaFile.toString());
 
-            return new FileProcessingResult(javaFile, false, true, this.globalOptions.reportAll);
+            return new FileProcessingResult(javaFile, false, true, this.globalOptions.reportAll());
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
         }

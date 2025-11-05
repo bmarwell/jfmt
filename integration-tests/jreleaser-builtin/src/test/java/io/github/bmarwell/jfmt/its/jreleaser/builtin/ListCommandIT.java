@@ -21,10 +21,10 @@ class ListCommandIT {
 
     @Test
     @JFmtTest(args = { "list", "src/test/resources/correctly_formatted" })
-    @DisplayName("runs list command with path should exit 0 and print file path")
+    @DisplayName("runs list command with correctly formatted files should exit 0 and produce no output")
     void runs_list_command_with_path(JdtResult result) {
         assertEquals(0, result.exitCode());
-        assertTrue(result.getStderr().contains("src/test/resources/correctly_formatted/CorrectlyFormatted.java"));
+        assertTrue(!result.getStdout().contains(".java"), "stdout should not contain any .java filenames");
     }
 
     @Test
@@ -32,6 +32,6 @@ class ListCommandIT {
     @DisplayName("runs list command with path should exit 1 and print 'not formatted correctly'")
     void runs_list_command_with_incorrectly_formatted_path(JdtResult result) {
         assertEquals(1, result.exitCode());
-        assertTrue(result.getStderr().contains("src/test/resources/incorrectly_formatted"));
+        assertTrue(result.getStdout().contains("src/test/resources/incorrectly_formatted"));
     }
 }
