@@ -116,7 +116,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
             cf -> cf.withThreadFactory(BoundedVirtualThreadExecutor.create())
         )) {
             allFilesAndDirs.forEach(scope::fork);
-            final List<StructuredTaskScope.Subtask<FileProcessingResult>> results = scope.join().toList();
+            final List<FileProcessingResult> results = scope.join();
 
             reportExceptions(results);
             printOutput(results);
@@ -126,28 +126,13 @@ public abstract class AbstractCommand implements Callable<Integer> {
         }
     }
 
-    private void reportExceptions(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
-        for (StructuredTaskScope.Subtask<FileProcessingResult> result : results) {
+    private void reportExceptions(List<FileProcessingResult> results) {
+        for (FileProcessingResult result : results) {
             reportException(result);
         }
     }
 
-    private void reportException(StructuredTaskScope.Subtask<FileProcessingResult> subtask) {
-        if (subtask.state() == StructuredTaskScope.Subtask.State.FAILED) {
-            Throwable exception = subtask.exception();
-            if (exception != null) {
-                getWriter().error("Error processing file", exception.getMessage());
-            }
-
-            return;
-        }
-
-        if (subtask.state() == StructuredTaskScope.Subtask.State.UNAVAILABLE) {
-            // No exception to report
-            return;
-        }
-
-        FileProcessingResult fileProcessingResult = subtask.get();
+    private void reportException(FileProcessingResult fileProcessingResult) {
         fileProcessingResult.exception().ifPresent((e) -> {
             getWriter().error("Error processing file", e.getMessage());
 
@@ -170,22 +155,16 @@ public abstract class AbstractCommand implements Callable<Integer> {
 
     }
 
-    private void printOutput(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+    private void printOutput(List<FileProcessingResult> results) {
         results.stream()
-            .filter(subtask -> subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-            .map(StructuredTaskScope.Subtask::get)
+            .filter(subtask -> subtask.exception().isEmpty())
             .forEach(result -> result.outputLines().forEach(getWriter()::output));
     }
 
-    private void reportFormattingErrors(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+    private void reportFormattingErrors(List<FileProcessingResult> results) {
         boolean firstErrorReported = false;
 
-        for (StructuredTaskScope.Subtask<FileProcessingResult> subtask : results) {
-            if (subtask.state() != StructuredTaskScope.Subtask.State.SUCCESS) {
-                continue;
-            }
-
-            FileProcessingResult result = subtask.get();
+        for (FileProcessingResult result : results) {
             if (!shouldReportError(result)) {
                 continue;
             }
@@ -224,12 +203,9 @@ public abstract class AbstractCommand implements Callable<Integer> {
         return !result.shouldContinue();
     }
 
-    private boolean hasFailures(List<StructuredTaskScope.Subtask<FileProcessingResult>> results) {
+    private boolean hasFailures(List<FileProcessingResult> results) {
         return results.stream()
-            .anyMatch(
-                subtask -> subtask.state() == StructuredTaskScope.Subtask.State.FAILED
-                    || (subtask.state() == StructuredTaskScope.Subtask.State.SUCCESS && subtask.get().hasDiff())
-            );
+            .anyMatch(st -> st.exception().isPresent() || !st.shouldContinue() || st.hasDiff());
     }
 
     FileProcessingResult processFile(Path javaFile) {
