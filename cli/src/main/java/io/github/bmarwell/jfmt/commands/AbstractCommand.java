@@ -189,16 +189,10 @@ public abstract class AbstractCommand implements Callable<Integer> {
     }
 
     private boolean shouldReportError(FileProcessingResult result) {
-        // List mode reports all files with diffs
-        if (getFormatterMode() == FormatterMode.LIST) {
+        // List and Write modes report all files with diffs
+        if (getFormatterMode() == FormatterMode.LIST || getFormatterMode() == FormatterMode.WRITE) {
             return result.hasDiff();
         }
-
-        // Write mode reports files with diffs (including syntax errors)
-        if (getFormatterMode() == FormatterMode.WRITE) {
-            return result.hasDiff();
-        }
-
         // Other modes only report fail-fast files (--no-all: shouldContinue=false)
         return !result.shouldContinue();
     }
