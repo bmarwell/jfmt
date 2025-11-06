@@ -93,7 +93,9 @@ jobs:
   release:
     needs: [version, build-native]
     runs-on: ubuntu-24.04
-    permissions: write-all
+    permissions:
+      contents: write
+      actions: read
 
     steps:
       # must read HEAD before checkout
