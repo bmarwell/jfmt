@@ -125,7 +125,8 @@ jobs:
         run: |
           mkdir -p artifacts
          
-          find /tmp/artifacts/ -name "mcs*" -exec mv -v {} artifacts/ \;
+          find /tmp/artifacts/ -name "jfmt-*.zip" -exec mv -v {} artifacts/ \;
+          find /tmp/artifacts/ -name "jfmt-*.tar.gz" -exec mv -v {} artifacts/ \;
 
       - name: Set up Java
         uses: actions/setup-java@v5.0.0
