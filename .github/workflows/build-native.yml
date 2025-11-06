@@ -5,6 +5,11 @@ name: Build Native
 on:
   # must be triggered by build.yml
   workflow_call:
+    inputs:
+      head_sha:
+        description: 'The commit SHA to checkout'
+        required: false
+        type: string
 
 jobs:
   build-linux-x64-musl:
@@ -15,6 +20,7 @@ jobs:
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
+          ref: ${{ inputs.head_sha || github.sha }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
@@ -141,6 +147,7 @@ jobs:
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
+          ref: ${{ inputs.head_sha || github.sha }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
