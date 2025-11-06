@@ -61,9 +61,9 @@ jobs:
           git push origin HEAD:main
           
           git rev-parse HEAD > HEAD
-          echo $RELEASE_VERSION > RELEASE_VERSION
-          echo $PLAIN_VERSION > PLAIN_VERSION
-          echo $NEXT_VERSION > NEXT_VERSION
+          echo "$RELEASE_VERSION" > RELEASE_VERSION
+          echo "$PLAIN_VERSION" > PLAIN_VERSION
+          echo "$NEXT_VERSION" > NEXT_VERSION
 
       - name: Upload version files
         uses: actions/upload-artifact@v5.0.0
