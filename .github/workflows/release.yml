@@ -184,4 +184,11 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
-          git push origin ${{ steps.head.outputs.content }}:main
+          
+          # Push with --force-with-lease to handle potential race conditions
+          # This will fail if main has been updated by another process during the release
+          if ! git push --force-with-lease origin HEAD:main; then
+            echo "::error::Failed to push next version to main. Main branch may have been updated during the release process."
+            echo "::error::You may need to manually merge the next version commit or re-run the release workflow."
+            exit 1
+          fi
