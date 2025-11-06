@@ -124,7 +124,6 @@ jobs:
       - name: Move build artifacts to correct folder
         run: |
           mkdir -p artifacts
-         
           find /tmp/artifacts/ -name "jfmt-*.zip" -exec mv -v {} artifacts/ \;
           find /tmp/artifacts/ -name "jfmt-*.tar.gz" -exec mv -v {} artifacts/ \;
 
