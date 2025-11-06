@@ -85,9 +85,21 @@ jobs:
             *_VERSION
 
   build-native:
-    uses: ./.github/workflows/build-native.yml
-    secrets: inherit
     needs: version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download version artifacts
+        uses: actions/download-artifact@v5.0.0
+      - name: Read HEAD ref
+        id: head
+        run: |
+          HEAD=$(cat artifacts/HEAD)
+          echo "head_sha=$HEAD" >> $GITHUB_OUTPUT
+      - name: Call build-native workflow
+        uses: ./.github/workflows/build-native.yml
+        with:
+          head_sha: ${{ steps.head.outputs.head_sha }}
+        secrets: inherit
 
   release:
     needs: [version, build-native]
