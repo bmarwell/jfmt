@@ -49,7 +49,7 @@ jobs:
           NEXT_VERSION="${{ github.event.inputs.next }}"
           
           PLAIN_VERSION="$(echo "${RELEASE_VERSION}" \
-              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\)/) { print substr($0, RSTART, RLENGTH); }'
+              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'
           )"
           
           if [ -z "$PLAIN_VERSION" ]; then
