@@ -55,7 +55,11 @@ jobs:
           fi
           
           if [ -z "$NEXT_VERSION" ]; then
-            COMPUTED_NEXT_VERSION="${PLAIN_VERSION}-SNAPSHOT"
+            MAJOR=$(echo "$PLAIN_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$PLAIN_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$PLAIN_VERSION" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            COMPUTED_NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
             NEXT_VERSION="$COMPUTED_NEXT_VERSION"
           fi
           
