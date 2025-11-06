@@ -41,7 +41,7 @@ jobs:
           RELEASE_VERSION=${{ github.event.inputs.version }}
           NEXT_VERSION=${{ github.event.inputs.next }}
           
-          if [ -z $NEXT_VERSION ]; then
+          if [ -z "$NEXT_VERSION" ]; then
             PLAIN_VERSION="$(echo "${RELEASE_VERSION}" \
                 | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'
             )"
@@ -61,9 +61,9 @@ jobs:
           git push origin HEAD:main
           
           git rev-parse HEAD > HEAD
-          echo $RELEASE_VERSION > RELEASE_VERSION
-          echo $PLAIN_VERSION > PLAIN_VERSION
-          echo $NEXT_VERSION > NEXT_VERSION
+          echo "$RELEASE_VERSION" > RELEASE_VERSION
+          echo "$PLAIN_VERSION" > PLAIN_VERSION
+          echo "$NEXT_VERSION" > NEXT_VERSION
 
       - name: Upload version files
         uses: actions/upload-artifact@v5.0.0
@@ -124,8 +124,8 @@ jobs:
       - name: Move build artifacts to correct folder
         run: |
           mkdir -p artifacts
-         
-          find /tmp/artifacts/ -name "mcs*" -exec mv -v {} artifacts/ \;
+          find /tmp/artifacts/ -name "jfmt-*.zip" -exec mv -v {} artifacts/ \;
+          find /tmp/artifacts/ -name "jfmt-*.tar.gz" -exec mv -v {} artifacts/ \;
 
       - name: Set up Java
         uses: actions/setup-java@v5.0.0
@@ -151,7 +151,7 @@ jobs:
 
       - name: Capture JReleaser output
         if: always()
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v5.0.0
         with:
           name: jreleaser-release-output
           retention-days: 7
