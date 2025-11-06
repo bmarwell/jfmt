@@ -64,14 +64,32 @@ Before creating a release, ensure:
 
 === Release Process
 
-The release process will be documented when the release workflow is set up.
-For now, early access builds are the primary distribution method.
+The release workflow creates releases on a `release/*` branch to comply with branch protection rules on `main`.
 
-[NOTE]
+1. **Trigger the workflow**: Go to https://github.com/bmarwell/jfmt/actions/workflows/release.yml[Actions → Release]
+2. Click "Run workflow"
+3. Enter the release version (e.g., `0.1.0`)
+4. Optionally enter the next snapshot version (e.g., `0.1.1-SNAPSHOT`)
+   - If not provided, it will auto-increment the patch version
+5. Click "Run workflow"
+
+The workflow will:
+
+1. Create a `release/X.Y.Z` branch from `main`
+2. Update version to the release version and commit
+3. Build native binaries for all platforms
+4. Create a GitHub release with all artifacts
+5. Update version to the next snapshot and commit
+
+After the workflow completes successfully:
+
+1. Review the release branch at `https://github.com/bmarwell/jfmt/compare/main...release/X.Y.Z`
+2. Create a pull request to merge the release branch into `main`
+3. Merge the PR after review
+
+[TIP]
 ====
-The release workflow template is available at: https://github.com/mthmulders/mcs/blob/main/.github/workflows/release.yml
-
-This will be adapted in a future issue.
+The workflow will provide a direct link to create the PR in the workflow output logs.
 ====
 
 == Technical Details
