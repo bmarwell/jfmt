@@ -63,8 +63,7 @@ jobs:
           
           ./mvnw \
             --batch-mode --strict-checksum --errors \
-            versions:set \
-            versions:commit \
+            versions:set versions:commit \
             "-DnewVersion=$RELEASE_VERSION"
           
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
