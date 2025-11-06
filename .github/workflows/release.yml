@@ -145,7 +145,6 @@ jobs:
         uses: actions/download-artifact@v5.0.0
         with:
           path: /tmp/artifacts
-
       - name: Move build artifacts to correct folder
         run: |
           mkdir -p artifacts
