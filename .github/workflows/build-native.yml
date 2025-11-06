@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux-x64-musl:
-    if: contains(github.event.workflow_run.head_commit.message, 'Releasing version') != true && contains(github.event.workflow_run.head_commit.message, 'Prepare next version') != true
+    if: github.event.workflow_run == null || (contains(github.event.workflow_run.head_commit.message, 'Releasing version') != true && contains(github.event.workflow_run.head_commit.message, 'Prepare next version') != true)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
