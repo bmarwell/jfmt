@@ -79,7 +79,7 @@ jobs:
           fi
           
           # Create release branch
-          RELEASE_BRANCH="release/${PLAIN_VERSION}"
+          RELEASE_BRANCH="release/${RELEASE_VERSION}"
           git checkout -b "$RELEASE_BRANCH"
           
           ./mvnw \
