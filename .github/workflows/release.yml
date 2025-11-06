@@ -15,6 +15,8 @@ on:
 
 jobs:
   version:
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
 
     steps:
@@ -26,10 +28,10 @@ jobs:
         uses: actions/setup-java@v5.0.0
         with:
           java-version: 25
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Cache Maven packages
-        uses: actions/cache/restore@v4.3.0
+        uses: actions/cache@v4.3.0
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -38,14 +40,24 @@ jobs:
       - name: Set release version
         id: version
         run: |
-          RELEASE_VERSION=${{ github.event.inputs.version }}
-          NEXT_VERSION=${{ github.event.inputs.next }}
+          RELEASE_VERSION="${{ github.event.inputs.version }}"
+          NEXT_VERSION="${{ github.event.inputs.next }}"
+          
+          PLAIN_VERSION="$(echo "${RELEASE_VERSION}" \
+              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\)/) { print substr($0, RSTART, RLENGTH); }'
+          )"
+          
+          if [ -z "$PLAIN_VERSION" ]; then
+            echo "Error: Invalid version format. Could not extract semantic version from '${RELEASE_VERSION}'." >&2
+            exit 1
+          fi
           
           if [ -z "$NEXT_VERSION" ]; then
-            PLAIN_VERSION="$(echo "${RELEASE_VERSION}" \
-                | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'
-            )"
-            COMPUTED_NEXT_VERSION="${PLAIN_VERSION}-SNAPSHOT"
+            MAJOR=$(echo "$PLAIN_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$PLAIN_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$PLAIN_VERSION" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            COMPUTED_NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
             NEXT_VERSION="$COMPUTED_NEXT_VERSION"
           fi
           
@@ -81,7 +93,9 @@ jobs:
   release:
     needs: [version, build-native]
     runs-on: ubuntu-24.04
-    permissions: write-all
+    permissions:
+      contents: write
+      actions: read
 
     steps:
       # must read HEAD before checkout
@@ -90,9 +104,9 @@ jobs:
 
       - name: Read HEAD ref
         id: head
-        uses: juliangruber/read-file-action@v1.1.7
-        with:
-          path: artifacts/HEAD
+        run: |
+          HEAD=$(cat artifacts/HEAD)
+          echo "content=$HEAD" >> $GITHUB_OUTPUT
 
       - name: Read versions
         id: version
@@ -124,14 +138,17 @@ jobs:
       - name: Move build artifacts to correct folder
         run: |
           mkdir -p artifacts
-          find /tmp/artifacts/ -name "jfmt-*.zip" -exec mv -v {} artifacts/ \;
-          find /tmp/artifacts/ -name "jfmt-*.tar.gz" -exec mv -v {} artifacts/ \;
-
+          FOUND=$(find /tmp/artifacts/ -type f \( -name "jfmt-*.zip" -o -name "jfmt-*.tar.gz" \))
+          if [ -z "$FOUND" ]; then
+            echo "ERROR: No build artifacts found in /tmp/artifacts/"
+            exit 1
+          fi
+          echo "$FOUND" | xargs -I{} mv -v {} artifacts/
       - name: Set up Java
         uses: actions/setup-java@v5.0.0
         with:
           java-version: 25
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Cache Maven packages
         uses: actions/cache@v4.3.0
@@ -171,4 +188,11 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
-          git push origin HEAD:main
+          
+          # Push with --force-with-lease to handle potential race conditions
+          # This will fail if main has been updated by another process during the release
+          if ! git push --force-with-lease origin HEAD:main; then
+            echo "::error::Failed to push next version to main. Main branch may have been updated during the release process."
+            echo "::error::You may need to manually merge the next version commit or re-run the release workflow."
+            exit 1
+          fi
