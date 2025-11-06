@@ -1,0 +1,197 @@
+
+name: Release
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version"
+        required: true
+      next:
+        description: "Next version"
+        required: false
+
+jobs:
+  version:
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    outputs:
+      head_sha: ${{ steps.version.outputs.head_sha }}
+      release_version: ${{ steps.version.outputs.release_version }}
+      plain_version: ${{ steps.version.outputs.plain_version }}
+      next_version: ${{ steps.version.outputs.next_version }}
+
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v5.0.0
+
+      - name: Set up Java
+        uses: actions/setup-java@v5.0.0
+        with:
+          java-version: 25
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4.3.0
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Set release version
+        id: version
+        run: |
+          RELEASE_VERSION="${{ github.event.inputs.version }}"
+          NEXT_VERSION="${{ github.event.inputs.next }}"
+          
+          PLAIN_VERSION="$(echo "${RELEASE_VERSION}" \
+              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'
+          )"
+          
+          if [ -z "$PLAIN_VERSION" ]; then
+            echo "Error: Invalid version format. Could not extract semantic version from '${RELEASE_VERSION}'." >&2
+            exit 1
+          fi
+          
+          if [ -z "$NEXT_VERSION" ]; then
+            MAJOR=$(echo "$PLAIN_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$PLAIN_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$PLAIN_VERSION" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            COMPUTED_NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
+            NEXT_VERSION="$COMPUTED_NEXT_VERSION"
+          fi
+          
+          # Validate NEXT_VERSION if provided by user
+          if [ ! -z "${{ github.event.inputs.next }}" ]; then
+            NEXT_PLAIN_VERSION="$(echo "${NEXT_VERSION}" \
+              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-SNAPSHOT$/) { print substr($0, RSTART, RLENGTH); }'
+            )"
+            if [ -z "$NEXT_PLAIN_VERSION" ]; then
+              echo "Error: Invalid next version format. Must be semantic version with -SNAPSHOT suffix (e.g., 1.2.3-SNAPSHOT), got '${NEXT_VERSION}'." >&2
+              exit 1
+            fi
+          fi
+          
+          ./mvnw \
+            --batch-mode --strict-checksum --errors \
+            versions:set versions:commit \
+            "-DnewVersion=$RELEASE_VERSION"
+          
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Action"
+          git commit -a -m "chore: Releasing version $RELEASE_VERSION"
+          git push origin HEAD:main
+          
+          HEAD_SHA=$(git rev-parse HEAD)
+          echo "$HEAD_SHA" > HEAD
+          echo "$RELEASE_VERSION" > RELEASE_VERSION
+          echo "$PLAIN_VERSION" > PLAIN_VERSION
+          echo "$NEXT_VERSION" > NEXT_VERSION
+          echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "plain_version=$PLAIN_VERSION" >> $GITHUB_OUTPUT
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload version files
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          name: artifacts
+          path: |
+            HEAD
+            *_VERSION
+
+  build-native:
+    needs: version
+    uses: ./.github/workflows/build-native.yml
+    with:
+      head_sha: ${{ needs.version.outputs.head_sha }}
+    secrets: inherit
+
+  release:
+    needs: [version, build-native]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Check out correct Git ref
+        run: git checkout ${{ needs.version.outputs.head_sha }}
+
+      # checkout will clobber downloaded artifacts; we have to download them again
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v5.0.0
+        with:
+          path: /tmp/artifacts
+      - name: Move build artifacts to correct folder
+        run: |
+          mkdir -p artifacts
+          FOUND=$(find /tmp/artifacts/ -type f \( -name "jfmt-*.zip" -o -name "jfmt-*.tar.gz" \))
+          if [ -z "$FOUND" ]; then
+            echo "ERROR: No build artifacts found in /tmp/artifacts/"
+            exit 1
+          fi
+          echo "$FOUND" | xargs -I{} mv -v {} artifacts/
+      - name: Set up Java
+        uses: actions/setup-java@v5.0.0
+        with:
+          java-version: 25
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4.3.0
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Release with JReleaser
+        run: |
+          ./mvnw \
+            --batch-mode --strict-checksum --errors \
+            -Prelease -DartifactsDir=artifacts \
+            jreleaser:full-release
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Capture JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          name: jreleaser-release-output
+          retention-days: 7
+          path: |
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties
+
+      - name: Set next version
+        env:
+          NEXT_VERSION: ${{ needs.version.outputs.next_version }}
+        run: |
+          ./mvnw \
+            --batch-mode --strict-checksum --errors \
+            versions:set \
+            versions:commit \
+            "-DnewVersion=$NEXT_VERSION"
+          
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Action"
+          git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
+          
+          # Push with --force-with-lease=main:<commit-sha> to handle potential race conditions
+          # This will fail if main has been updated by another process during the release
+          if ! git push --force-with-lease=main:${{ needs.version.outputs.head_sha }} origin HEAD:main; then
+            echo "::error::Failed to push next version to main. Main branch may have been updated during the release process."
+            echo "::error::You may need to manually merge the next version commit or re-run the release workflow."
+            exit 1
+          fi
