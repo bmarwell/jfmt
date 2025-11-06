@@ -38,7 +38,9 @@ You can run jfmt as a native binary or as a portable JAR (see <<Compiling>>).
 +
 [source,console]
 ----
-# Format and rewrite all Java files
+# Format and rewrite all Java files (write is the default command)
+jfmt src/
+# or explicitly:
 jfmt write src/
 
 # Or just check which files need formatting
@@ -52,7 +54,7 @@ jfmt diff --all .
 +
 |===
 | Action | Who | Purpose
-| `jfmt write` | Developer | Format files locally before committing
+| `jfmt <files>` or `jfmt write <files>` | Developer | Format files locally before committing (write is the default)
 | `jfmt diff`  | CI pipeline | Verify formatting consistency
 | `jfmt print` | Tooling | Print the correctly formatted output for the given file
 | `jfmt list`  | Developer or CI | List unformatted files
@@ -97,17 +99,16 @@ jfmt diff --all .
 Usage: jfmt [-hlV] [COMMAND]
 A command-line tool to format Java source code using JDT.
   -h, --help      Show this help message and exit.
-  -l, --list      Just report the name of the files which are not indented correctly.
   -V, --version   Print version information and exit.
 Commands:
   list        Just list files which are not formatted correctly without printing a diff or writing changes.
-  write, fix  Write the formatted source code back to the file(s).
-              If not given, the non-indented file(s) will be printed to stdout.
-              Only the first file is printed, unless -a is also given.
+  write, fix  Write the formatted source code back to the file(s). This is the default command.
   print       Print the correctly formatted output for the given file(s).
               Stops on the first file unless -a (--all) is given.
               In this case, the file name is printed before each output.
   diff        Output in diff format. Normal diff is used unless -u is also given.
+
+If no subcommand is specified, 'write' is used as the default.
 ----
 
 === `list` command
@@ -141,7 +142,7 @@ writing changes.
   -V, --version           Print version information and exit.
 ----
 
-=== `write`/`fix` command
+=== `write`/`fix` command (default)
 
 [source]
 ----
@@ -149,9 +150,8 @@ Usage: jfmt write [-ahV] [--no-color] [--config=<config>]
                   [--config-file=<configFile>] [--import-order=<importOrder>]
                   [--import-order-file=<importOrderFile>]
                   <filesOrDirectories>...
-Write the formatted source code back to the file(s).
-If not given, the non-indented file(s) will be printed to stdout.
-Only the first file is printed, unless -e is also given.
+Write the formatted source code back to the file(s). This is the default command
+when no subcommand is specified.
       <filesOrDirectories>...
                           Files or directory to scan and to format.
   -a, --all               Report all errors, not just the first one.
