@@ -63,8 +63,7 @@ jobs:
           
           ./mvnw \
             --batch-mode --strict-checksum --errors \
-            versions:set \
-            versions:commit \
+            versions:set versions:commit \
             "-DnewVersion=$RELEASE_VERSION"
           
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -86,9 +85,21 @@ jobs:
             *_VERSION
 
   build-native:
-    uses: ./.github/workflows/build-native.yml
-    secrets: inherit
     needs: version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download version artifacts
+        uses: actions/download-artifact@v5.0.0
+      - name: Read HEAD ref
+        id: head
+        run: |
+          HEAD=$(cat artifacts/HEAD)
+          echo "head_sha=$HEAD" >> $GITHUB_OUTPUT
+      - name: Call build-native workflow
+        uses: ./.github/workflows/build-native.yml
+        with:
+          head_sha: ${{ steps.head.outputs.head_sha }}
+        secrets: inherit
 
   release:
     needs: [version, build-native]
@@ -134,7 +145,6 @@ jobs:
         uses: actions/download-artifact@v5.0.0
         with:
           path: /tmp/artifacts
-
       - name: Move build artifacts to correct folder
         run: |
           mkdir -p artifacts
@@ -182,16 +192,17 @@ jobs:
         run: |
           ./mvnw \
             --batch-mode --strict-checksum --errors \
-            versions:set versions:commit \
-            -DnewVersion=$NEXT_VERSION
+            versions:set \
+            versions:commit \
+            "-DnewVersion=$NEXT_VERSION"
           
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
           
-          # Push with --force-with-lease to handle potential race conditions
+          # Push with --force-with-lease=main:<commit-sha> to handle potential race conditions
           # This will fail if main has been updated by another process during the release
-          if ! git push --force-with-lease origin HEAD:main; then
+          if ! git push --force-with-lease=main:${{ steps.head.outputs.content }} origin HEAD:main; then
             echo "::error::Failed to push next version to main. Main branch may have been updated during the release process."
             echo "::error::You may need to manually merge the next version commit or re-run the release workflow."
             exit 1
