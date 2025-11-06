@@ -171,4 +171,4 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
-          git push origin HEAD:main
+          git push origin ${{ steps.head.outputs.content }}:main
