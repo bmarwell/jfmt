@@ -23,6 +23,7 @@ jobs:
       release_version: ${{ steps.version.outputs.release_version }}
       plain_version: ${{ steps.version.outputs.plain_version }}
       next_version: ${{ steps.version.outputs.next_version }}
+      release_branch: ${{ steps.version.outputs.release_branch }}
 
     steps:
 
@@ -77,6 +78,10 @@ jobs:
             fi
           fi
           
+          # Create release branch
+          RELEASE_BRANCH="release/${PLAIN_VERSION}"
+          git checkout -b "$RELEASE_BRANCH"
+          
           ./mvnw \
             --batch-mode --strict-checksum --errors \
             versions:set versions:commit \
@@ -85,7 +90,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Releasing version $RELEASE_VERSION"
-          git push origin HEAD:main
+          git push origin "$RELEASE_BRANCH"
           
           HEAD_SHA=$(git rev-parse HEAD)
           echo "$HEAD_SHA" > HEAD
@@ -96,6 +101,7 @@ jobs:
           echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
           echo "plain_version=$PLAIN_VERSION" >> $GITHUB_OUTPUT
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "release_branch=$RELEASE_BRANCH" >> $GITHUB_OUTPUT
 
       - name: Upload version files
         uses: actions/upload-artifact@v5.0.0
@@ -177,6 +183,7 @@ jobs:
       - name: Set next version
         env:
           NEXT_VERSION: ${{ needs.version.outputs.next_version }}
+          RELEASE_BRANCH: ${{ needs.version.outputs.release_branch }}
         run: |
           ./mvnw \
             --batch-mode --strict-checksum --errors \
@@ -187,11 +194,8 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
           git commit -a -m "chore: Prepare next version: $NEXT_VERSION"
+          git push origin HEAD:"$RELEASE_BRANCH"
           
-          # Push with --force-with-lease=main:<commit-sha> to handle potential race conditions
-          # This will fail if main has been updated by another process during the release
-          if ! git push --force-with-lease=main:${{ needs.version.outputs.head_sha }} origin HEAD:main; then
-            echo "::error::Failed to push next version to main. Main branch may have been updated during the release process."
-            echo "::error::You may need to manually merge the next version commit or re-run the release workflow."
-            exit 1
-          fi
+          echo "::notice::Release branch '$RELEASE_BRANCH' created successfully."
+          echo "::notice::Create a pull request to merge '$RELEASE_BRANCH' into main:"
+          echo "::notice::https://github.com/${{ github.repository }}/compare/main...$RELEASE_BRANCH"
