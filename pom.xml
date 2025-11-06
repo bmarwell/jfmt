@@ -4,7 +4,7 @@
 
   <groupId>io.github.bmarwell.jfmt</groupId>
   <artifactId>jfmt-root</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0-rc1</version>
   <packaging>pom</packaging>
 
   <name>jfmt (root)</name>
