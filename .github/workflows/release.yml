@@ -61,6 +61,17 @@ jobs:
             NEXT_VERSION="$COMPUTED_NEXT_VERSION"
           fi
           
+          # Validate NEXT_VERSION if provided by user
+          if [ ! -z "${{ github.event.inputs.next }}" ]; then
+            NEXT_PLAIN_VERSION="$(echo "${NEXT_VERSION}" \
+              | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-SNAPSHOT$/) { print substr($0, RSTART, RLENGTH); }'
+            )"
+            if [ -z "$NEXT_PLAIN_VERSION" ]; then
+              echo "Error: Invalid next version format. Must be semantic version with -SNAPSHOT suffix (e.g., 1.2.3-SNAPSHOT), got '${NEXT_VERSION}'." >&2
+              exit 1
+            fi
+          fi
+          
           ./mvnw \
             --batch-mode --strict-checksum --errors \
             versions:set versions:commit \
