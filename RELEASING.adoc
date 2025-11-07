@@ -121,6 +121,7 @@ The release process uses the following Maven goals:
   - Uploads all distribution artifacts
   - Generates changelog from conventional commits
   - Executed in the early-access workflow's release job
+  - Must be run with `-N` and/or `-pl .`, so it only executes on the root project
 
 [TIP]
 ====

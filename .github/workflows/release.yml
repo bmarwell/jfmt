@@ -164,8 +164,12 @@ jobs:
       - name: Release with JReleaser
         run: |
           ./mvnw \
-            --batch-mode --strict-checksum --errors \
-            -Prelease -DartifactsDir=artifacts \
+            --batch-mode \
+            --strict-checksum \
+            --errors \
+            --non-recursive \
+            -Prelease \
+            -DartifactsDir=artifacts \
             jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
