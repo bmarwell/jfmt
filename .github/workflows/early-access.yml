@@ -64,6 +64,9 @@ jobs:
         run: |
           ./mvnw \
             --batch-mode \
+            --strict-checksum \
+            --errors \
+            --non-recursive \
             -Prelease \
             -DartifactsDir=artifacts \
             jreleaser:full-release
