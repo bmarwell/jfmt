@@ -26,6 +26,7 @@ public class ApacheImportOrderTest extends ImportOrderProcessorTestBase {
 
     @Test
     void does_not_change_as_expected() {
+        // given
         String expected = """
                           import javax.inject.Inject;
                           import javax.inject.Named;
@@ -50,7 +51,10 @@ public class ApacheImportOrderTest extends ImportOrderProcessorTestBase {
                           import static java.util.stream.Collectors.toSet;
                           """;
 
+        // when
         String actual = runAndGetImportBlock();
+
+        // then
         assertEquals(expected, actual);
     }
 }
