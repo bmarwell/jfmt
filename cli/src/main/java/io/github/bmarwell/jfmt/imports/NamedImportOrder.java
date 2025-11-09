@@ -7,7 +7,8 @@ public enum NamedImportOrder {
     google("/io/github/bmarwell/jfmt/config/importorder.google.properties"),
     eclipse("/io/github/bmarwell/jfmt/config/importorder.eclipse.properties"),
     intellij("/io/github/bmarwell/jfmt/config/importorder.intellij.properties"),
-    enterprise("/io/github/bmarwell/jfmt/config/importorder.enterprise.properties");
+    enterprise("/io/github/bmarwell/jfmt/config/importorder.enterprise.properties"),
+    apache("/io/github/bmarwell/jfmt/config/importorder.apache.properties");
 
     private final String resourcePath;
 

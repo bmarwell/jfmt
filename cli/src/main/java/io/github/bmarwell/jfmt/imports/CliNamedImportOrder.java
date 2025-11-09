@@ -11,5 +11,10 @@ public enum CliNamedImportOrder {
     google,
     eclipse,
     intellij,
-    enterprise
+    enterprise,
+    /**
+     * Apache import order profile. First all javax non-static imports, then all java.* imports,
+     * then all other non-static imports, then all static imports.
+     */
+    apache
 }
