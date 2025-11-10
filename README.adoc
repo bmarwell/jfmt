@@ -9,6 +9,7 @@ image:https://codecov.io/github/bmarwell/jfmt/graph/badge.svg?token=97T490QXQ2["
 image:https://img.shields.io/badge/License-Apache_2.0-blue.svg["License",link=https://opensource.org/licenses/Apache-2.0]
 image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=https://joinup.ec.europa.eu/software/page/eupl]
 image:https://img.shields.io/github/all-contributors/bmarwell/jfmt?color=ee8449&style=flat-square["All Contributors",link="#contributors"]
+image:https://deepwiki.com/badge.svg["Ask DeepWiki",link=https://deepwiki.com/bmarwell/jfmt]
 
 toc::[]
 
