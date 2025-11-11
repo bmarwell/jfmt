@@ -8,7 +8,7 @@ toc::[]
 
 == Overview
 
-The release process has been redesigned into three phases:
+The release process consists of three phases:
 
 1. **Phase 1: Local Maven Release** - Create GPG-signed tags locally using maven-release-plugin
 2. **Phase 2: CI Native Builds** - Automated native binary builds triggered by tag push
@@ -63,37 +63,12 @@ git pull
 
 === Configuration
 
-The maven-release-plugin is configured in the root `pom.xml`:
+The maven-release-plugin is configured in the root `pom.xml` with the following key settings:
 
-[source,xml]
-----
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-release-plugin</artifactId>
-  <configuration>
-    <tagNameFormat>v@{project.version}</tagNameFormat>
-    <autoVersionSubmodules>true</autoVersionSubmodules>
-    <releaseProfiles>release</releaseProfiles>
-    <goals>deploy</goals>
-    <preparationGoals>clean verify</preparationGoals>
-    <pushChanges>true</pushChanges>
-    <localCheckout>true</localCheckout>
-  </configuration>
-</plugin>
-----
-
-Note: The `deploy` goal is configured, but actual deployment is skipped via:
-
-[source,xml]
-----
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-deploy-plugin</artifactId>
-  <configuration>
-    <skip>true</skip>
-  </configuration>
-</plugin>
-----
+* **Tag format:** `v@{project.version}` (e.g., `v0.1.0`)
+* **Goal:** `install` (deployment to Maven Central is skipped)
+* **Auto-version submodules:** Enabled
+* **Push changes:** Enabled (commits and tags are pushed automatically)
 
 == Phase 2: CI Native Builds (Automated)
 
