@@ -2,243 +2,311 @@
 = Releasing jfmt
 :toc: macro
 
-This document describes the release process for jfmt, including both early-access (pre-release) builds and official releases.
+This document describes the release process for jfmt using maven-release-plugin and GPG-signed releases.
 
 toc::[]
 
 == Overview
 
-jfmt uses https://jreleaser.org/[JReleaser] to automate the release process.
-There are two types of releases:
+The release process has been redesigned into three phases:
 
-* **Early Access builds**: Automated pre-releases from the `main` branch
-* **Official releases**: Tagged releases created manually
+1. **Phase 1: Local Maven Release** - Create GPG-signed tags locally using maven-release-plugin
+2. **Phase 2: CI Native Builds** - Automated native binary builds triggered by tag push
+3. **Phase 3: Local JReleaser** - Create GitHub release with all artifacts
 
-Both processes build native binaries for multiple platforms:
+== Phase 1: Local Maven Release
 
-* Linux x86_64 (static binary with musl)
-* macOS x86_64 (Intel)
-* macOS aarch64 (Apple Silicon)
-* Windows x86_64
-
-== Early Access Builds (Automated)
-
-Early access builds are automatically created on every push to the `main` branch.
-
-=== How it Works
-
-1. When code is pushed to `main`, the `.github/workflows/early-access.yml` workflow is triggered
-2. The workflow calls `.github/workflows/build-native.yml` to build native binaries for all platforms
-3. Build artifacts are collected from all platform builds
-4. JReleaser creates a pre-release on GitHub with all artifacts attached
-
-=== What Gets Built
-
-The `build-native.yml` workflow builds:
-
-* A static native binary for each platform
-* Distribution archives (`.zip` and `.tar.gz`) containing:
-  - The native executable
-  - Bash completion scripts
-  - Man pages
-  - License files
-  - Third-party license information
-
-=== Viewing Early Access Builds
-
-Early access builds appear as pre-releases on the https://github.com/bmarwell/jfmt/releases[GitHub Releases page].
-They are tagged with a version like `early-access` and are marked as pre-releases.
-
-== Official Releases
-
-Official releases are created manually by project maintainers.
+The maven-release-plugin handles version management and GPG signing.
 
 === Prerequisites
 
-Before creating a release, ensure:
+Before releasing:
 
 1. All tests pass on the `main` branch
-2. The changelog is up to date
-3. You have write access to the repository
-4. You have the `GH_PAT` secret configured (for maintainers)
+2. You have GPG configured for signing commits and tags
+3. Git is configured with your GPG key:
++
+[source,console]
+----
+git config --global user.signingkey <your-key-id>
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+----
 
-=== Release Process
-
-The release workflow creates releases on a `release/*` branch to comply with branch protection rules on `main`.
-
-1. **Trigger the workflow**: Go to https://github.com/bmarwell/jfmt/actions/workflows/release.yml[Actions → Release]
-2. Click "Run workflow"
-3. Enter the release version (e.g., `0.1.0`)
-4. Optionally enter the next snapshot version (e.g., `0.1.1-SNAPSHOT`)
-   - If not provided, it will auto-increment the patch version
-5. Click "Run workflow"
-
-The workflow will:
-
-1. Create a `release/X.Y.Z` branch from `main`
-2. Update version to the release version and commit
-3. Build native binaries for all platforms
-4. Create a GitHub release with all artifacts
-5. Update version to the next snapshot and commit
-
-After the workflow completes successfully:
-
-1. Review the release branch at `https://github.com/bmarwell/jfmt/compare/main...release/X.Y.Z`
-2. Create a pull request to merge the release branch into `main`
-3. Merge the PR after review
-
-[TIP]
-====
-The workflow will provide a direct link to create the PR in the workflow output logs.
-====
-
-== Technical Details
-
-=== JReleaser Configuration
-
-The JReleaser configuration is split between two files:
-
-* `jreleaser.yml`: Main configuration file at the repository root
-  - Project metadata (name, description, license)
-  - Release configuration (GitHub settings)
-  - Distribution definitions (artifacts to release)
-
-* `cli/pom.xml`: Maven-specific assembly configuration
-  - JReleaser Maven plugin execution
-  - Java archive assembly definition
-  - File sets for documentation and completions
-
-=== Maven Goals
-
-The release process uses the following Maven goals:
-
-* `jreleaser:assemble`: Creates distribution archives from build artifacts
-  - Executed during the `package` phase in the `cli` module
-  - Bundles the JAR with dependencies, docs, and scripts
-
-* `jreleaser:full-release`: Performs a complete release
-  - Creates/updates GitHub release
-  - Uploads all distribution artifacts
-  - Generates changelog from conventional commits
-  - Executed in the early-access workflow's release job
-  - Must be run with `-N` and/or `-pl .`, so it only executes on the root project
-
-[TIP]
-====
-To test the assembly locally without releasing:
+=== Release Steps
 
 [source,console]
 ----
-./mvnw clean package -Prelease
+# 1. Ensure you're on main with latest changes
+git checkout main
+git pull
+
+# 2. Run maven-release-plugin (interactive)
+./mvnw release:prepare release:perform
+
+# You'll be prompted for:
+# - Release version (e.g., 0.1.0)
+# - SCM tag (default: v0.1.0)
+# - Next development version (e.g., 0.1.1-SNAPSHOT)
 ----
 
-This will create distributions in `cli/target/jreleaser/assemble/`.
-====
+**What happens:**
 
-=== Workflow Architecture
+* Updates version to release version (removes `-SNAPSHOT`)
+* Updates `<scm><tag>` in POM to the release tag
+* Creates a GPG-signed commit: `[maven-release-plugin] prepare release v0.1.0`
+* Creates a GPG-signed tag: `v0.1.0`
+* Updates version to next development version
+* Creates a GPG-signed commit: `[maven-release-plugin] prepare for next development iteration`
+* Pushes commits and tags to GitHub
+* Triggers the CI workflow (Phase 2)
 
-The workflow architecture uses GitHub Actions' reusable workflow feature:
+=== Configuration
 
-[source]
+The maven-release-plugin is configured in the root `pom.xml`:
+
+[source,xml]
 ----
-early-access.yml
-  ├─ calls: build-native.yml (builds on all platforms)
-  │    ├─ build-linux-x64-musl
-  │    └─ build-others (matrix: macOS x64, macOS aarch64, Windows x64)
-  └─ release job (collects artifacts, runs jreleaser:full-release)
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-release-plugin</artifactId>
+  <configuration>
+    <tagNameFormat>v@{project.version}</tagNameFormat>
+    <autoVersionSubmodules>true</autoVersionSubmodules>
+    <releaseProfiles>release</releaseProfiles>
+    <goals>deploy</goals>
+    <preparationGoals>clean verify</preparationGoals>
+    <pushChanges>true</pushChanges>
+    <localCheckout>true</localCheckout>
+  </configuration>
+</plugin>
 ----
 
-This design:
+Note: The `deploy` goal is configured, but actual deployment is skipped via:
 
-* Keeps build logic in one place (`build-native.yml`)
-* Allows testing native builds independently
-* Shares secrets securely using `secrets: inherit`
-* Enables parallel builds across platforms
+[source,xml]
+----
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-deploy-plugin</artifactId>
+  <configuration>
+    <skip>true</skip>
+  </configuration>
+</plugin>
+----
 
-=== Artifact Locations
+== Phase 2: CI Native Builds (Automated)
 
-After a successful build, artifacts are available in several locations:
+When you push a tag (e.g., `v0.1.0`), the `.github/workflows/build-release-artifacts.yml` workflow is automatically triggered.
 
-* **GitHub Actions artifacts**: Temporary storage during workflow runs
-  - `artifacts-ubuntu-latest`: Linux binaries
-  - `artifacts-macos-13`: macOS Intel binaries
-  - `artifacts-macos-14`: macOS ARM binaries
-  - `artifacts-windows-2022`: Windows binaries
+=== What It Does
 
-* **GitHub Releases**: Permanent storage for released artifacts
-  - Early access: https://github.com/bmarwell/jfmt/releases/tag/early-access
-  - Tagged releases: `https://github.com/bmarwell/jfmt/releases/tag/v{version}`
+1. Checks out the tagged commit
+2. Builds native binaries for all platforms using `.github/workflows/build-native.yml`:
+   - Linux x86_64 (static binary with musl)
+   - macOS x86_64 (Intel)
+   - macOS aarch64 (Apple Silicon)
+   - Windows x86_64
+3. Creates distribution archives (`.zip` and `.tar.gz`) for each platform
+4. Uploads all artifacts with 90-day retention
 
-=== Secrets Required
+=== Monitoring the Build
 
-The following secrets must be configured in the repository (for maintainers):
+Go to https://github.com/bmarwell/jfmt/actions and watch for the "Build Release Artifacts" workflow.
 
-* `GH_PAT`: GitHub Personal Access Token with repo and packages permissions
-  - Used by JReleaser to create releases and upload artifacts
+The workflow will show instructions for downloading artifacts in the final step.
 
-* `MUSL_TOOLCHAIN_LOCATION`: URL to musl toolchain download location
-* `MUSL_TOOLCHAIN_USER`: Username for musl toolchain authentication
-* `MUSL_TOOLCHAIN_PASS`: Password for musl toolchain authentication
+== Phase 3: Local JReleaser
+
+After CI builds complete, create the GitHub release locally with JReleaser.
+
+=== Set GitHub Token
+
+JReleaser needs a GitHub Personal Access Token with `repo` scope.
+
+[source,console]
+----
+# Set environment variable (or add to ~/.bashrc or ~/.zshrc)
+export JRELEASER_GITHUB_TOKEN=<your-github-pat>
+
+# To create a token, visit:
+# https://github.com/settings/tokens/new
+# Required scopes: repo
+----
+
+=== Download Artifacts
+
+[source,console]
+----
+# Get the workflow run ID from GitHub Actions UI or:
+gh run list --workflow=build-release-artifacts.yml --limit 1
+
+# Download artifacts to ./artifacts folder
+gh run download <run-id> -n release-artifacts-v0.1.0 -D artifacts/
+
+# Verify artifacts
+ls -lh artifacts/
+----
+
+=== Create GitHub Release
+
+[source,console]
+----
+# Checkout the release tag
+git checkout v0.1.0
+
+# Ensure you're in the project root directory
+cd /path/to/jfmt
+
+# Run JReleaser with downloaded artifacts
+./mvnw -N -Prelease -DartifactsDir=artifacts jreleaser:full-release
+----
+
+**Note:** The `-DartifactsDir=artifacts` path is relative to the project root. Ensure you run this command from the repository root directory.
+
+**What happens:**
+
+* JReleaser creates a GitHub release linked to the tag
+* Uploads all native binary artifacts
+* Generates changelog from conventional commits
+* Marks the release as latest
+
+=== Verify the Release
+
+Check https://github.com/bmarwell/jfmt/releases to see your new release.
+
+== Testing the Release Process
+
+Before performing an actual release, you can test the configuration with the provided dry-run script:
+
+[source,console]
+----
+./test-release.sh
+----
+
+This script validates:
+
+* Git and GPG configuration
+* maven-release-plugin configuration
+* CI workflow files
+* JReleaser configuration
+* Artifact path resolution
+
+The script runs maven-release-plugin and JReleaser in dry-run mode without making any actual changes.
 
 == Troubleshooting
 
-=== Build Failures
+=== maven-release-plugin Issues
 
-If the early access build fails:
+**Problem:** Plugin fails with "Unable to commit files"
 
-1. Check the GitHub Actions logs for the failing job
-2. Look for errors in the build output
-3. Common issues:
-   - Compilation errors: Fix the code and push again
-   - Test failures: Fix the tests or investigate test flakiness
-   - Native image build failures: Check GraalVM compatibility
+* Ensure Git is configured properly
+* Check you have push access to the repository
+* Verify GPG key is set up correctly
 
-=== Release Failures
+**Problem:** "Working directory is not clean"
 
-If JReleaser fails to create a release:
+* Commit or stash all local changes before releasing
+* Run `git status` to check for uncommitted files
 
-1. Check the `jreleaser-release-output` artifact for detailed logs
-2. Common issues:
-   - Missing artifacts: Ensure all platform builds completed successfully
-   - GitHub API errors: Check `GH_PAT` secret is valid and has required permissions
-   - Configuration errors: Validate `jreleaser.yml` syntax
+=== CI Build Failures
 
-=== Testing Locally
+**Problem:** Native build fails
 
-To test the native build locally:
+* Check the workflow logs in GitHub Actions
+* Common issues:
+  - GraalVM compatibility
+  - Missing dependencies
+  - Platform-specific compilation errors
+
+=== JReleaser Issues
+
+**Problem:** "Artifacts not found"
+
+* Verify artifacts were downloaded to `./artifacts/`
+* Check artifact naming matches pattern in `jreleaser.yml`
+
+**Problem:** "GitHub API rate limit exceeded"
+
+* Use a personal access token with sufficient permissions
+* Wait for rate limit to reset
+
+== Release Candidates
+
+To create a release candidate (RC) instead of a final release:
 
 [source,console]
 ----
-# Build native image for your platform
-./mvnw clean package -Pnative
+# Run maven-release-plugin with RC version
+./mvnw release:prepare release:perform
 
-# Test the native binary
-./cli/target/jfmt-0.1.0-SNAPSHOT --help
+# When prompted for release version, enter: 0.1.0-rc.1
+# When prompted for SCM tag, accept default: v0.1.0-rc.1
+# When prompted for next development version, keep current: 0.1.0-SNAPSHOT
 ----
 
-To test JReleaser configuration without releasing:
+**What happens:**
+
+* Creates tag `v0.1.0-rc.1` with RC version (SemVer 2.0.0 compliant)
+* Returns to `0.1.0-SNAPSHOT` after release (not incremented)
+* Allows multiple RC releases before final release (`0.1.0-rc.2`, `0.1.0-rc.3`, etc.)
+* CI builds natives for the RC tag
+* JReleaser creates a pre-release on GitHub
+
+**Next steps:**
+
+1. Follow Phase 2 and Phase 3 as usual
+2. The GitHub release will be marked as "pre-release" automatically (detected by `-rc` suffix)
+3. When ready for final release, run `./mvnw release:prepare release:perform` again with version `0.1.0`
+
+== Rollback
+
+If something goes wrong during release:
 
 [source,console]
 ----
-# Dry-run to check configuration
-./mvnw -Prelease jreleaser:config
+# Rollback the maven release (only if not pushed yet)
+./mvnw release:rollback
 
-# Assemble distributions without releasing
-./mvnw -Prelease jreleaser:assemble
+# If already pushed, manually clean up:
+# Delete the pushed tag
+git push --delete origin v0.1.0
+git tag -d v0.1.0
+
+# Delete the GitHub release (if created)
+gh release delete v0.1.0
+
+# Reset commits (if release commits were pushed)
+git reset --hard HEAD~2  # Revert prepare and next version commits
+git push origin main --force
 ----
 
-== Future Enhancements
+**For Release Candidates:**
 
-Potential improvements to the release process:
+If rolling back an RC release, the version should already be back at the SNAPSHOT version (e.g., `0.1.0-SNAPSHOT`).
+No additional version changes are needed since RCs don't increment the next development version.
 
-* Add package manager integrations (Homebrew, Chocolatey, Scoop, SDKMAN)
-* Set up Docker image releases
-* Add social media announcements (Mastodon, Bluesky)
-* Implement automated changelog generation
-* Add release notes templates
+If you need to re-release an RC with the same number (e.g., `0.1.0-rc.1`), you must:
+
+1. Delete the tag as shown above
+2. Run `./mvnw release:prepare release:perform` again with the same RC version
+
+== Advantages of This Process
+
+✅ **GPG-signed commits and tags** - Full traceability and security
+
+✅ **SCM tags properly managed** - Maven updates `<scm><tag>` automatically
+
+✅ **Atomic operations** - maven-release-plugin handles rollback on failure
+
+✅ **CI for cross-platform builds** - Native binaries built on proper platforms
+
+✅ **Local control** - You verify artifacts before publishing
+
+✅ **Standard Maven way** - Uses battle-tested maven-release-plugin
 
 == References
 
+* https://maven.apache.org/maven-release/maven-release-plugin/[Maven Release Plugin]
 * https://jreleaser.org/[JReleaser Documentation]
-* https://jreleaser.org/guide/latest/examples/maven/maven.html[JReleaser Maven Examples]
-* https://github.com/mthmulders/mcs[MCS Project] (reference implementation)
+* https://docs.github.com/en/authentication/managing-commit-signature-verification[GitHub: GPG Commit Signing]
