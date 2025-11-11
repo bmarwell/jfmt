@@ -9,8 +9,6 @@ project:
   authors:
     - Benjamin Marwell
   license: Apache-2.0 OR EUPL-1.2
-  extraProperties:
-    inceptionYear: 2025
   stereotype: CLI
   tags:
     - 'java'

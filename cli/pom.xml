@@ -11,6 +11,8 @@
   <packaging>jar</packaging>
 
   <name>jfmt :: cli</name>
+  <description>Java source code formatter - command line interface</description>
+
   <properties>
     <main.class>io.github.bmarwell.jfmt.JFmt</main.class>
     <binary.name>${artifactId}</binary.name>
