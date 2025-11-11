@@ -8,6 +8,51 @@
   <packaging>pom</packaging>
 
   <name>jfmt (root)</name>
+  <description>Format your Java source code using the Eclipse JDT formatter</description>
+  <url>https://github.com/bmarwell/jfmt</url>
+  <inceptionYear>2025</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache-2.0 OR EUPL-1.2</name>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>bmarwell</id>
+      <name>Benjamin Marwell</name>
+      <email>bmarwell@apache.org</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+  </developers>
+
+  <mailingLists>
+    <mailingList>
+      <name>GitHub Discussions</name>
+      <archive>https://github.com/bmarwell/jfmt/discussions</archive>
+    </mailingList>
+  </mailingLists>
+
+  <scm>
+    <connection>scm:git:https://github.com/bmarwell/jfmt.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/bmarwell/jfmt.git</developerConnection>
+    <url>https://github.com/bmarwell/jfmt</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/bmarwell/jfmt/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/bmarwell/jfmt/actions</url>
+  </ciManagement>
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
