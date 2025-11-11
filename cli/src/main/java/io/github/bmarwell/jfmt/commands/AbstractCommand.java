@@ -111,6 +111,11 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
                 .toList();
 
+        if (allFilesAndDirs.isEmpty()) {
+            spec.commandLine().getErr().println("Error: No Java files found in the specified paths");
+            return 1;
+        }
+
         try (var scope = StructuredTaskScope.open(
             new FailFastFileProcessingResultJoiner(),
             cf -> cf.withThreadFactory(BoundedVirtualThreadExecutor.create())

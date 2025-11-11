@@ -179,4 +179,22 @@ class ListTest extends AbstractCommandTest {
         );
     }
 
+    @Test
+    void returns_error_when_no_java_files_found() {
+        // given - only non-Java files
+        var args = new String[] { "list", "pom.xml" };
+
+        // when
+        var result = doExecute(args);
+
+        // then
+        assertEquals(1, result.returncode(), "Should return error code 1 when no Java files found");
+
+        String stderr = String.join(System.lineSeparator(), result.stderr());
+        assertTrue(
+            stderr.contains("No Java files found"),
+            "stderr should contain error message but was: " + stderr
+        );
+    }
+
 }
