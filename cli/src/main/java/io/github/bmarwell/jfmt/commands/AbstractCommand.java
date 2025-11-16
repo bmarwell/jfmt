@@ -112,7 +112,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
                 .toList();
 
         if (allFilesAndDirs.isEmpty()) {
-            spec.commandLine().getErr().println("Error: No Java files found in the specified paths");
+            getWriter().error("Error reading arguments", "No Java files found in the specified paths");
             return 1;
         }
 
