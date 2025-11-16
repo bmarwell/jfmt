@@ -1,6 +1,7 @@
 package io.github.bmarwell.jfmt.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -194,6 +195,10 @@ class ListTest extends AbstractCommandTest {
         assertTrue(
             stderr.contains("No Java files found"),
             "stderr should contain error message but was: " + stderr
+        );
+        assertFalse(
+            stderr.contains("io.github.bmarwell.jfmt"),
+            "stdout should not contain stack trace but was: " + stderr
         );
     }
 

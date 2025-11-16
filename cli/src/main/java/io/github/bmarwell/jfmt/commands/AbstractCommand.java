@@ -106,10 +106,19 @@ public abstract class AbstractCommand implements Callable<Integer> {
      */
     @Override
     public Integer call() throws Exception {
-        final List<Callable<FileProcessingResult>> allFilesAndDirs =
-            PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
-                .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
-                .toList();
+
+        final List<Callable<FileProcessingResult>> allFilesAndDirs;
+
+        try {
+            allFilesAndDirs =
+                PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
+                    .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
+                    .toList();
+        } catch (IllegalArgumentException pathException) {
+            getWriter().error("Error reading arguments", "No Java files found in the specified paths");
+            // TODO: exception stack trace on verbose?
+            return 1;
+        }
 
         if (allFilesAndDirs.isEmpty()) {
             getWriter().error("Error reading arguments", "No Java files found in the specified paths");
