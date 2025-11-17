@@ -33,7 +33,7 @@ public class WriteCommandIT {
         );
         assertFalse(
             result.getStdout().contains("io.github.bmarwell.jfmt"),
-            "stderr should not contain a stacktrace"
+            "stdout should not contain a stacktrace"
         );
     }
 
