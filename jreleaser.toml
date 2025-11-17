@@ -1,0 +1,64 @@
+[project]
+name = "jfmt"
+description = "Formatter for Java source files (jfmt)"
+longDescription = "Format your Java source code using the Eclipse JDT formatter."
+authors = [ "Benjamin Marwell" ]
+license = "Apache-2.0 OR EUPL-1.2"
+inceptionYear = "2025"
+stereotype = "CLI"
+tags = [ "java", "formatter", "cli" ]
+
+# Project links
+links.bugTracker = "https://github.com/bmarwell/jfmt/issues"
+links.homepage = "https://github.com/bmarwell/jfmt"
+links.vcsBrowser = "https://github.com/bmarwell/jfmt"
+
+
+[release.github]
+enabled = true
+owner = "bmarwell"
+name = "jfmt"
+username = "bmarwell"
+update.enabled = true
+
+    [release.github.changelog]
+    formatted = "ALWAYS"
+    preset = "conventional-commits"
+    links = true
+    hide.contributors = [ "Benjamin Marwell", "[bot]", "GitHub" ]
+
+
+# Distribution archive: contains bin/jfmt[.sh|.bat] scripts
+[distributions.jfmt-archive]
+type = "JAVA_BINARY"
+stereotype = "CLI"
+
+# distribution jfmt: a native binary
+[distributions.jfmt]
+type = "BINARY"
+stereotype = "CLI"
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-x86_64.zip"
+    platform = "linux-x86_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-x86_64.tar.gz"
+    platform = "linux-x86_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-windows-x86_64.zip"
+    platform = "windows-x86_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-x86_64.zip"
+    platform = "osx-x86_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-aarch_64.zip"
+    platform = "osx-aarch_64"
+    extraProperties.graalVMNativeImage = true

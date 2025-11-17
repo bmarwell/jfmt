@@ -452,7 +452,7 @@
             <artifactId>jreleaser-maven-plugin</artifactId>
             <inherited>false</inherited>
             <configuration>
-              <configFile>${maven.multiModuleProjectDirectory}/jreleaser.yml</configFile>
+              <configFile>${maven.multiModuleProjectDirectory}/jreleaser.toml</configFile>
             </configuration>
           </plugin>
         </plugins>
