@@ -22,13 +22,13 @@ class EmptyConfigurationImportOrderTest {
     @Test
     void empty_configuration_should_place_static_imports_first() throws Exception {
         // given
-        String source = loadTestResource("imports/AbstractCommandLike.java");
-        CompilationUnit cu = parseCompilationUnit(source, "AbstractCommandLike.java");
-        IDocument workingDoc = new Document(source);
+        ImportOrderTestUtil.TestResource source = loadTestResource("imports/AbstractCommandLike.java");
+        CompilationUnit cu = parseCompilationUnit(source.contents(), "AbstractCommandLike.java");
+        IDocument workingDoc = new Document(source.contents());
         ImportOrderConfiguration emptyConfig = ImportOrderConfiguration.empty();
 
         // when
-        new ImportOrderProcessor(emptyConfig).rewriteImportsIfAny(cu, workingDoc);
+        new ImportOrderProcessor(emptyConfig).rewriteImportsIfAny(source.path(), cu, workingDoc);
 
         // then
         String[] lines = workingDoc.get().split("\n");

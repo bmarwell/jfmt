@@ -1,11 +1,8 @@
 package io.github.bmarwell.jfmt.imports;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +14,7 @@ public class ApacheImportOrderTest extends ImportOrderProcessorTestBase {
 
     @BeforeAll
     static void loadSource() throws IOException {
-        try (InputStream in =
-            ImportOrderProcessorTestBase.class.getClassLoader().getResourceAsStream("imports/MavenCore.java")) {
-            assertNotNull(in, "Test resource imports/MavenCore.java must exist");
-            source = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        source = ImportOrderTestUtil.loadTestResource("imports/MavenCore.java");
     }
 
     @Test

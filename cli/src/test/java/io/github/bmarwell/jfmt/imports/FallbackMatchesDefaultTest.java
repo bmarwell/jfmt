@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
  */
 class FallbackMatchesDefaultTest {
 
-    private String source;
+    private ImportOrderTestUtil.TestResource source;
 
     @BeforeEach
     void setUp() {
@@ -39,23 +39,23 @@ class FallbackMatchesDefaultTest {
     }
 
     private String processWithDefaultConfiguration() throws Exception {
-        CompilationUnit cu = parseCompilationUnit(source, "MixedImports.java");
-        IDocument workingDoc = new Document(source);
+        CompilationUnit cu = parseCompilationUnit(source.contents(), "MixedImports.java");
+        IDocument workingDoc = new Document(source.contents());
 
         NamedImportOrder nio = NamedImportOrder.valueOf("defaultorder");
         ImportOrderConfiguration config = new ImportOrderLoader().loadFromResource(nio.getResourcePath());
 
-        new ImportOrderProcessor(config).rewriteImportsIfAny(cu, workingDoc);
+        new ImportOrderProcessor(config).rewriteImportsIfAny(source.path(), cu, workingDoc);
         return workingDoc.get();
     }
 
     private String processWithEmptyConfiguration() throws Exception {
-        CompilationUnit cu = parseCompilationUnit(source, "MixedImports.java");
-        IDocument workingDoc = new Document(source);
+        CompilationUnit cu = parseCompilationUnit(source.contents(), "MixedImports.java");
+        IDocument workingDoc = new Document(source.contents());
 
         ImportOrderConfiguration config = ImportOrderConfiguration.empty();
 
-        new ImportOrderProcessor(config).rewriteImportsIfAny(cu, workingDoc);
+        new ImportOrderProcessor(config).rewriteImportsIfAny(source.path(), cu, workingDoc);
         return workingDoc.get();
     }
 }

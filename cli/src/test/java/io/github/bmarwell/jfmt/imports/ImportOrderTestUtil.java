@@ -2,6 +2,8 @@ package io.github.bmarwell.jfmt.imports;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -20,6 +22,8 @@ final class ImportOrderTestUtil {
         // Utility class
     }
 
+    record TestResource(Path path, String contents) {}
+
     /**
      * Loads a test resource file as a string.
      *
@@ -29,12 +33,12 @@ final class ImportOrderTestUtil {
      * @throws IllegalStateException
      *     if the resource cannot be loaded
      */
-    static String loadTestResource(String resourcePath) {
+    static TestResource loadTestResource(String resourcePath) {
         try (InputStream in = ImportOrderTestUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new IllegalStateException("Test resource not found: " + resourcePath);
             }
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            return new TestResource(Paths.get(resourcePath), new String(in.readAllBytes(), StandardCharsets.UTF_8));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load test resource: " + resourcePath, e);
         }

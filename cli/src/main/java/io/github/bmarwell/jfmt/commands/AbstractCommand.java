@@ -311,7 +311,7 @@ public abstract class AbstractCommand implements Callable<Integer> {
         final IDocument workingDoc = new Document(unixSourceCode);
 
         ImportOrderProcessor importOrderProcessor = createImportOrderProcessor();
-        importOrderProcessor.rewriteImportsIfAny(compilationUnit, workingDoc);
+        importOrderProcessor.rewriteImportsIfAny(javaFile, compilationUnit, workingDoc);
 
         // Now format the (possibly) updated document
         FormatterProcessor formatterProcessor = new FormatterProcessor(formatter);
