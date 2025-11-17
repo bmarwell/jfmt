@@ -45,6 +45,12 @@ import picocli.CommandLine;
 
 public abstract class AbstractCommand implements Callable<Integer> {
 
+    ///  Prefix displayed when reading arguments failed due to a variety of reasons.
+    private static final String ERR_PRFX_ARGS = "Error reading arguments";
+
+    /// Messages displayed when no arguments point to `.java` files.
+    private static final String ERR_MSG_NO_JAVA_FILES = "No Java files found in the specified paths";
+
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
 
@@ -106,10 +112,24 @@ public abstract class AbstractCommand implements Callable<Integer> {
      */
     @Override
     public Integer call() throws Exception {
-        final List<Callable<FileProcessingResult>> allFilesAndDirs =
-            PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
-                .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
-                .toList();
+
+        final List<Callable<FileProcessingResult>> allFilesAndDirs;
+
+        try {
+            allFilesAndDirs =
+                PathUtils.streamAll(List.of(this.globalOptions.filesOrDirectories))
+                    .map(javaFile -> (Callable<FileProcessingResult>) () -> processFile(javaFile))
+                    .toList();
+        } catch (IllegalArgumentException pathException) {
+            getWriter().error(ERR_PRFX_ARGS, ERR_MSG_NO_JAVA_FILES);
+            // TODO: exception stack trace on verbose?
+            return 1;
+        }
+
+        if (allFilesAndDirs.isEmpty()) {
+            getWriter().error(ERR_PRFX_ARGS, ERR_MSG_NO_JAVA_FILES);
+            return 1;
+        }
 
         try (var scope = StructuredTaskScope.open(
             new FailFastFileProcessingResultJoiner(),

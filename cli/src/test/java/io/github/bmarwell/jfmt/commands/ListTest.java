@@ -1,6 +1,7 @@
 package io.github.bmarwell.jfmt.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -176,6 +177,28 @@ class ListTest extends AbstractCommandTest {
             1,
             staticCount,
             "StaticImportsAtEnd.java should appear exactly once, not " + staticCount + " times. stdout:\n" + stdout
+        );
+    }
+
+    @Test
+    void returns_error_when_no_java_files_found() {
+        // given - only non-Java files
+        var args = new String[] { "list", "pom.xml" };
+
+        // when
+        var result = doExecute(args);
+
+        // then
+        assertEquals(1, result.returncode(), "Should return error code 1 when no Java files found");
+
+        String stderr = String.join(System.lineSeparator(), result.stderr());
+        assertTrue(
+            stderr.contains("No Java files found"),
+            "stderr should contain error message but was: " + stderr
+        );
+        assertFalse(
+            stderr.contains("io.github.bmarwell.jfmt"),
+            "stderr should not contain stack trace but was: " + stderr
         );
     }
 

@@ -49,12 +49,16 @@ class PathUtilsTest {
     }
 
     @Test
-    void throws_exception_on_non_java_file() throws IOException {
+    @DisplayName("non-Java files should resolve to an empty Stream")
+    void non_java_file_resolves_to_empty_stream() throws IOException {
+        // given
         Path testFile = tempDir.resolve("test.txt");
         Files.writeString(testFile, "hello\n", StandardCharsets.UTF_8);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            PathUtils.resolveAsStream(testFile);
-        });
+        // when
+        Stream<Path> pathStream = PathUtils.resolveAsStream(testFile);
+
+        // then
+        assertEquals(0L, pathStream.count());
     }
 }

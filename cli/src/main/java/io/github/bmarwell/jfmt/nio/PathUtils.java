@@ -34,7 +34,8 @@ public final class PathUtils {
             return Stream.of(path);
         }
 
-        throw new IllegalArgumentException("Path is not a java file or directory: " + path);
+        // Silently skip non-Java files
+        return Stream.empty();
     }
 
     /**
