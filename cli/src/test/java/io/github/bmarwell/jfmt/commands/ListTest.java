@@ -198,7 +198,7 @@ class ListTest extends AbstractCommandTest {
         );
         assertFalse(
             stderr.contains("io.github.bmarwell.jfmt"),
-            "stdout should not contain stack trace but was: " + stderr
+            "stderr should not contain stack trace but was: " + stderr
         );
     }
 
