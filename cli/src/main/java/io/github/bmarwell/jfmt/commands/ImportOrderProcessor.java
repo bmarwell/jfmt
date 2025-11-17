@@ -1,9 +1,12 @@
 package io.github.bmarwell.jfmt.commands;
 
 import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
+import io.github.bmarwell.jfmt.imports.ImportOrderProcessorException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -27,7 +30,7 @@ public class ImportOrderProcessor {
      * Rewrites the imports in the provided document according to the configured order.
      * If there are no imports, this method is a no-op.
      */
-    public void rewriteImportsIfAny(CompilationUnit compilationUnit, IDocument workingDoc)
+    public void rewriteImportsIfAny(Path javaFile, CompilationUnit compilationUnit, IDocument workingDoc)
         throws BadLocationException {
         @SuppressWarnings("unchecked")
         List<ImportDeclaration> imports = new ArrayList<>((List<ImportDeclaration>) compilationUnit.imports());
@@ -42,7 +45,7 @@ public class ImportOrderProcessor {
         List<ImportOrderGroup> groups = buildGroupsFromConfig(p);
 
         String rendered = renderGroups(groups);
-        replaceImportsInDocument(compilationUnit, workingDoc, rendered);
+        replaceImportsInDocument(javaFile, compilationUnit, workingDoc, rendered);
     }
 
     private Partition partitionImports(List<ImportDeclaration> imports) {
@@ -144,7 +147,21 @@ public class ImportOrderProcessor {
         return sb.toString();
     }
 
-    private void replaceImportsInDocument(CompilationUnit compilationUnit, IDocument workingDoc, String rendered)
+    /**
+     *
+     * @param javaFile
+     * @param compilationUnit
+     * @param workingDoc
+     * @param rendered
+     *     the newly rendered import block
+     * @throws BadLocationException
+     */
+    private void replaceImportsInDocument(
+        Path javaFile,
+        CompilationUnit compilationUnit,
+        IDocument workingDoc,
+        String rendered
+    )
         throws BadLocationException {
         @SuppressWarnings("unchecked")
         List<ImportDeclaration> imports = (List<ImportDeclaration>) compilationUnit.imports();
@@ -161,8 +178,21 @@ public class ImportOrderProcessor {
             .orElse(importStart);
 
         workingDoc.replace(importStart, importEnd - importStart, rendered);
-        TextEdit importRewrite = compilationUnit.rewrite(workingDoc, null);
-        importRewrite.apply(workingDoc);
+        try {
+            TextEdit importRewrite = compilationUnit.rewrite(workingDoc, null);
+            importRewrite.apply(workingDoc);
+        } catch (IllegalArgumentException jdtEx) {
+            String message = String.format(
+                Locale.ROOT,
+                "Problem formatting file [%s]. Range: [%d-%d]. Rendered old: >>>\n%s\n<<<",
+                javaFile.toAbsolutePath(),
+                importStart,
+                importEnd,
+                workingDoc.get().substring(importStart, importEnd)
+            );
+
+            throw new ImportOrderProcessorException(javaFile, message, jdtEx);
+        }
     }
 
     // contains all imports read from the original source file.

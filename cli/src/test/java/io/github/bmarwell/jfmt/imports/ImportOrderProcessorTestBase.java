@@ -1,11 +1,7 @@
 package io.github.bmarwell.jfmt.imports;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import io.github.bmarwell.jfmt.commands.ImportOrderProcessor;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -19,31 +15,27 @@ import org.junit.jupiter.api.BeforeAll;
 abstract class ImportOrderProcessorTestBase {
 
     public static final String MIXED_IMPORTS_JAVA = "MixedImports.java";
-    static String source;
+    static ImportOrderTestUtil.TestResource source;
 
     @BeforeAll
     static void loadSource() throws IOException {
-        try (InputStream in =
-            ImportOrderProcessorTestBase.class.getClassLoader().getResourceAsStream("imports/MixedImports.java")) {
-            assertNotNull(in, "Test resource imports/MixedImports.java must exist");
-            source = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        source = ImportOrderTestUtil.loadTestResource("imports/MixedImports.java");
     }
 
     protected String runAndGetImportBlock() {
         try {
             // Parse the source into a CompilationUnit
-            CompilationUnit cu = parseCompilationUnit(source);
+            CompilationUnit cu = parseCompilationUnit(source.contents());
 
             // Prepare the working document
-            IDocument workingDoc = new Document(source);
+            IDocument workingDoc = new Document(source.contents());
 
             // Load tokens for the given profile
             NamedImportOrder nio = NamedImportOrder.valueOf(getProfileName());
             ImportOrderConfiguration tokens = new ImportOrderLoader().loadFromResource(nio.getResourcePath());
 
             // Rewrite imports according to tokens
-            new ImportOrderProcessor(tokens).rewriteImportsIfAny(cu, workingDoc);
+            new ImportOrderProcessor(tokens).rewriteImportsIfAny(source.path(), cu, workingDoc);
 
             // Extract and return the import block
             return extractImportBlock(workingDoc);
