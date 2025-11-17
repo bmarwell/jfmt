@@ -39,7 +39,7 @@ public class WriteCommandIT {
 
     @Test
     @JFmtTest(args = { "write", "target/test-classes/write/t002/AlreadyFormatted.java" })
-    void write_non_existend_file(JdtResult result) {
+    void write_non_existent_file(JdtResult result) {
         // expect
 
         // ... non-zero exit code
