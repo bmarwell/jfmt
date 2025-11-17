@@ -226,12 +226,13 @@ Features:
 * [x] basic commands implemented
 * [x] basic tests implemented
 * [x] CI/CD implemented
-* [X] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
+* [x] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
 * [ ] Refinement of default formatting rules
+* [ ] global configuration files (link:https://github.com/bmarwell/jfmt/issues/92[#92])
 
 Distribution:
 
-* [ ] native binaries for Linux, Windows, MacOS
+* [x] native binaries for Linux, Windows, MacOS (attached to link:https://github.com/bmarwell/jfmt/releases[GitHub releases])
 * [ ] package for Homebrew
 * [ ] package for Scoop
 * [ ] package for apt/dpkg
