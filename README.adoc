@@ -55,7 +55,8 @@ jfmt diff --all .
 +
 |===
 | Action | Who | Purpose
-| `jfmt <files>` or `jfmt write <files>` | Developer | Format files locally before committing (write is the default)
+| `jfmt <files>` +
+or `jfmt write <files>` | Developer | Format files locally before committing (write is the default)
 | `jfmt diff`  | CI pipeline | Verify formatting consistency
 | `jfmt print` | Tooling | Print the correctly formatted output for the given file
 | `jfmt list`  | Developer or CI | List unformatted files
@@ -226,12 +227,13 @@ Features:
 * [x] basic commands implemented
 * [x] basic tests implemented
 * [x] CI/CD implemented
-* [X] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
+* [x] Formatting of import statements (link:https://github.com/bmarwell/jfmt/issues/34[#34])
 * [ ] Refinement of default formatting rules
+* [ ] global configuration files (link:https://github.com/bmarwell/jfmt/issues/92[#92])
 
 Distribution:
 
-* [ ] native binaries for Linux, Windows, MacOS
+* [x] native binaries for Linux, Windows, MacOS (attached to link:https://github.com/bmarwell/jfmt/releases[GitHub releases])
 * [ ] package for Homebrew
 * [ ] package for Scoop
 * [ ] package for apt/dpkg
@@ -296,6 +298,11 @@ As you can see, the native binary is about three times faster than the JAR distr
 
 By default, a profile `dist-linux` is activated, which will create a native binary for Linux x86_64 using musl.
 If you do not have musl and `libz.a` installed, you can use the profile `'-Pnative,!dist-linux'` to create a native binary using glibc instead.
+
+==== Optimized binaries
+
+The default profile `-Pnative` creates fast binaries, suitable for testing.
+For production, use `-Pnative,native-production` which creates binaries compiled with `-O2`.
 
 == Further reading
 
