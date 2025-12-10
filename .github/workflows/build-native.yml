@@ -23,7 +23,7 @@ jobs:
           ref: ${{ inputs.head_sha || github.sha }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5.0.0
+        uses: actions/setup-java@v5.1.0
         with:
           java-version: 25
           distribution: 'graalvm'
@@ -152,7 +152,7 @@ jobs:
           ref: ${{ inputs.head_sha || github.sha }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5.0.0
+        uses: actions/setup-java@v5.1.0
         with:
           java-version: 25
           distribution: 'graalvm'
