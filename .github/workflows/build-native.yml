@@ -108,7 +108,7 @@ jobs:
           TOOLCHAIN_DIR: ${{ steps.prepare-musl.outputs.TOOLCHAIN_DIR }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: artifacts-ubuntu-latest
           path: |
@@ -249,7 +249,7 @@ jobs:
         if: github.event.workflow_run.event != 'pull_request'
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: artifacts-${{ matrix.os }}
           path: |
