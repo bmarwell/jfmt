@@ -45,7 +45,7 @@ import picocli.CommandLine;
 
 public abstract class AbstractCommand implements Callable<Integer> {
 
-    ///  Prefix displayed when reading arguments failed due to a variety of reasons.
+    /// Prefix displayed when reading arguments failed due to a variety of reasons.
     private static final String ERR_PRFX_ARGS = "Error reading arguments";
 
     /// Messages displayed when no arguments point to `.java` files.
