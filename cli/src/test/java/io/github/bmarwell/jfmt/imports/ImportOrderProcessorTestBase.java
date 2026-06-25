@@ -36,11 +36,16 @@ abstract class ImportOrderProcessorTestBase {
 
     protected String runAndGetDocument() {
         try {
+            // Normalize line endings as production does (see AbstractCommand.createRevisedSourceCode),
+            // so the result is LF on every platform and does not depend on how the resource was
+            // checked out (CRLF on Windows would otherwise leak into the document).
+            String src = source.replace("\r\n", "\n");
+
             // Parse the source into a CompilationUnit
-            CompilationUnit cu = parseCompilationUnit(source);
+            CompilationUnit cu = parseCompilationUnit(src);
 
             // Prepare the working document
-            IDocument workingDoc = new Document(source);
+            IDocument workingDoc = new Document(src);
 
             // Load tokens for the given profile
             NamedImportOrder nio = NamedImportOrder.valueOf(getProfileName());
