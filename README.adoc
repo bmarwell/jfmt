@@ -9,6 +9,7 @@ image:https://codecov.io/github/bmarwell/jfmt/graph/badge.svg?token=97T490QXQ2["
 image:https://img.shields.io/badge/License-Apache_2.0-blue.svg["License",link=https://opensource.org/licenses/Apache-2.0]
 image:https://img.shields.io/badge/License-EUPL_1.2-blue["License EUPL",link=https://joinup.ec.europa.eu/software/page/eupl]
 image:https://img.shields.io/github/all-contributors/bmarwell/jfmt?color=ee8449&style=flat-square["All Contributors",link="#contributors"]
+image:https://img.shields.io/badge/AI-Assisted-blue["AI-Assisted Development",link=AI-USAGE.adoc]
 image:https://deepwiki.com/badge.svg["Ask DeepWiki",link=https://deepwiki.com/bmarwell/jfmt]
 
 toc::[]
@@ -326,6 +327,8 @@ But I encourage everyone to use the default configuration – and let's discuss 
 == Contributing & Releasing
 
 For contribution guidelines, code style standards, and development workflow, see link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+
+For information about AI-assisted development in this project, see link:AI-USAGE.adoc[AI-USAGE.adoc].
 
 For information about the release process, including early access builds and official releases, see link:RELEASING.adoc[RELEASING.adoc].
 
