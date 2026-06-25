@@ -6,8 +6,8 @@
     <version>3.5.3</version>
   </extension>
   <extension>
-    <groupId>com.tisonkun.os</groupId>
-    <artifactId>os-detector-maven-plugin</artifactId>
-    <version>0.6.0</version>
+    <groupId>eu.maveniverse.maven.nisse</groupId>
+    <artifactId>extension</artifactId>
+    <version>0.4.4</version>
   </extension>
 </extensions>
