@@ -385,7 +385,8 @@
                 <configuration combine.self="merge">
                   <skipAssembly>false</skipAssembly>
                   <appendAssemblyId>false</appendAssemblyId>
-                  <!-- Use os.detected.classifier from os-detector-maven-plugin extension
+                  <!-- Use os.detected.classifier from Maveniverse Nisse extension
+                       (in OS Detector compatibility mode via -Dnisse.compat.osDetector)
                        to create platform-specific distribution names like:
                        - jfmt-0.1.0-SNAPSHOT-linux-x86_64.zip
                        - jfmt-0.1.0-SNAPSHOT-osx-x86_64.zip
