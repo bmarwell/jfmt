@@ -1,38 +1,38 @@
 // SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
-= AI-Augmented Development Disclosure
+= AI-Assisted Development Guidelines
 :toc: macro
 
-This software project was created within the framework of a **Human-Guided AI-Supported Implementation Procedure**.
+This document provides guidelines for contributors using AI tools when contributing to the jfmt project.
 
 toc::[]
 
 == Summary
 
 This document establishes the framework for AI-assisted development in the jfmt project.
-While AI tools are used to assist with implementation tasks, all architectural decisions, code quality, and final responsibility remain with human developers.
+While AI tools may be used to assist with implementation tasks, all architectural decisions, code quality, and final responsibility remain with human contributors and reviewers.
 
-== 1. Human Responsibility Domain
+== 1. Contributor Responsibility
 
-The **Natural Person Acting as Principal Author** assumes complete, undivided and non-delegable responsibility for the project and expressly confirms that:
+Each **contributor** assumes complete responsibility for their contributions and confirms that:
 
-* All fundamental architectural decisions, system design, modularisation strategy and technical conception were made exclusively and autonomously by the **Natural Person Acting as Principal Author**.
-* The overall project orientation, domain modelling, business logic and conceptual coherence were defined, supervised and finally approved by the aforementioned **Natural Person Acting as Principal Author**.
-* All quality assurance activities, security evaluations, performance considerations and final code validation were performed personally by the **Natural Person Acting as Principal Author** in accordance with the **Human Final Control Principle**.
+* All fundamental architectural decisions, system design, modularisation strategy and technical conception are made by human contributors and reviewed by project maintainers.
+* The overall code orientation, domain modelling, business logic and conceptual coherence are defined, supervised and approved by human contributors and reviewers.
+* All quality assurance activities, security evaluations, performance considerations and final code validation are performed by human contributors in accordance with the **Human Final Control Principle**.
 
-== 2. Utilisation of AI Implementation Assistants
+== 2. Use of AI Implementation Assistants
 
-During the implementation phase, so-called **AI Implementation Assistants** (algorithmic coding support systems) were engaged to a considerable extent.
+Contributors may use **AI Implementation Assistants** (algorithmic coding support systems) to assist with implementation tasks.
 
-These **AI Implementation Assistants** were primarily deployed for the following subordinate tasks:
+These **AI Implementation Assistants** may be used for the following subordinate tasks:
 
 * Generation and formulation of source code segments
 * Creation of repetitive code structures and boilerplate implementations
 * Execution of refactoring operations and code structure optimisations
 * Assistance in the preparation of technical documentation
 
-All output produced by the **AI Implementation Assistants** was subsequently subjected to thorough manual examination, modification, correction and final approval by the **Natural Person Acting as Principal Author** in accordance with the **Human-in-the-Loop Oversight Procedure**.
+All output produced by **AI Implementation Assistants** must be thoroughly examined, modified, corrected and approved by the human contributor before submission, in accordance with the **Human-in-the-Loop Oversight Procedure**.
 
-The **Natural Person Acting as Principal Author** remains solely and personally accountable for the correctness, functional integrity, security and long-term maintainability of the resulting codebase.
+Each **contributor** remains solely and personally accountable for the correctness, functional integrity, security and long-term maintainability of their contributions.
 
 == 3. AI Tools Used in This Project
 
