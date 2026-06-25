@@ -385,8 +385,7 @@
                 <configuration combine.self="merge">
                   <skipAssembly>false</skipAssembly>
                   <appendAssemblyId>false</appendAssemblyId>
-                  <!-- Use os.detected.classifier from Maveniverse Nisse extension
-                       (in OS Detector compatibility mode via -Dnisse.compat.osDetector)
+                  <!-- Use nisse.os.classifier from Maveniverse Nisse extension
                        to create platform-specific distribution names like:
                        - jfmt-0.1.0-SNAPSHOT-linux-x86_64.zip
                        - jfmt-0.1.0-SNAPSHOT-osx-x86_64.zip
@@ -395,7 +394,7 @@
                        
                        This naming matches the expectations in jreleaser.yml distributions.
                   -->
-                  <finalName>${project.artifactId}-${project.version}-${os.detected.classifier}</finalName>
+                  <finalName>${project.artifactId}-${project.version}-${nisse.os.classifier}</finalName>
                   <descriptors>
                     <descriptor>src/main/assembly/assembly-native.xml</descriptor>
                   </descriptors>
