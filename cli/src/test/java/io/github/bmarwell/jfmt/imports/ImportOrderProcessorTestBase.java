@@ -31,6 +31,10 @@ abstract class ImportOrderProcessorTestBase {
     }
 
     protected String runAndGetImportBlock() {
+        return extractImportBlock(runAndGetDocument());
+    }
+
+    protected String runAndGetDocument() {
         try {
             // Parse the source into a CompilationUnit
             CompilationUnit cu = parseCompilationUnit(source);
@@ -45,8 +49,7 @@ abstract class ImportOrderProcessorTestBase {
             // Rewrite imports according to tokens
             new ImportOrderProcessor(tokens).rewriteImportsIfAny(cu, workingDoc);
 
-            // Extract and return the import block
-            return extractImportBlock(workingDoc);
+            return workingDoc.get();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -72,9 +75,8 @@ abstract class ImportOrderProcessorTestBase {
         return cu;
     }
 
-    private static String extractImportBlock(IDocument doc)
+    private static String extractImportBlock(String text)
         throws MalformedTreeException {
-        String text = doc.get();
         String[] lines = text.split("\n", -1); // keep trailing empties
 
         int startIdx = -1;

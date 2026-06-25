@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
  * AST against it, which made JDT's TokenScanner run past EOF for any node after the imports
  * ("Document does not match the AST" / "End Of File"). The source here therefore has a class body
  * after the imports, which the empty-bodied resources used by the other profile tests lack.
+ *
+ * <p>It also verifies that a comment attached to an import is carried along with that import when
+ * the imports are reordered, instead of being dropped.
  */
 class CommentBetweenImportsRegressionTest extends ImportOrderProcessorTestBase {
 
@@ -30,18 +33,26 @@ class CommentBetweenImportsRegressionTest extends ImportOrderProcessorTestBase {
     }
 
     @Test
-    void reordering_imports_with_a_comment_in_between_does_not_throw() {
-        // runAndGetImportBlock() throws if the rewrite fails, so reaching the assertion proves #164 is fixed.
-        String actual = runAndGetImportBlock();
+    void reordering_imports_carries_the_comment_along_with_its_import() {
+        String expected = """
+                          package com.example;
 
-        String expected = String.join(
-            "\n",
-            "import static java.lang.Math.PI;",
-            "",
-            "import com.example.App;",
-            "import java.util.List;",
-            ""
-        );
+                          // this comment is attached to the static import
+                          import static java.lang.Math.PI;
+
+                          import com.example.App;
+                          import java.util.List;
+
+                          public class CommentBetweenImports {
+                              public double area(List<Integer> ignored) {
+                                  App app = new App();
+                                  return PI;
+                              }
+                          }
+                          """;
+
+        String actual = runAndGetDocument();
+
         assertEquals(expected, actual);
     }
 
