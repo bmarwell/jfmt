@@ -92,7 +92,7 @@ As a code formatting tool, jfmt has unique requirements that AI assistance must 
 
 * **Idempotency**: AI-generated formatting logic must produce identical results on repeated runs
 * **No AST Loss**: AI must not suggest changes that lose comments, intentional line breaks, or code structure
-* **Performance**: AI-suggested optimizations must maintain or improve formatting speed (target: <100ms for typical files)
+* **Performance**: AI-suggested optimizations must maintain or improve formatting speed (measure changes with benchmarks and avoid regressions)
 * **Compatibility**: Changes must work with Eclipse JDT formatter engine and GraalVM native compilation
 * **Test Coverage**: All AI-assisted formatter changes require comprehensive test cases with before/after examples
 * **Encoding Consistency**: Maintain UTF-8 encoding and Unix line endings (`\n`) across all operations
