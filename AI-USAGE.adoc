@@ -1,0 +1,221 @@
+// SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+= AI-Augmented Development Disclosure
+:toc: macro
+
+This software project was created within the framework of a **Human-Guided AI-Supported Implementation Procedure**.
+
+toc::[]
+
+== Summary
+
+This document establishes the framework for AI-assisted development in the jfmt project.
+While AI tools are used to assist with implementation tasks, all architectural decisions, code quality, and final responsibility remain with human developers.
+
+== 1. Human Responsibility Domain
+
+The **Natural Person Acting as Principal Author** assumes complete, undivided and non-delegable responsibility for the project and expressly confirms that:
+
+* All fundamental architectural decisions, system design, modularisation strategy and technical conception were made exclusively and autonomously by the **Natural Person Acting as Principal Author**.
+* The overall project orientation, domain modelling, business logic and conceptual coherence were defined, supervised and finally approved by the aforementioned **Natural Person Acting as Principal Author**.
+* All quality assurance activities, security evaluations, performance considerations and final code validation were performed personally by the **Natural Person Acting as Principal Author** in accordance with the **Human Final Control Principle**.
+
+== 2. Utilisation of AI Implementation Assistants
+
+During the implementation phase, so-called **AI Implementation Assistants** (algorithmic coding support systems) were engaged to a considerable extent.
+
+These **AI Implementation Assistants** were primarily deployed for the following subordinate tasks:
+
+* Generation and formulation of source code segments
+* Creation of repetitive code structures and boilerplate implementations
+* Execution of refactoring operations and code structure optimisations
+* Assistance in the preparation of technical documentation
+
+All output produced by the **AI Implementation Assistants** was subsequently subjected to thorough manual examination, modification, correction and final approval by the **Natural Person Acting as Principal Author** in accordance with the **Human-in-the-Loop Oversight Procedure**.
+
+The **Natural Person Acting as Principal Author** remains solely and personally accountable for the correctness, functional integrity, security and long-term maintainability of the resulting codebase.
+
+== 3. AI Tools Used in This Project
+
+The following AI tools may be used during development:
+
+* **GitHub Copilot**: For code completion and inline suggestions
+* **AI Chat Assistants** (e.g., Bob, ChatGPT, Claude, Gemini): For code review, refactoring, problem-solving, and documentation
+* **AI-Powered IDEs**: For intelligent code analysis and suggestions
+
+All AI-generated code must:
+
+* Follow the project's "no `else`" rule (use guard statements instead)
+* Pass Spotless formatting checks (`./mvnw spotless:apply`)
+* Include appropriate tests following the "given-when-then" pattern
+* Be reviewed by a human developer before merging
+* Maintain idempotent formatting behavior
+* Preserve all comments and intentional code structure (no AST loss)
+
+== 4. Guidelines for Contributors Using AI Tools
+
+When using AI assistance:
+
+* **Always Review**: Never commit AI-generated code without thorough review and understanding
+* **Test Thoroughly**: Ensure AI-generated code passes all tests (`./mvnw verify`)
+* **Apply Style**: Run `./mvnw spotless:apply` on all AI-modified files before committing
+* **Document Decisions**: If AI suggested a non-obvious approach, document why you chose it in comments
+* **Architectural Decisions**: Consult maintainers before implementing AI-suggested architectural changes
+* **Security**: Manually review any AI-generated code handling file I/O, command execution, or user input
+* **Performance**: Verify that AI suggestions maintain or improve formatting speed
+* **Compatibility**: Ensure changes work with Eclipse JDT formatter and GraalVM native compilation
+
+== 5. Appropriate AI Usage Examples
+
+=== ✅ Good Uses
+
+* Generating boilerplate test cases following existing patterns in `cli/src/test/java/`
+* Refactoring code to eliminate `else` keywords using guard statements
+* Creating new import order configurations based on existing ones in `cli/src/main/resources/io/github/bmarwell/jfmt/config/`
+* Writing JavaDoc comments for public APIs
+* Suggesting performance optimizations for file processing in `PathUtils` or `FormatterProcessor`
+* Generating repetitive CLI command implementations following the `AbstractCommand` pattern
+* Creating integration tests following the `JFmtExtension` pattern
+
+=== ❌ Inappropriate Uses
+
+* Making architectural decisions about formatter engine integration without human design
+* Changing core formatting logic in `FormatterProcessor` without thorough understanding
+* Modifying build configuration (`pom.xml`, GraalVM settings) without understanding implications
+* Accepting AI suggestions that violate project code style (e.g., using `else` keyword)
+* Changing Eclipse JDT formatter configuration without maintainer review
+* Modifying release processes or CI/CD workflows without explicit approval
+* Implementing security-sensitive features without human security review
+
+== 6. Special Considerations for Code Formatting Projects
+
+As a code formatting tool, jfmt has unique requirements that AI assistance must respect:
+
+* **Idempotency**: AI-generated formatting logic must produce identical results on repeated runs
+* **No AST Loss**: AI must not suggest changes that lose comments, intentional line breaks, or code structure
+* **Performance**: AI-suggested optimizations must maintain or improve formatting speed (target: <100ms for typical files)
+* **Compatibility**: Changes must work with Eclipse JDT formatter engine and GraalVM native compilation
+* **Test Coverage**: All AI-assisted formatter changes require comprehensive test cases with before/after examples
+* **Encoding Consistency**: Maintain UTF-8 encoding and Unix line endings (`\n`) across all operations
+* **Import Ordering**: Preserve the two-group import scheme (static imports first, then all others)
+
+== 7. AI Tool Integration in Development Workflow
+
+=== Pre-commit Validation
+
+Before committing AI-assisted changes:
+
+[source,console]
+----
+# Apply code style
+./mvnw spotless:apply
+
+# Run unit tests
+./mvnw -am -pl cli test
+
+# Run full verification including integration tests
+./mvnw verify
+----
+
+=== Manual Testing
+
+Test AI-modified code with the assembled binary:
+
+[source,console]
+----
+# Build the project
+./mvnw package
+
+# Test the binary
+./cli/target/jreleaser/assemble/jfmt/java-archive/work/jfmt-*/bin/jfmt --help
+./cli/target/jreleaser/assemble/jfmt/java-archive/work/jfmt-*/bin/jfmt list --all .
+----
+
+=== CI Validation
+
+All AI-assisted changes must pass:
+
+* GitHub Actions workflows (build, test, CodeQL analysis)
+* Codecov coverage requirements
+* Spotless formatting checks
+* Integration tests in `integration-tests/` module
+
+== 8. Frequently Asked Questions
+
+**Q: Can I use AI to generate entire new features?**
+
+A: AI can assist with implementation, but feature design and architecture must be human-driven.
+Discuss the feature design with maintainers first, then use AI to help with implementation details.
+
+**Q: Do I need to disclose AI usage in commit messages?**
+
+A: Not required for minor assistance (e.g., code completion, simple refactoring).
+Recommended for substantial AI-generated code or when AI suggested a non-obvious solution.
+
+**Q: Can AI modify the Eclipse JDT formatter configuration?**
+
+A: Only with explicit maintainer review, as this affects all users and the core formatting behavior.
+Propose changes in an issue first.
+
+**Q: What if AI suggests violating the "no else" rule?**
+
+A: Reject the suggestion and refactor to use guard statements (early returns).
+This is a non-negotiable project standard.
+
+**Q: Can AI help with native binary compilation issues?**
+
+A: AI can suggest solutions, but GraalVM native image configuration is complex.
+Always test native binaries thoroughly and consult GraalVM documentation.
+
+**Q: How do I handle AI-generated code that fails tests?**
+
+A: Debug and fix the code yourself, or ask AI to help debug.
+Never commit failing code, even if AI generated it.
+
+**Q: Can AI write integration tests?**
+
+A: Yes, following the existing patterns in `integration-tests/jreleaser-builtin/`.
+Ensure tests use the `JFmtExtension` and follow the "given-when-then" structure.
+
+== 9. Limitations of AI Assistance
+
+AI tools explicitly **cannot**:
+
+* Make licensing decisions or change project licenses
+* Approve security-sensitive changes without human security review
+* Modify release processes without maintainer approval
+* Change CI/CD workflows without understanding the full pipeline
+* Make breaking API changes without discussion
+* Decide on formatter default configuration changes
+* Approve changes to GraalVM native image configuration without testing
+
+== 10. Integration with Contributing Guidelines
+
+This document complements link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+All code style guidelines, testing requirements, and development workflows in CONTRIBUTING.adoc apply equally to AI-assisted code.
+
+Key reminders:
+
+* **No `else` keyword** - AI must follow this rule
+* **Guard statements** - Use early returns instead of else blocks
+* **Given-when-then** - Test structure must follow this pattern
+* **DRY principle** - Extract common code, don't repeat
+* **Short methods** - Keep methods focused and comprehensible
+
+== 11. Continuous Improvement
+
+This document will evolve as:
+
+* New AI tools become available
+* Best practices for AI-assisted development emerge
+* The project's needs change
+* Community feedback is received
+
+Suggestions for improvements should be discussed in GitHub issues or discussions.
+
+== License
+
+This document is licensed under the same terms as the project:
+
+----
+SPDX-License-Identifier: Apache-2.0 OR EUPL-1.2
+----

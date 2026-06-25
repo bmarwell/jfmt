@@ -65,6 +65,18 @@ doSomethingElse();
 * Document why a particular approach was chosen over alternatives
 * Use JavaDoc for public APIs
 
+== AI-Assisted Development
+
+This project welcomes the use of AI tools to assist development, subject to the guidelines in link:AI-USAGE.adoc[AI-USAGE.adoc].
+
+Key points for AI-assisted contributions:
+
+* All AI-generated code must meet the same quality standards as human-written code
+* AI suggestions must follow the "no `else`" rule and all other code style guidelines
+* Thorough human review is required before committing any AI-assisted code
+* Run `./mvnw spotless:apply` and `./mvnw verify` on all AI-modified code
+* See link:AI-USAGE.adoc[AI-USAGE.adoc] for detailed guidelines and examples
+
 == Development Workflow
 
 === Building and Testing
