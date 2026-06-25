@@ -9,7 +9,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.text.edits.TextEdit;
 
 /**
  * Encapsulates all logic for reading import-order configuration and reordering
@@ -161,8 +160,6 @@ public class ImportOrderProcessor {
             .orElse(importStart);
 
         workingDoc.replace(importStart, importEnd - importStart, rendered);
-        TextEdit importRewrite = compilationUnit.rewrite(workingDoc, null);
-        importRewrite.apply(workingDoc);
     }
 
     // contains all imports read from the original source file.
