@@ -45,7 +45,7 @@ The following AI tools may be used during development:
 All AI-generated code must:
 
 * Follow the project's "no `else`" rule (use guard statements instead)
-* Pass Spotless formatting checks (`./mvnw spotless:apply`)
+* Pass Spotless formatting checks (`./mvnw spotless:check`)
 * Include appropriate tests following the "given-when-then" pattern
 * Be reviewed by a human developer before merging
 * Maintain idempotent formatting behavior
