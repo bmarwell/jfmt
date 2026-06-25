@@ -346,6 +346,11 @@
               <imageName>${project.artifactId}-${project.version}</imageName>
               <agentResourceDirectory>${project.basedir}/src/main/graalvm-native</agentResourceDirectory>
 
+              <!-- Disable metadata repository since we use custom metadata -->
+              <metadataRepository>
+                <enabled>false</enabled>
+              </metadataRepository>
+
               <jvmArgs>
                 <jvmArg>-Duser.language=en</jvmArg>
                 <jvmArg>-Duser.country=US</jvmArg>
