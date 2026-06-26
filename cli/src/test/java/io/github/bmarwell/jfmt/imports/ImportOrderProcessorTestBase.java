@@ -31,15 +31,15 @@ abstract class ImportOrderProcessorTestBase {
     }
 
     protected String runAndGetImportBlock() {
-        return extractImportBlock(runAndGetDocument());
+        return extractImportBlock(runAndGetDocument(source));
     }
 
-    protected String runAndGetDocument() {
+    protected String runAndGetDocument(String input) {
         try {
             // Normalize line endings as production does (see AbstractCommand.createRevisedSourceCode),
             // so the result is LF on every platform and does not depend on how the resource was
             // checked out (CRLF on Windows would otherwise leak into the document).
-            String src = source.replace("\r\n", "\n");
+            String src = input.replace("\r\n", "\n");
 
             // Parse the source into a CompilationUnit
             CompilationUnit cu = parseCompilationUnit(src);
