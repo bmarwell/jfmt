@@ -15,6 +15,7 @@
   <properties>
     <!-- do not upload ITs to any repository -->
     <maven.deploy.skip>true</maven.deploy.skip>
+    <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
   </properties>
 
   <dependencies>
@@ -60,7 +61,7 @@
         <inherited>true</inherited>
         <configuration>
           <systemPropertyVariables combine.self="merge">
-            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
+            <jfmt.directory>${jfmt.directory}</jfmt.directory>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -71,7 +72,7 @@
         <inherited>true</inherited>
         <configuration>
           <systemPropertyVariables>
-            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
+            <jfmt.directory>${jfmt.directory}</jfmt.directory>
           </systemPropertyVariables>
         </configuration>
       </plugin>
