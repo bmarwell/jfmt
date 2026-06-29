@@ -128,7 +128,7 @@ jobs:
           tar -xzf "$DIST_FILE" -C cli/target/native-it
           JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
           "$JFMT_DIR/bin/jfmt" --help
-          ./mvnw --batch-mode --strict-checksum --errors -Pci -pl integration-tests/jreleaser-builtin -am verify -Djfmt.directory="$JFMT_DIR"
+          ./mvnw --batch-mode --strict-checksum --errors -Pci,native -pl integration-tests/jreleaser-builtin -am verify -Djfmt.directory="$JFMT_DIR"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7.0.1

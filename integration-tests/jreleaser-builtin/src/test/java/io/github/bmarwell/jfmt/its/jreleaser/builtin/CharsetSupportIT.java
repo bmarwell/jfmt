@@ -33,6 +33,7 @@ class CharsetSupportIT {
 
     @BeforeAll
     static void prepareCp1252TestFile() throws IOException {
+        NativeItConditions.assumeNativeProfileOnGraalVm();
         Files.createDirectories(CP1252_TEST_FILE.getParent());
 
         final String source = Files.readString(UTF8_SOURCE_FILE, StandardCharsets.UTF_8);
