@@ -1,0 +1,638 @@
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..7813804
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,11 @@
++* text=auto
++
++# Force batch scripts to always use CRLF line endings so that if a repo is accessed
++# in Windows via a file share from Linux, the scripts will work.
++*.{cmd,[cC][mM][dD]} text eol=crlf
++*.{bat,[bB][aA][tT]} text eol=crlf
++*.{ics,[iI][cC][sS]} text eol=crlf
++
++# Force bash scripts to always use LF line endings so that if a repo is accessed
++# in Unix via a file share from Windows, the scripts will work.
++*.sh text eol=lf
+diff --git a/.github/workflows/build-native.yml b/.github/workflows/build-native.yml
+index a29d8dd..a0c6e92 100644
+--- a/.github/workflows/build-native.yml
++++ b/.github/workflows/build-native.yml
+@@ -119,6 +119,17 @@ jobs:
+         env:
+           TOOLCHAIN_DIR: ${{ steps.prepare-musl.outputs.TOOLCHAIN_DIR }}
+ 
++      - name: Smoke test native binary (Linux)
++        shell: bash
++        run: |
++          set -euo pipefail
++          DIST_FILE=$(ls cli/target/distributions/jfmt-*-linux-*.tar.gz | head -n1)
++          mkdir -p cli/target/native-it
++          tar -xzf "$DIST_FILE" -C cli/target/native-it
++          JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
++          "$JFMT_DIR/bin/jfmt" --help
++          ./mvnw --batch-mode --strict-checksum --errors -Pci,native -pl integration-tests/jreleaser-builtin -am verify -Djfmt.directory="$JFMT_DIR"
++
+       - name: Upload build artifacts
+         uses: actions/upload-artifact@v7.0.1
+         with:
+@@ -262,6 +273,26 @@ jobs:
+           ./mvnw --batch-mode -Pnative package
+         if: matrix.os != 'ubuntu-latest'
+ 
++      - name: Smoke test native binary (Windows / macOS)
++        shell: bash
++        if: matrix.os != 'ubuntu-latest'
++        run: |
++          set -euo pipefail
++          if [ "${{ matrix.os }}" = "windows-2022" ]; then
++            DIST_FILE=$(ls cli/target/distributions/jfmt-*-windows-*.zip | head -n1)
++            mkdir -p cli/target/native-it
++            unzip -q "$DIST_FILE" -d cli/target/native-it
++            JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
++            "$JFMT_DIR/bin/jfmt.bat" --help
++            exit 0
++          fi
++
++          DIST_FILE=$(ls cli/target/distributions/jfmt-*-macos-*.tar.gz | head -n1)
++          mkdir -p cli/target/native-it
++          tar -xzf "$DIST_FILE" -C cli/target/native-it
++          JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
++          "$JFMT_DIR/bin/jfmt" --help
++
+       - name: Save downloaded Maven packages
+         uses: actions/cache/save@v6.0.0
+         with:
+diff --git a/.mvn/wrapper/maven-wrapper.properties b/.mvn/wrapper/maven-wrapper.properties
+index 728969c..c0b0262 100644
+--- a/.mvn/wrapper/maven-wrapper.properties
++++ b/.mvn/wrapper/maven-wrapper.properties
+@@ -1,19 +1,3 @@
+-# Licensed to the Apache Software Foundation (ASF) under one
+-# or more contributor license agreements.  See the NOTICE file
+-# distributed with this work for additional information
+-# regarding copyright ownership.  The ASF licenses this file
+-# to you under the Apache License, Version 2.0 (the
+-# "License"); you may not use this file except in compliance
+-# with the License.  You may obtain a copy of the License at
+-#
+-#   http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing,
+-# software distributed under the License is distributed on an
+-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+-# KIND, either express or implied.  See the License for the
+-# specific language governing permissions and limitations
+-# under the License.
+-wrapperVersion=3.3.2
++wrapperVersion=3.3.4
+ distributionType=only-script
+-distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/4.0.0-rc-4/apache-maven-4.0.0-rc-4-bin.zip
++distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/4.0.0-rc-5/apache-maven-4.0.0-rc-5-bin.zip
+diff --git a/cli/src/main/graalvm-native/resource-config.json b/cli/src/main/graalvm-native/resource-config.json
+index 0410954..ecb7f53 100644
+--- a/cli/src/main/graalvm-native/resource-config.json
++++ b/cli/src/main/graalvm-native/resource-config.json
+@@ -12,7 +12,10 @@
+       { "pattern": "org/eclipse/jdt/internal/compiler/parser/readableNames\\.props" },
+       { "pattern": "org/eclipse/jdt/internal/compiler/parser/unicode.*/.*\\.rsc" },
+       { "pattern": "org/eclipse/jdt/internal/compiler/util/messages(.*)?\\.properties" },
+-      { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" }
++      { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" },
++      { "pattern": "META-INF/services/java.nio.charset.spi.CharsetProvider" },
++      { "pattern": "sun/nio/cs/.*" },
++      { "pattern": "sun/nio/cs/ext/.*" }
+     ]
+   },
+   "bundles": [
+diff --git a/integration-tests/it-extension/src/main/java/io/github/bmarwell/jfmt/its/extension/JFmtExtension.java b/integration-tests/it-extension/src/main/java/io/github/bmarwell/jfmt/its/extension/JFmtExtension.java
+index d253037..43184be 100644
+--- a/integration-tests/it-extension/src/main/java/io/github/bmarwell/jfmt/its/extension/JFmtExtension.java
++++ b/integration-tests/it-extension/src/main/java/io/github/bmarwell/jfmt/its/extension/JFmtExtension.java
+@@ -109,6 +109,12 @@ class JFmtExtension implements BeforeAllCallback, BeforeEachCallback, ParameterR
+ 
+         final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+         processBuilder.environment().put("JAVA_OPTS", jacocoAgentArgLine);
++        processBuilder.environment().put("JAVA_HOME", System.getProperty("java.home"));
++        processBuilder.environment()
++            .put(
++                "PATH",
++                System.getProperty("java.home") + "/bin:" + processBuilder.environment().getOrDefault("PATH", "")
++            );
+         final Process process = processBuilder.start();
+ 
+         List<JdtResult.LogLine> logs = new CopyOnWriteArrayList<>();
+diff --git a/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportAdditionalIT.java b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportAdditionalIT.java
+new file mode 100644
+index 0000000..6063349
+--- /dev/null
++++ b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportAdditionalIT.java
+@@ -0,0 +1,61 @@
++package io.github.bmarwell.jfmt.its.jreleaser.builtin;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++import io.github.bmarwell.jfmt.its.extension.JFmtTest;
++import io.github.bmarwell.jfmt.its.extension.JdtResult;
++import java.io.IOException;
++import java.nio.charset.Charset;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import org.junit.jupiter.api.BeforeAll;
++import org.junit.jupiter.api.Test;
++
++@JFmtTest
++class CharsetSupportAdditionalIT {
++
++    private static final Path UTF8_SOURCE_FILE = resolvePath("src/test/resources/charset/Cp1252Test.java");
++    private static final Path CP1252_TEST_FILE = resolvePath("target/test-classes/charset/Cp1252Test.java");
++
++    @BeforeAll
++    static void prepareCp1252TestFile() throws IOException {
++        NativeItConditions.assumeNativeProfileOnGraalVm();
++        Files.createDirectories(CP1252_TEST_FILE.getParent());
++
++        final String source = Files.readString(UTF8_SOURCE_FILE, StandardCharsets.UTF_8);
++        Files.writeString(CP1252_TEST_FILE, source, Charset.forName("windows-1252"));
++    }
++
++    private static Path resolvePath(String moduleRelativePath) {
++        final Path currentDirectory = Path.of("").toAbsolutePath();
++        final Path directPath = currentDirectory.resolve(moduleRelativePath);
++
++        if (Files.exists(directPath)) {
++            return directPath;
++        }
++
++        return currentDirectory.resolve("integration-tests/jreleaser-builtin").resolve(moduleRelativePath);
++    }
++
++    @Test
++    @JFmtTest(args = { "print", "target/test-classes/charset/Cp1252Test.java" })
++    void test_print_command_handles_cp1252_charset_on_native_binary(JdtResult result) {
++        assertEquals(0, result.exitCode(), "Command should exit successfully");
++        assertFalse(result.getStderr().contains("UnsupportedCharsetException"));
++
++        String stdout = result.getStdout();
++        assertFalse(stdout.isEmpty(), "Output should not be empty");
++        assertTrue(stdout.contains("public class Cp1252Test"), "Should contain class declaration");
++    }
++
++    @Test
++    @JFmtTest(args = { "diff", "target/test-classes/charset/Cp1252Test.java" })
++    void test_diff_command_handles_cp1252_charset_on_native_binary(JdtResult result) {
++        assertEquals(0, result.exitCode(), "Command should exit successfully");
++        assertFalse(result.getStderr().contains("UnsupportedCharsetException"));
++        assertFalse(result.getStderr().contains("Cp1252"));
++    }
++}
+diff --git a/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportIT.java b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportIT.java
+new file mode 100644
+index 0000000..c8dd3b5
+--- /dev/null
++++ b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/CharsetSupportIT.java
+@@ -0,0 +1,124 @@
++package io.github.bmarwell.jfmt.its.jreleaser.builtin;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++import io.github.bmarwell.jfmt.its.extension.JFmtTest;
++import io.github.bmarwell.jfmt.its.extension.JdtResult;
++import java.io.IOException;
++import java.nio.charset.Charset;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import org.junit.jupiter.api.BeforeAll;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Integration test to verify that the native image includes support for various charsets,
++ * particularly Windows-1252 (Cp1252) which is commonly used on Windows systems.
++ * 
++ * This test addresses issue #190: UnsupportedCharsetException: Cp1252 with Windows image
++ * 
++ * The test verifies that:
++ * 1. Files with Cp1252/Windows-1252 characters can be processed without charset exceptions
++ * 2. The native image includes the necessary charset provider resources
++ * 3. Common charsets (UTF-8, ISO-8859-1, Cp1252) are available at runtime
++ */
++@JFmtTest
++class CharsetSupportIT {
++
++    private static final Path UTF8_SOURCE_FILE = resolvePath("src/test/resources/charset/Cp1252Test.java");
++    private static final Path CP1252_TEST_FILE = resolvePath("target/test-classes/charset/Cp1252Test.java");
++
++    @BeforeAll
++    static void prepareCp1252TestFile() throws IOException {
++        NativeItConditions.assumeNativeProfileOnGraalVm();
++        Files.createDirectories(CP1252_TEST_FILE.getParent());
++
++        final String source = Files.readString(UTF8_SOURCE_FILE, StandardCharsets.UTF_8);
++        Files.writeString(CP1252_TEST_FILE, source, Charset.forName("windows-1252"));
++    }
++
++    private static Path resolvePath(String moduleRelativePath) {
++        final Path currentDirectory = Path.of("").toAbsolutePath();
++        final Path directPath = currentDirectory.resolve(moduleRelativePath);
++
++        if (Files.exists(directPath)) {
++            return directPath;
++        }
++
++        return currentDirectory.resolve("integration-tests/jreleaser-builtin").resolve(moduleRelativePath);
++    }
++
++    /**
++     * Test that the print command can process files with Windows-1252 (Cp1252) characters.
++     * This verifies that the charset is available in the native image.
++     */
++    @Test
++    @JFmtTest(args = { "print", "target/test-classes/charset/Cp1252Test.java" })
++    void test_print_command_handles_cp1252_charset(JdtResult result) {
++        // then - command should succeed without charset exceptions
++        assertEquals(0, result.exitCode(), "Command should exit successfully");
++
++        // Verify no charset-related errors in stderr
++        String stderr = result.getStderr();
++        assertFalse(
++            stderr.contains("UnsupportedCharsetException"),
++            "Should not throw UnsupportedCharsetException"
++        );
++        assertFalse(
++            stderr.contains("Cp1252"),
++            "Should not have Cp1252 charset errors"
++        );
++
++        // Verify the file was processed and output contains expected content
++        String stdout = result.getStdout();
++        assertFalse(stdout.isEmpty(), "Output should not be empty");
++        assertTrue(stdout.contains("public class Cp1252Test"), "Should contain class declaration");
++        assertTrue(stdout.contains("formatPrice"), "Should contain method name");
++    }
++
++    /**
++     * Test that the list command can process files with special characters.
++     * This ensures charset support works across different commands.
++     */
++    @Test
++    @JFmtTest(args = { "list", "target/test-classes/charset/Cp1252Test.java" })
++    void test_list_command_handles_cp1252_charset(JdtResult result) {
++        // then - command should succeed
++        assertEquals(0, result.exitCode(), "Command should exit successfully");
++
++        // Verify no charset errors
++        String stderr = result.getStderr();
++        assertFalse(
++            stderr.contains("UnsupportedCharsetException"),
++            "Should not throw UnsupportedCharsetException"
++        );
++
++        // Verify command produced output without crashing on charset handling
++        assertFalse(result.getStdout().contains("UnsupportedCharsetException"));
++    }
++
++    /**
++     * Test that diff command works with files containing special characters.
++     * This is the command that originally triggered the issue in #190.
++     */
++    @Test
++    @JFmtTest(args = { "diff", "target/test-classes/charset/Cp1252Test.java" })
++    void test_diff_command_handles_cp1252_charset(JdtResult result) {
++        // then - command should succeed without charset exceptions
++        assertEquals(0, result.exitCode(), "Command should exit successfully");
++
++        // Verify no charset-related errors
++        String stderr = result.getStderr();
++        assertFalse(
++            stderr.contains("UnsupportedCharsetException"),
++            "Should not throw UnsupportedCharsetException"
++        );
++        assertFalse(
++            stderr.contains("Cp1252"),
++            "Should not have Cp1252 charset errors"
++        );
++    }
++}
+diff --git a/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/NativeItConditions.java b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/NativeItConditions.java
+new file mode 100644
+index 0000000..2e75a86
+--- /dev/null
++++ b/integration-tests/jreleaser-builtin/src/test/java/io/github/bmarwell/jfmt/its/jreleaser/builtin/NativeItConditions.java
+@@ -0,0 +1,28 @@
++package io.github.bmarwell.jfmt.its.jreleaser.builtin;
++
++import static org.junit.jupiter.api.Assumptions.assumeTrue;
++
++import java.util.Locale;
++
++final class NativeItConditions {
++
++    private NativeItConditions() {
++        // utility class
++    }
++
++    static void assumeNativeProfileOnGraalVm() {
++        final String nativeProfileActive = System.getProperty("jfmt.native.profile.active", "false");
++        assumeTrue(
++            "true".equalsIgnoreCase(nativeProfileActive),
++            "Native integration tests run only with -Pnative (jfmt.native.profile.active=true)."
++        );
++
++        final String javaVendor = System.getProperty("java.vendor", "");
++        final String vmVendor = System.getProperty("java.vm.vendor", "");
++        final String vendorText = (javaVendor + " " + vmVendor).toLowerCase(Locale.ROOT);
++        assumeTrue(
++            vendorText.contains("graal"),
++            "Native integration tests run only on GraalVM runtimes."
++        );
++    }
++}
+diff --git a/integration-tests/jreleaser-builtin/src/test/resources/charset/Cp1252Test.java b/integration-tests/jreleaser-builtin/src/test/resources/charset/Cp1252Test.java
+new file mode 100644
+index 0000000..8632507
+--- /dev/null
++++ b/integration-tests/jreleaser-builtin/src/test/resources/charset/Cp1252Test.java
+@@ -0,0 +1,34 @@
++package io.github.bmarwell.jfmt.test.charset;
++
++/**
++ * Test file with Windows-1252 (Cp1252) specific characters.
++ * This file contains characters that are specific to the Windows-1252 encoding:
++ * - Euro sign: €
++ * - Trademark: ™
++ * - Copyright: ©
++ * - Registered: ®
++ */
++public class Cp1252Test {
++
++    // Windows-1252 specific characters in comments
++    // Euro: € (U+20AC)
++    // Trademark: ™ (U+2122)
++
++    private static final String CURRENCY = "Price: 100€";
++    private static final String TRADEMARK = "Product™";
++    private static final String COPYRIGHT = "© 2024 Company";
++    private static final String REGISTERED = "Brand®";
++
++    /**
++     * Method with special characters in documentation.
++     * @param price The price in euros (€)
++     * @return formatted string with trademark (™)
++     */
++    public String formatPrice(double price) {
++        return String.format("%.2f€", price);
++    }
++
++    public String getCopyright() {
++        return COPYRIGHT;
++    }
++}
+diff --git a/integration-tests/pom.xml b/integration-tests/pom.xml
+index e7fd641..015d6a3 100644
+--- a/integration-tests/pom.xml
++++ b/integration-tests/pom.xml
+@@ -15,6 +15,7 @@
+   <properties>
+     <!-- do not upload ITs to any repository -->
+     <maven.deploy.skip>true</maven.deploy.skip>
++    <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
+   </properties>
+ 
+   <dependencies>
+@@ -60,7 +61,8 @@
+         <inherited>true</inherited>
+         <configuration>
+           <systemPropertyVariables combine.self="merge">
+-            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
++            <jfmt.directory>${jfmt.directory}</jfmt.directory>
++            <jfmt.native.profile.active>${jfmt.native.profile.active}</jfmt.native.profile.active>
+           </systemPropertyVariables>
+         </configuration>
+       </plugin>
+@@ -71,7 +73,8 @@
+         <inherited>true</inherited>
+         <configuration>
+           <systemPropertyVariables>
+-            <jfmt.directory>${project.build.directory}/jfmt/jfmt-${project.version}</jfmt.directory>
++            <jfmt.directory>${jfmt.directory}</jfmt.directory>
++            <jfmt.native.profile.active>${jfmt.native.profile.active}</jfmt.native.profile.active>
+           </systemPropertyVariables>
+         </configuration>
+       </plugin>
+diff --git a/mvnw b/mvnw
+index 19529dd..bd8896b 100755
+--- a/mvnw
++++ b/mvnw
+@@ -19,7 +19,7 @@
+ # ----------------------------------------------------------------------------
+ 
+ # ----------------------------------------------------------------------------
+-# Apache Maven Wrapper startup batch script, version 3.3.2
++# Apache Maven Wrapper startup batch script, version 3.3.4
+ #
+ # Optional ENV vars
+ # -----------------
+@@ -105,14 +105,17 @@ trim() {
+   printf "%s" "${1}" | tr -d '[:space:]'
+ }
+ 
++scriptDir="$(dirname "$0")"
++scriptName="$(basename "$0")"
++
+ # parse distributionUrl and optional distributionSha256Sum, requires .mvn/wrapper/maven-wrapper.properties
+ while IFS="=" read -r key value; do
+   case "${key-}" in
+   distributionUrl) distributionUrl=$(trim "${value-}") ;;
+   distributionSha256Sum) distributionSha256Sum=$(trim "${value-}") ;;
+   esac
+-done <"${0%/*}/.mvn/wrapper/maven-wrapper.properties"
+-[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in ${0%/*}/.mvn/wrapper/maven-wrapper.properties"
++done <"$scriptDir/.mvn/wrapper/maven-wrapper.properties"
++[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+ 
+ case "${distributionUrl##*/}" in
+ maven-mvnd-*bin.*)
+@@ -130,7 +133,7 @@ maven-mvnd-*bin.*)
+   distributionUrl="${distributionUrl%-bin.*}-$distributionPlatform.zip"
+   ;;
+ maven-mvnd-*) MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/ ;;
+-*) MVN_CMD="mvn${0##*/mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
++*) MVN_CMD="mvn${scriptName#mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
+ esac
+ 
+ # apply MVNW_REPOURL and calculate MAVEN_HOME
+@@ -227,7 +230,7 @@ if [ -n "${distributionSha256Sum-}" ]; then
+     echo "Please disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+     exit 1
+   elif command -v sha256sum >/dev/null; then
+-    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c >/dev/null 2>&1; then
++    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c - >/dev/null 2>&1; then
+       distributionSha256Result=true
+     fi
+   elif command -v shasum >/dev/null; then
+@@ -252,8 +255,41 @@ if command -v unzip >/dev/null; then
+ else
+   tar xzf${__MVNW_QUIET_TAR:+"$__MVNW_QUIET_TAR"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -C "$TMP_DOWNLOAD_DIR" || die "failed to untar"
+ fi
+-printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/mvnw.url"
+-mv -- "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
++
++# Find the actual extracted directory name (handles snapshots where filename != directory name)
++actualDistributionDir=""
++
++# First try the expected directory name (for regular distributions)
++if [ -d "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" ]; then
++  if [ -f "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/bin/$MVN_CMD" ]; then
++    actualDistributionDir="$distributionUrlNameMain"
++  fi
++fi
++
++# If not found, search for any directory with the Maven executable (for snapshots)
++if [ -z "$actualDistributionDir" ]; then
++  # enable globbing to iterate over items
++  set +f
++  for dir in "$TMP_DOWNLOAD_DIR"/*; do
++    if [ -d "$dir" ]; then
++      if [ -f "$dir/bin/$MVN_CMD" ]; then
++        actualDistributionDir="$(basename "$dir")"
++        break
++      fi
++    fi
++  done
++  set -f
++fi
++
++if [ -z "$actualDistributionDir" ]; then
++  verbose "Contents of $TMP_DOWNLOAD_DIR:"
++  verbose "$(ls -la "$TMP_DOWNLOAD_DIR")"
++  die "Could not find Maven distribution directory in extracted archive"
++fi
++
++verbose "Found extracted Maven distribution directory: $actualDistributionDir"
++printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$actualDistributionDir/mvnw.url"
++mv -- "$TMP_DOWNLOAD_DIR/$actualDistributionDir" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
+ 
+ clean || :
+ exec_maven "$@"
+diff --git a/mvnw.cmd b/mvnw.cmd
+index 249bdf3..92450f9 100644
+--- a/mvnw.cmd
++++ b/mvnw.cmd
+@@ -19,7 +19,7 @@
+ @REM ----------------------------------------------------------------------------
+ 
+ @REM ----------------------------------------------------------------------------
+-@REM Apache Maven Wrapper startup batch script, version 3.3.2
++@REM Apache Maven Wrapper startup batch script, version 3.3.4
+ @REM
+ @REM Optional ENV vars
+ @REM   MVNW_REPOURL - repo url base for downloading maven distribution
+@@ -40,7 +40,7 @@
+ @SET __MVNW_ARG0_NAME__=
+ @SET MVNW_USERNAME=
+ @SET MVNW_PASSWORD=
+-@IF NOT "%__MVNW_CMD__%"=="" (%__MVNW_CMD__% %*)
++@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
+ @echo Cannot start maven from wrapper >&2 && exit /b 1
+ @GOTO :EOF
+ : end batch / begin powershell #>
+@@ -73,16 +73,30 @@ switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
+ # apply MVNW_REPOURL and calculate MAVEN_HOME
+ # maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+ if ($env:MVNW_REPOURL) {
+-  $MVNW_REPO_PATTERN = if ($USE_MVND) { "/org/apache/maven/" } else { "/maven/mvnd/" }
+-  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace '^.*'+$MVNW_REPO_PATTERN,'')"
++  $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
++  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
+ }
+ $distributionUrlName = $distributionUrl -replace '^.*/',''
+ $distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
+-$MAVEN_HOME_PARENT = "$HOME/.m2/wrapper/dists/$distributionUrlNameMain"
++
++$MAVEN_M2_PATH = "$HOME/.m2"
+ if ($env:MAVEN_USER_HOME) {
+-  $MAVEN_HOME_PARENT = "$env:MAVEN_USER_HOME/wrapper/dists/$distributionUrlNameMain"
++  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
++}
++
++if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
++    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
++}
++
++$MAVEN_WRAPPER_DISTS = $null
++if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
++  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
++} else {
++  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+ }
+-$MAVEN_HOME_NAME = ([System.Security.Cryptography.MD5]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
++
++$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
++$MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
+ $MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+ 
+ if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
+@@ -134,7 +148,33 @@ if ($distributionSha256Sum) {
+ 
+ # unzip and move
+ Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
+-Rename-Item -Path "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" -NewName $MAVEN_HOME_NAME | Out-Null
++
++# Find the actual extracted directory name (handles snapshots where filename != directory name)
++$actualDistributionDir = ""
++
++# First try the expected directory name (for regular distributions)
++$expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
++$expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
++if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
++  $actualDistributionDir = $distributionUrlNameMain
++}
++
++# If not found, search for any directory with the Maven executable (for snapshots)
++if (!$actualDistributionDir) {
++  Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
++    $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
++    if (Test-Path -Path $testPath -PathType Leaf) {
++      $actualDistributionDir = $_.Name
++    }
++  }
++}
++
++if (!$actualDistributionDir) {
++  Write-Error "Could not find Maven distribution directory in extracted archive"
++}
++
++Write-Verbose "Found extracted Maven distribution directory: $actualDistributionDir"
++Rename-Item -Path "$TMP_DOWNLOAD_DIR/$actualDistributionDir" -NewName $MAVEN_HOME_NAME | Out-Null
+ try {
+   Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
+ } catch {
+diff --git a/pom.xml b/pom.xml
+index 88eeea0..dd8d2fd 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -60,6 +60,7 @@
+     <!-- for structured concurrency preview features, disable in Java 27+ -->
+     <maven.compiler.enablePreview>true</maven.compiler.enablePreview>
+     <default.surefire.argline>--enable-preview</default.surefire.argline>
++    <jfmt.native.profile.active>false</jfmt.native.profile.active>
+     <forkCount>0.9C</forkCount>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+ 
+@@ -413,6 +414,9 @@
+   <profiles>
+     <profile>
+       <id>native</id>
++      <properties>
++        <jfmt.native.profile.active>true</jfmt.native.profile.active>
++      </properties>
+     </profile>
+ 
+     <!-- run jacoco aggregate b/c of separated integration tests -->
