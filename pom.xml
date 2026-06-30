@@ -60,6 +60,7 @@
     <!-- for structured concurrency preview features, disable in Java 27+ -->
     <maven.compiler.enablePreview>true</maven.compiler.enablePreview>
     <default.surefire.argline>--enable-preview</default.surefire.argline>
+    <jfmt.native.profile.active>false</jfmt.native.profile.active>
     <forkCount>0.9C</forkCount>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -413,6 +414,9 @@
   <profiles>
     <profile>
       <id>native</id>
+      <properties>
+        <jfmt.native.profile.active>true</jfmt.native.profile.active>
+      </properties>
     </profile>
 
     <!-- run jacoco aggregate b/c of separated integration tests -->

@@ -119,6 +119,17 @@ jobs:
         env:
           TOOLCHAIN_DIR: ${{ steps.prepare-musl.outputs.TOOLCHAIN_DIR }}
 
+      - name: Smoke test native binary (Linux)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIST_FILE=$(ls cli/target/distributions/jfmt-*-linux-*.tar.gz | head -n1)
+          mkdir -p cli/target/native-it
+          tar -xzf "$DIST_FILE" -C cli/target/native-it
+          JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
+          "$JFMT_DIR/bin/jfmt" --help
+          ./mvnw --batch-mode --strict-checksum --errors -Pci,native -pl integration-tests/jreleaser-builtin -am verify -Djfmt.directory="$JFMT_DIR"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
@@ -261,6 +272,26 @@ jobs:
         run: |
           ./mvnw --batch-mode -Pnative package
         if: matrix.os != 'ubuntu-latest'
+
+      - name: Smoke test native binary (Windows / macOS)
+        shell: bash
+        if: matrix.os != 'ubuntu-latest'
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.os }}" = "windows-2022" ]; then
+            DIST_FILE=$(ls cli/target/distributions/jfmt-*-windows-*.zip | head -n1)
+            mkdir -p cli/target/native-it
+            unzip -q "$DIST_FILE" -d cli/target/native-it
+            JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
+            "$JFMT_DIR/bin/jfmt.bat" --help
+            exit 0
+          fi
+
+          DIST_FILE=$(ls cli/target/distributions/jfmt-*-macos-*.tar.gz | head -n1)
+          mkdir -p cli/target/native-it
+          tar -xzf "$DIST_FILE" -C cli/target/native-it
+          JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
+          "$JFMT_DIR/bin/jfmt" --help
 
       - name: Save downloaded Maven packages
         uses: actions/cache/save@v6.0.0
