@@ -4,12 +4,10 @@ import io.github.bmarwell.jfmt.imports.ImportOrderConfiguration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.text.edits.TextEdit;
 
 /**
  * Encapsulates all logic for reading import-order configuration and reordering
@@ -41,7 +39,7 @@ public class ImportOrderProcessor {
         // Decide configured vs fallback.
         List<ImportOrderGroup> groups = buildGroupsFromConfig(p);
 
-        String rendered = renderGroups(groups);
+        String rendered = renderGroups(groups, compilationUnit, workingDoc.get());
         replaceImportsInDocument(compilationUnit, workingDoc, rendered);
     }
 
@@ -118,7 +116,7 @@ public class ImportOrderProcessor {
         return groups;
     }
 
-    private String renderGroups(List<ImportOrderGroup> groups) {
+    private String renderGroups(List<ImportOrderGroup> groups, CompilationUnit compilationUnit, String source) {
         StringBuilder sb = new StringBuilder();
         boolean needSeparator = false;
 
@@ -135,7 +133,10 @@ public class ImportOrderProcessor {
             }
 
             for (ImportDeclaration id : importOrderGroup.elements()) {
-                sb.append(id.toString());
+                // Use the extended source range so any comment JDT attaches to the import is carried along.
+                int start = compilationUnit.getExtendedStartPosition(id);
+                int length = compilationUnit.getExtendedLength(id);
+                sb.append(source, start, start + length).append('\n');
             }
 
             needSeparator = true;
@@ -153,16 +154,16 @@ public class ImportOrderProcessor {
             return;
         }
 
-        int importStart = imports.getFirst().getStartPosition();
+        // Use the extended ranges so the replaced region covers exactly the import declarations and
+        // their attached comments: everything removed here is re-emitted (reordered) by renderGroups.
+        int importStart = compilationUnit.getExtendedStartPosition(imports.getFirst());
         int importEnd = imports
             .stream()
-            .mapToInt(id -> ((ASTNode) id).getStartPosition() + ((ASTNode) id).getLength())
+            .mapToInt(id -> compilationUnit.getExtendedStartPosition(id) + compilationUnit.getExtendedLength(id))
             .max()
             .orElse(importStart);
 
         workingDoc.replace(importStart, importEnd - importStart, rendered);
-        TextEdit importRewrite = compilationUnit.rewrite(workingDoc, null);
-        importRewrite.apply(workingDoc);
     }
 
     // contains all imports read from the original source file.

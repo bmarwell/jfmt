@@ -31,12 +31,21 @@ abstract class ImportOrderProcessorTestBase {
     }
 
     protected String runAndGetImportBlock() {
+        return extractImportBlock(runAndGetDocument(source));
+    }
+
+    protected String runAndGetDocument(String input) {
         try {
+            // Normalize line endings as production does (see AbstractCommand.createRevisedSourceCode),
+            // so the result is LF on every platform and does not depend on how the resource was
+            // checked out (CRLF on Windows would otherwise leak into the document).
+            String src = input.replace("\r\n", "\n");
+
             // Parse the source into a CompilationUnit
-            CompilationUnit cu = parseCompilationUnit(source);
+            CompilationUnit cu = parseCompilationUnit(src);
 
             // Prepare the working document
-            IDocument workingDoc = new Document(source);
+            IDocument workingDoc = new Document(src);
 
             // Load tokens for the given profile
             NamedImportOrder nio = NamedImportOrder.valueOf(getProfileName());
@@ -45,8 +54,7 @@ abstract class ImportOrderProcessorTestBase {
             // Rewrite imports according to tokens
             new ImportOrderProcessor(tokens).rewriteImportsIfAny(cu, workingDoc);
 
-            // Extract and return the import block
-            return extractImportBlock(workingDoc);
+            return workingDoc.get();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -72,9 +80,8 @@ abstract class ImportOrderProcessorTestBase {
         return cu;
     }
 
-    private static String extractImportBlock(IDocument doc)
+    private static String extractImportBlock(String text)
         throws MalformedTreeException {
-        String text = doc.get();
         String[] lines = text.split("\n", -1); // keep trailing empties
 
         int startIdx = -1;
