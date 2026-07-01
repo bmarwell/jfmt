@@ -31,7 +31,7 @@ jobs:
 
       - name: Retrieve musl toolchain from cache
         id: musl-toolchain-cache
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.musl-toolchain
           key: jfmt-musl-toolchain-11
@@ -98,14 +98,14 @@ jobs:
           MUSL_TOOLCHAIN_PASS: ${{ secrets.MUSL_TOOLCHAIN_PASS }}
 
       - name: Save musl toolchain to cache
-        uses: actions/cache/save@v6.0.0
+        uses: actions/cache/save@v6.1.0
         with:
           path: ~/.musl-toolchain
           key: jfmt-musl-toolchain-11
 
       - name: Cache Maven packages
         id: restore-maven-package-cache
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -130,7 +130,7 @@ jobs:
             cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.gz
 
       - name: Save downloaded Maven packages
-        uses: actions/cache/save@v6.0.0
+        uses: actions/cache/save@v6.1.0
         with:
           path: ~/.m2
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
@@ -170,7 +170,7 @@ jobs:
       - name: Retrieve musl toolchain from cache
         id: musl-toolchain-cache
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.musl-toolchain
           key: jfmt-musl-toolchain-11
@@ -233,7 +233,7 @@ jobs:
           MUSL_TOOLCHAIN_PASS: ${{ secrets.MUSL_TOOLCHAIN_PASS }}
 
       - name: Save musl toolchain to cache
-        uses: actions/cache/save@v6.0.0
+        uses: actions/cache/save@v6.1.0
         if: matrix.os == 'ubuntu-latest'
         with:
           path: ~/.musl-toolchain
@@ -241,7 +241,7 @@ jobs:
 
       - name: Cache Maven packages
         id: restore-maven-package-cache
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -263,7 +263,7 @@ jobs:
         if: matrix.os != 'ubuntu-latest'
 
       - name: Save downloaded Maven packages
-        uses: actions/cache/save@v6.0.0
+        uses: actions/cache/save@v6.1.0
         with:
           path: ~/.m2
           key: ${{ steps.restore-maven-package-cache.outputs.cache-primary-key }}
