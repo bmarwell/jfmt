@@ -142,7 +142,7 @@ test_release_prepare_dry_run() {
     echo "This will simulate the release without making changes..."
     echo ""
     
-    ./mvnw release:prepare -DdryRun=true -DskipTests=true 2>&1 | tee /tmp/release-prepare-dry-run.log || {
+    ./mvnw -B release:prepare -DdryRun=true -DskipTests=true 2>&1 | tee /tmp/release-prepare-dry-run.log || {
         print_error "release:prepare dry-run failed"
         echo "Check /tmp/release-prepare-dry-run.log for details"
         exit 1
