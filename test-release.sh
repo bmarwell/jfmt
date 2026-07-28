@@ -121,7 +121,7 @@ check_prerequisites() {
 }
 
 check_maven_release_plugin() {
-    ./mvnw help:effective-pom -q | grep -q "maven-release-plugin" && return 0
+    ./mvnw help:effective-pom | grep -F "maven-release-plugin" > /dev/null && return 0
     print_error "maven-release-plugin not found in POM"
     exit 1
 }
