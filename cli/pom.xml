@@ -5,6 +5,7 @@
   <parent>
     <groupId>io.github.bmarwell.jfmt</groupId>
     <artifactId>jfmt-root</artifactId>
+    <version>0.2.0</version>
   </parent>
 
   <artifactId>jfmt</artifactId>

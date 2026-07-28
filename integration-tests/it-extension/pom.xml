@@ -5,6 +5,7 @@
   <parent>
     <groupId>io.github.bmarwell.jfmt</groupId>
     <artifactId>jfmt-integration-tests</artifactId>
+    <version>0.2.0</version>
   </parent>
 
   <groupId>io.github.bmarwell.jfmt.its</groupId>
