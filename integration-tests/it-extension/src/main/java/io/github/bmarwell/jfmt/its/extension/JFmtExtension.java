@@ -110,11 +110,13 @@ class JFmtExtension implements BeforeAllCallback, BeforeEachCallback, ParameterR
         final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
         processBuilder.environment().put("JAVA_OPTS", jacocoAgentArgLine);
         processBuilder.environment().put("JAVA_HOME", System.getProperty("java.home"));
-        processBuilder.environment()
-            .put(
-                "PATH",
-                System.getProperty("java.home") + "/bin:" + processBuilder.environment().getOrDefault("PATH", "")
-            );
+
+        final String javaHome = System.getProperty("java.home");
+        final String javaBin = Path.of(javaHome, "bin").toString();
+        final String existingPath = processBuilder.environment().getOrDefault("PATH", "");
+        final String pathSeparator = System.getProperty("path.separator");
+        final String newPath = existingPath.isBlank() ? javaBin : javaBin + pathSeparator + existingPath;
+        processBuilder.environment().put("PATH", newPath);
         final Process process = processBuilder.start();
 
         List<JdtResult.LogLine> logs = new CopyOnWriteArrayList<>();
