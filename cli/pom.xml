@@ -351,6 +351,10 @@
                 <enabled>false</enabled>
               </metadataRepository>
 
+              <buildArgs>
+                <buildArg>-H:+AddAllCharsets</buildArg>
+              </buildArgs>
+
               <jvmArgs>
                 <jvmArg>-Duser.language=en</jvmArg>
                 <jvmArg>-Duser.country=US</jvmArg>
