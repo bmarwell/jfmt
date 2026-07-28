@@ -13,7 +13,7 @@
       { "pattern": "org/eclipse/jdt/internal/compiler/parser/unicode.*/.*\\.rsc" },
       { "pattern": "org/eclipse/jdt/internal/compiler/util/messages(.*)?\\.properties" },
       { "pattern": "org/eclipse/jdt/internal/formatter/.*\\.properties" },
-      { "pattern": "META-INF/services/java.nio.charset.spi.CharsetProvider" },
+      { "pattern": "META-INF/services/java\\.nio\\.charset\\.spi\\.CharsetProvider" },
       { "pattern": "sun/nio/cs/.*" },
       { "pattern": "sun/nio/cs/ext/.*" }
     ]
