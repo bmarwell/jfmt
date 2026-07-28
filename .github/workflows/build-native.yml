@@ -283,7 +283,8 @@ jobs:
             mkdir -p cli/target/native-it
             unzip -q "$DIST_FILE" -d cli/target/native-it
             JFMT_DIR=$(find cli/target/native-it -maxdepth 1 -type d -name "jfmt-*" | head -n1)
-            "$JFMT_DIR/bin/jfmt.bat" --help
+            JFMT_BAT=$(cygpath -w "$JFMT_DIR/bin/jfmt.bat")
+            cmd.exe /c "\"$JFMT_BAT\" --help"
             exit 0
           fi
 
