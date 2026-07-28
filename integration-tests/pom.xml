@@ -72,7 +72,7 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <inherited>true</inherited>
         <configuration>
-          <systemPropertyVariables>
+          <systemPropertyVariables combine.self="merge">
             <jfmt.directory>${jfmt.directory}</jfmt.directory>
             <jfmt.native.profile.active>${jfmt.native.profile.active}</jfmt.native.profile.active>
           </systemPropertyVariables>
