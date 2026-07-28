@@ -134,7 +134,7 @@ git checkout v0.1.0
 cd /path/to/jfmt
 
 # Run JReleaser with downloaded artifacts
-./mvnw -N -Prelease -DartifactsDir=artifacts jreleaser:full-release
+./mvnw -N -Prelease jreleaser:full-release -Djreleaser.github.token=${JRELEASER_GITHUB_TOKEN}
 ----
 
 **Note:** The `-DartifactsDir=artifacts` path is relative to the project root. Ensure you run this command from the repository root directory.
