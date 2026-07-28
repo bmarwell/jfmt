@@ -235,9 +235,9 @@ check_jreleaser_github_token() {
     return 0
 }
 
-check_jreleaser_yml_exists() {
-    [ -f "jreleaser.yml" ] && return 0
-    print_error "jreleaser.yml not found"
+check_jreleaser_toml_exists() {
+    [ -f "jreleaser.toml" ] && return 0
+    print_error "jreleaser.toml not found"
     exit 1
 }
 
@@ -309,8 +309,8 @@ test_jreleaser_phase() {
     
     check_jreleaser_github_token
     
-    check_jreleaser_yml_exists
-    print_success "jreleaser.yml exists"
+    check_jreleaser_toml_exists
+    print_success "jreleaser.toml exists"
     
     test_jreleaser_configuration
     test_jreleaser_with_mock_artifacts
