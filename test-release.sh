@@ -121,13 +121,13 @@ check_prerequisites() {
 }
 
 check_maven_release_plugin() {
-    ./mvnw help:effective-pom -q | grep -q "maven-release-plugin" && return 0
+    ./mvnw help:effective-pom | grep -F "maven-release-plugin" > /dev/null && return 0
     print_error "maven-release-plugin not found in POM"
     exit 1
 }
 
 check_scm_configuration() {
-    if ./mvnw help:effective-pom -q | grep -A 5 "<scm>" | grep -q "<tag>"; then
+    if ./mvnw help:effective-pom | grep -A 5 "<scm>" | grep "<tag>" > /dev/null; then
         print_success "SCM tag configuration found"
         return 0
     fi
@@ -142,7 +142,7 @@ test_release_prepare_dry_run() {
     echo "This will simulate the release without making changes..."
     echo ""
     
-    ./mvnw release:prepare -DdryRun=true -DskipTests=true 2>&1 | tee /tmp/release-prepare-dry-run.log || {
+    ./mvnw -B release:prepare -DdryRun=true -DskipTests=true 2>&1 | tee /tmp/release-prepare-dry-run.log || {
         print_error "release:prepare dry-run failed"
         echo "Check /tmp/release-prepare-dry-run.log for details"
         exit 1
@@ -235,9 +235,9 @@ check_jreleaser_github_token() {
     return 0
 }
 
-check_jreleaser_yml_exists() {
-    [ -f "jreleaser.yml" ] && return 0
-    print_error "jreleaser.yml not found"
+check_jreleaser_toml_exists() {
+    [ -f "jreleaser.toml" ] && return 0
+    print_error "jreleaser.toml not found"
     exit 1
 }
 
@@ -309,8 +309,8 @@ test_jreleaser_phase() {
     
     check_jreleaser_github_token
     
-    check_jreleaser_yml_exists
-    print_success "jreleaser.yml exists"
+    check_jreleaser_toml_exists
+    print_success "jreleaser.toml exists"
     
     test_jreleaser_configuration
     test_jreleaser_with_mock_artifacts

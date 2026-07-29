@@ -199,7 +199,7 @@ The script runs maven-release-plugin and JReleaser in dry-run mode without makin
 **Problem:** "Artifacts not found"
 
 * Verify artifacts were downloaded to `./artifacts/`
-* Check artifact naming matches pattern in `jreleaser.yml`
+* Check artifact naming matches pattern in `jreleaser.toml`
 
 **Problem:** "GitHub API rate limit exceeded"
 

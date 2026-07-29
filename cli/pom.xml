@@ -397,7 +397,7 @@
                        - jfmt-0.1.0-SNAPSHOT-osx-aarch_64.zip
                        - jfmt-0.1.0-SNAPSHOT-windows-x86_64.zip
                        
-                       This naming matches the expectations in jreleaser.yml distributions.
+                       This naming matches the expectations in jreleaser.toml distributions.
                   -->
                   <finalName>${project.artifactId}-${project.version}-${nisse.os.classifier}</finalName>
                   <descriptors>
