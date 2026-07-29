@@ -127,7 +127,7 @@ check_maven_release_plugin() {
 }
 
 check_scm_configuration() {
-    if ./mvnw help:effective-pom -q | grep -A 5 "<scm>" | grep -q "<tag>"; then
+    if ./mvnw help:effective-pom | grep -A 5 "<scm>" | grep "<tag>" > /dev/null; then
         print_success "SCM tag configuration found"
         return 0
     fi
