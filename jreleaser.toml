@@ -54,11 +54,6 @@ stereotype = "CLI"
     extraProperties.graalVMNativeImage = true
 
     [[distributions.jfmt.artifacts]]
-    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-x86_64.zip"
-    platform = "osx-x86_64"
-    extraProperties.graalVMNativeImage = true
-
-    [[distributions.jfmt.artifacts]]
     path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-osx-aarch_64.zip"
     platform = "osx-aarch_64"
     extraProperties.graalVMNativeImage = true

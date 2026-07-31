@@ -64,7 +64,7 @@ jobs:
         run: |
           ./mvnw \
             --batch-mode \
-            --strict-checksum \
+            --strict-checksums \
             --errors \
             --non-recursive \
             -Prelease \
