@@ -61,8 +61,10 @@ jobs:
           path: |
             cli/target/distributions/*.zip
             cli/target/distributions/*.tar.gz
+            cli/target/distributions/*.tar.zst
             cli/target/jreleaser/assemble/jfmt/java-archive/*.zip
             cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.gz
+            cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.zst
 
       - name: Save downloaded Maven packages
         uses: actions/cache/save@v6.1.0
@@ -158,3 +160,4 @@ jobs:
           path: |
             cli/target/distributions/*.zip
             cli/target/distributions/*.tar.gz
+            cli/target/distributions/*.tar.zst

@@ -51,6 +51,7 @@ jobs:
           path: |
             cli/target/jreleaser/assemble/jfmt/java-archive/*.zip
             cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.gz
+            cli/target/jreleaser/assemble/jfmt/java-archive/*.tar.zst
           retention-days: 1
 
       - name: Upload coverage reports to Codecov

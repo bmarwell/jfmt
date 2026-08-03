@@ -109,6 +109,7 @@ fabric.properties
 *.ear
 *.zip
 *.tar.gz
+*.tar.zst
 *.rar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
