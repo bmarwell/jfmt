@@ -30,7 +30,7 @@ jobs:
           cache: maven
 
       - name: Install build dependencies on Linux
-        if: runner.os == 'Linux'
+        if: startsWith(matrix.os, 'ubuntu-')
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential zlib1g-dev
@@ -43,7 +43,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build static native image for Linux
+      - name: Build mostly-static native image for Linux x64
         run: |
           export PATH
           ./mvnw \
@@ -99,6 +99,12 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.head_sha || github.sha }}
 
+      - name: Install build dependencies on Linux
+        if: startsWith(matrix.os, 'ubuntu-')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential zlib1g-dev
+
       - name: Set up JDK
         uses: actions/setup-java@v5.6.0
         with:
@@ -114,7 +120,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build static native image for Linux
+      - name: Build mostly-static native image for Linux
         run: |
           ./mvnw \
             --batch-mode \
