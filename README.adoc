@@ -298,6 +298,7 @@ As you can see, the native binary is about three times faster than the JAR distr
 ==== Compiling native binaries on linux
 
 By default, a profile `dist-linux` is activated, which will create a native binary for Linux x86_64.
+The resulting binary is mostly static and requires glibc >=2.35 at runtime.
 
 ==== Optimized binaries
 
