@@ -33,6 +33,12 @@ update.enabled = true
 type = "JAVA_BINARY"
 stereotype = "CLI"
 
+    [[distributions.betterbranch-archive.artifacts]]
+    path = "{{artifactsDir}}/jfmt-{{projectVersion}}.zip"
+
+    [[distributions.betterbranch-archive.artifacts]]
+    path = "{{artifactsDir}}/jfmt-{{projectVersion}}.tar.gz"
+
 # distribution jfmt: a native binary
 [distributions.jfmt]
 type = "BINARY"
