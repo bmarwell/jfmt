@@ -82,7 +82,7 @@ When you push a tag (e.g., `v0.1.0`), the `.github/workflows/build-release-artif
    - Linux aarch64 (mostly static binary, needs glibc >=2.35)
    - macOS aarch64 (Apple Silicon)
    - Windows x86_64
-3. Creates distribution archives (`.zip` and `.tar.gz`) for each platform
+3. Creates distribution archives (`.zip`, `.tar.gz` and `.tar.zst`) for each platform
 4. Uploads all artifacts with 90-day retention
 
 === Monitoring the Build

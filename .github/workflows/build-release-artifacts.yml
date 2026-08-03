@@ -30,7 +30,7 @@ jobs:
       - name: Organize artifacts for upload
         run: |
           mkdir -p release-artifacts
-          FOUND=$(find /tmp/artifacts/ -type f \( -name "jfmt-*.zip" -o -name "jfmt-*.tar.gz" \))
+          FOUND=$(find /tmp/artifacts/ -type f \( -name "jfmt-*.zip" -o -name "jfmt-*.tar.gz" -o -name "jfmt-*.tar.zst" \))
           if [ -z "$FOUND" ]; then
             echo "ERROR: No build artifacts found in /tmp/artifacts/"
             exit 1

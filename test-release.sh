@@ -262,8 +262,10 @@ create_mock_artifacts() {
     # Regular release artifacts
     touch "$mock_dir/jfmt-0.1.0.zip"
     touch "$mock_dir/jfmt-0.1.0.tar.gz"
+    touch "$mock_dir/jfmt-0.1.0.tar.zst"
     touch "$mock_dir/jfmt-0.1.0-linux-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-linux-x86_64.tar.gz"
+    touch "$mock_dir/jfmt-0.1.0-linux-x86_64.tar.zst"
     touch "$mock_dir/jfmt-0.1.0-windows-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-osx-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-osx-aarch_64.zip"
@@ -271,8 +273,10 @@ create_mock_artifacts() {
     # RC version artifacts (SemVer 2.0.0 format)
     touch "$mock_dir/jfmt-0.1.0-rc.1.zip"
     touch "$mock_dir/jfmt-0.1.0-rc.1.tar.gz"
+    touch "$mock_dir/jfmt-0.1.0-rc.1.tar.zst"
     touch "$mock_dir/jfmt-0.1.0-rc.1-linux-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-rc.1-linux-x86_64.tar.gz"
+    touch "$mock_dir/jfmt-0.1.0-rc.1-linux-x86_64.tar.zst"
     touch "$mock_dir/jfmt-0.1.0-rc.1-windows-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-rc.1-osx-x86_64.zip"
     touch "$mock_dir/jfmt-0.1.0-rc.1-osx-aarch_64.zip"
