@@ -39,6 +39,16 @@ type = "BINARY"
 stereotype = "CLI"
 
     [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-aarch_64.zip"
+    platform = "linux-aarch_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
+    path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-aarch_64.tar.gz"
+    platform = "linux-aarch_64"
+    extraProperties.graalVMNativeImage = true
+
+    [[distributions.jfmt.artifacts]]
     path = "{{artifactsDir}}/{{distributionName}}-{{projectVersion}}-linux-x86_64.zip"
     platform = "linux-x86_64"
     extraProperties.graalVMNativeImage = true
