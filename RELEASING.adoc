@@ -78,8 +78,8 @@ When you push a tag (e.g., `v0.1.0`), the `.github/workflows/build-release-artif
 
 1. Checks out the tagged commit
 2. Builds native binaries for all platforms using `.github/workflows/build-native.yml`:
-   - Linux x86_64 (static binary with musl)
-   - macOS x86_64 (Intel)
+   - Linux x86_64 (mostly static binary, needs glibc >=2.35)
+   - Linux aarch64 (mostly static binary, needs glibc >=2.35)
    - macOS aarch64 (Apple Silicon)
    - Windows x86_64
 3. Creates distribution archives (`.zip` and `.tar.gz`) for each platform

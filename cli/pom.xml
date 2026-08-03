@@ -352,7 +352,10 @@
                 <enabled>false</enabled>
               </metadataRepository>
 
-              <buildArgs>
+              <buildArgs combine.children="append">
+                <buildArg>--future-defaults=all</buildArg>
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>-R:MaxHeapSize=128m</buildArg>
                 <buildArg>-H:+AddAllCharsets</buildArg>
               </buildArgs>
 
@@ -393,7 +396,6 @@
                   <!-- Use nisse.os.classifier from Maveniverse Nisse extension
                        to create platform-specific distribution names like:
                        - jfmt-0.1.0-SNAPSHOT-linux-x86_64.zip
-                       - jfmt-0.1.0-SNAPSHOT-osx-x86_64.zip
                        - jfmt-0.1.0-SNAPSHOT-osx-aarch_64.zip
                        - jfmt-0.1.0-SNAPSHOT-windows-x86_64.zip
                        
@@ -430,10 +432,9 @@
             <artifactId>native-maven-plugin</artifactId>
             <!-- as of Maven 4.0.0-rc-4, combine.* does not work -->
             <configuration>
-              <buildArgs>
-                <buildArg>--static</buildArg>
+              <buildArgs combine.children="append">
+                <buildArg>--static-nolibc</buildArg>
                 <buildArg>-march=compatibility</buildArg>
-                <buildArg>--libc=musl</buildArg>
               </buildArgs>
             </configuration>
           </plugin>
@@ -457,6 +458,21 @@
       <properties>
         <native.quick.build>false</native.quick.build>
       </properties>
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <!-- as of Maven 4.0.0-rc-4, combine.* does not work -->
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-Os</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
