@@ -337,6 +337,47 @@
       <id>native</id>
       <build>
         <plugins>
+          <!--
+        Bundles the app together with all dependencies (jgit included) into a single jar,
+        stripping jgit's META-INF/*.SF/*.DSA/*.RSA signature files in the process. This is
+        used exclusively as the native-image classpath below, so native-image never sees the
+        signed jgit jar (which otherwise makes the build fail, see native-maven-plugin
+        configuration comment). Uses shadedClassifierName so this fat jar is written under
+        its own name (jfmt-<version>-native-image.jar) instead of overwriting
+        target/${project.build.finalName}.jar, which must remain the plain, small jar used
+        for the jreleaser distribution.
+      -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>native-image</shadedClassifierName>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/*.MF</exclude>
+                    <exclude>META-INF/LICENSE.txt</exclude>
+                    <exclude>META-INF/versions/*/*module-info*.*</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+            <executions>
+              <execution>
+                <id>shade-for-native-image</id>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
@@ -346,6 +387,11 @@
               <quickBuild>${native.quick.build}</quickBuild>
               <imageName>${project.artifactId}-${project.version}</imageName>
               <agentResourceDirectory>${project.basedir}/src/main/graalvm-native</agentResourceDirectory>
+
+              <!-- force the shaded jar -->
+              <classpath>
+                <param>${project.build.directory}/${project.build.finalName}-native-image.jar</param>
+              </classpath>
 
               <!-- Disable metadata repository since we use custom metadata -->
               <metadataRepository>
