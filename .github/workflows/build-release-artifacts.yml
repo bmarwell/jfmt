@@ -17,7 +17,7 @@ jobs:
 
   collect-artifacts:
     needs: build-native
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       actions: read
 
