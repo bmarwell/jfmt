@@ -249,13 +249,21 @@ Distribution:
 * Use Maven 4 or the Maven wrapper
 * JDK 25 required
 
-You can use `mvn verify` to create a tested and verified runnable application archive using jreleaser.
+You can use `./mvnw verify` to create a tested and verified runnable application archive using jreleaser.
 You can find and execute the archive in the path `cli/target/jreleaser/assemble/jfmt/java-archive`.
 More info about these kinds of archives can be found in my blog post: https://blog.bmarwell.de/2025/04/12/creating-app-distribution-using-maven-jreleaser.html[Creating an App Distribution with Apache Maven and JReleaser].
 
 Please note that Java 25 or better needs to be installed on your system and must be in the `PATH` environment variable.
 
 === Native Binaries
+
+You can use `./mvnw -Pnative verify` to create a runnable application.
+You can find and execute the binary at `cli/target/jfmt-<version>` (file with no extension).
+For more info about native binaries, see below.
+
+Please note that a GraalVM edition of Java 25 or better needs to be installed on your system and must be in the `PATH` environment variable.
+
+==== Motivation for native binaries
 
 Why use native binaries?
 Because they are fast, small, and do not require a JRE to be installed on the system.
@@ -299,6 +307,7 @@ As you can see, the native binary is about three times faster than the JAR distr
 
 By default, a profile `dist-linux` is activated, which will create a native binary for Linux x86_64.
 The resulting binary is mostly static and requires glibc >=2.35 at runtime.
+If you do not have a static `libz.a` installed, you can use the profile `'-Pnative,!dist-linux'` to link zlib dynamically instead.
 
 ==== Optimized binaries
 

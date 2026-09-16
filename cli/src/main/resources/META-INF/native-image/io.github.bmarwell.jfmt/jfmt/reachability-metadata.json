@@ -1,0 +1,20 @@
+{
+  "reflection": [
+    {
+      "comment": "picocli-codegen only scans fields of @Command-annotated classes, so the @Spec field on this IVersionProvider is not registered automatically. picocli injects it via reflection in CommandLine's constructor, so without this every invocation of the native binary fails.",
+      "type": "io.github.bmarwell.jfmt.VersionProvider",
+      "fields": [
+        {
+          "name": "commandSpec"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "comment": "picocli wraps usage text with BreakIterator.getLineInstance(), which loads its data from java.base as a resource bundle. Without this, rendering the help text fails with 'Can't load sun/text/resources/LineBreakIteratorData'.",
+      "module": "java.base",
+      "glob": "sun/text/resources/**"
+    }
+  ]
+}
